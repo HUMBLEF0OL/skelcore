@@ -44,7 +44,7 @@ export async function generateDynamicBlueprint(
     if (htmlEl.style && htmlEl.style.display === "none") return;
 
     // Closed <details> omit content
-    if (htmlEl.tagName === "DETAILS" && !(htmlEl as any).open) {
+    if (htmlEl.tagName === "DETAILS" && !(htmlEl as HTMLDetailsElement).open) {
       return;
     }
 
@@ -76,7 +76,7 @@ export async function generateDynamicBlueprint(
   // Batch layout read. Zero writes occur in this loop. Absolutely no interleaving.
   const reads: ReadResult[] = new Array(collected.length);
   const elementToIndex = new Map<HTMLElement, number>();
-  
+
   for (let i = 0; i < collected.length; i++) {
     elementToIndex.set(collected[i].element, i);
   }
@@ -157,7 +157,23 @@ export async function generateDynamicBlueprint(
     let role: BlueprintNode["role"] = inferredRole;
 
     // Table & Container Overrides: Persist exact DOM structure wrappers
-    if (["TABLE", "THEAD", "TBODY", "TFOOT", "DIV", "SECTION", "ARTICLE", "HEADER", "FOOTER", "MAIN", "ASIDE", "NAV"].includes(measured.tagName) && measured.hasChildren) {
+    if (
+      [
+        "TABLE",
+        "THEAD",
+        "TBODY",
+        "TFOOT",
+        "DIV",
+        "SECTION",
+        "ARTICLE",
+        "HEADER",
+        "FOOTER",
+        "MAIN",
+        "ASIDE",
+        "NAV",
+      ].includes(measured.tagName) &&
+      measured.hasChildren
+    ) {
       role = "container";
     }
     if (measured.tagName === "TR") role = "table-row";
@@ -166,11 +182,15 @@ export async function generateDynamicBlueprint(
     // Layout clipping inside overflow containers
     let width = rect.width;
     let height = rect.height;
-    
+
     // Clamp to parent bounds if parent has overflow: hidden
     if (parentIndex !== -1) {
       const parent = reads[parentIndex];
-      if (parent.styles.overflow === "hidden" || parent.styles.overflowX === "hidden" || parent.styles.overflowY === "hidden") {
+      if (
+        parent.styles.overflow === "hidden" ||
+        parent.styles.overflowX === "hidden" ||
+        parent.styles.overflowY === "hidden"
+      ) {
         const topDiff = Math.max(0, parent.rect.top - rect.top);
         const leftDiff = Math.max(0, parent.rect.left - rect.left);
         const rightDiff = Math.max(0, rect.right - parent.rect.right);
@@ -214,7 +234,7 @@ export async function generateDynamicBlueprint(
     const mb = parseFloat(measured.computedStyles.marginBottom) || 0;
     const ml = parseFloat(measured.computedStyles.marginLeft) || 0;
     const mr = parseFloat(measured.computedStyles.marginRight) || 0;
-    
+
     node.layout.margin = `${Math.max(0, mt)}px ${Math.max(0, mr)}px ${Math.max(0, mb)}px ${Math.max(0, ml)}px`;
 
     if (role === "text") {
