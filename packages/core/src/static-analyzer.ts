@@ -58,8 +58,8 @@ function isVNode(child: unknown): child is VNode {
 function parseDimension(val: unknown, fallback: number): number {
   if (typeof val === "number") return val;
   if (typeof val === "string") {
-    const parsed = parseInt(val, 10);
-    if (!Number.isNaN(parsed)) return parsed;
+    const parsed = parseFloat(val);
+    if (!Number.isNaN(parsed) && parsed > 0) return parsed;
   }
   return fallback;
 }

@@ -3,7 +3,6 @@ import type { Blueprint } from "./types.js";
 type CacheEntry = {
   blueprint: Blueprint;
   structuralHash: string;
-  timestamp: number;
 };
 
 /**
@@ -75,7 +74,6 @@ export class BlueprintCache {
     this.store.set(el, {
       blueprint,
       structuralHash: hash,
-      timestamp: Date.now(),
     });
   }
 

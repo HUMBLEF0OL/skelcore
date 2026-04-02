@@ -345,4 +345,51 @@ describe("generateDynamicBlueprint", () => {
     expect(pChild).toBeDefined();
     expect(pChild?.role).toBe("text");
   });
+
+  it("filters elements with opacity variants (0, 0.0, near-zero)", async () => {
+    const root = document.createElement("div");
+    mockLayout(root, { width: 500, height: 500, top: 0, left: 0 });
+
+    // opacity = "0"
+    const img1 = document.createElement("img");
+    mockLayout(img1, { width: 100, height: 100 }, { opacity: "0" });
+    root.appendChild(img1);
+
+    // opacity = "0.0"
+    const img2 = document.createElement("img");
+    mockLayout(img2, { width: 100, height: 100 }, { opacity: "0.0" });
+    root.appendChild(img2);
+
+    // opacity = "0.00"
+    const img3 = document.createElement("img");
+    mockLayout(img3, { width: 100, height: 100 }, { opacity: "0.00" });
+    root.appendChild(img3);
+
+    // opacity = "0.005" (very close to zero, should still filter)
+    const img4 = document.createElement("img");
+    mockLayout(img4, { width: 100, height: 100 }, { opacity: "0.005" });
+    root.appendChild(img4);
+
+    document.body.appendChild(root);
+
+    const bp = await generateDynamicBlueprint(root);
+    // All opacity-zero/near-zero elements should be filtered out
+    expect(bp.nodes).toHaveLength(0);
+  });
+
+  it("includes elements with low but visible opacity (>0.01)", async () => {
+    const root = document.createElement("div");
+    mockLayout(root, { width: 500, height: 500, top: 0, left: 0 });
+
+    // opacity = "0.01" (just over threshold, should be included)
+    const img = document.createElement("img");
+    mockLayout(img, { width: 100, height: 100 }, { opacity: "0.01" });
+    root.appendChild(img);
+
+    document.body.appendChild(root);
+
+    const bp = await generateDynamicBlueprint(root);
+    expect(bp.nodes).toHaveLength(1);
+    expect(bp.nodes[0].role).toBe("image");
+  });
 });

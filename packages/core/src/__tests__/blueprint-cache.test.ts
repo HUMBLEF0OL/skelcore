@@ -83,4 +83,24 @@ describe("BlueprintCache", () => {
 
     expect(blueprintCache.get(el, hash)).toBeNull();
   });
+
+  it("known limitation: structural hash does not detect attribute-only changes", () => {
+    // This test documents a known limitation: changes to data-skeleton-role or classes
+    // that don't affect DOM structure won't invalidate the cache.
+    // The structural hash only considers tagName, childCount, and depth.
+    const el = document.createElement("div");
+    const hash1 = computeStructuralHash(el);
+
+    // Change an attribute that affects role inference but not structure
+    el.setAttribute("data-skeleton-role", "avatar");
+    const hash2 = computeStructuralHash(el);
+
+    // Hash is the same because structure is identical
+    expect(hash1).toBe(hash2);
+
+    // This means callers should use a blueprint key that includes:
+    // - cache key (element ref)
+    // - role-relevant data attributes (data-skeleton-role, data-skeleton-slot, etc.)
+    // Or re-compute blueprint when these attributes change.
+  });
 });

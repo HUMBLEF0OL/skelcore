@@ -106,7 +106,9 @@ export async function generateDynamicBlueprint(
     const { element: el, rect, styles, parentIndex } = reads[i];
 
     // Edge-case filtering resolved via CSS
-    if (styles.display === "none" || styles.visibility === "hidden" || styles.opacity === "0")
+    // Opacity check must handle all falsy variants: "0", "0.0", "0.00", etc.
+    const opacityVal = parseFloat(styles.opacity);
+    if (styles.display === "none" || styles.visibility === "hidden" || (opacityVal >= 0 && opacityVal < 0.01))
       continue;
     if (styles.position === "fixed") continue; // Cannot accurately relative-position fixed navbars inside flow
     if (rect.width < 1 || rect.height < 1) continue;

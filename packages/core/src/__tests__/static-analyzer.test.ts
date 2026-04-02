@@ -111,4 +111,37 @@ describe("generateStaticBlueprint", () => {
     expect(parsed.nodes).toHaveLength(1);
     expect(parsed.nodes[0].children).toHaveLength(3); // p, img, and the unrolled function component's svg
   });
+
+  it("preserves decimal dimensions in styles and props", () => {
+    // Previously parseInt would truncate decimals; now parseFloat preserves precision
+    const input = h("button", {
+      style: { width: "120.5px", height: "36.75px" },
+    });
+
+    const bp = generateStaticBlueprint(input);
+    expect(bp.nodes[0].width).toBe(120.5);
+    expect(bp.nodes[0].height).toBe(36.75);
+  });
+
+  it("handles numeric style values (not just strings)", () => {
+    const input = h("div", {
+      style: { width: 250.5, height: 150 },
+    });
+
+    const bp = generateStaticBlueprint(input);
+    expect(bp.nodes[0].width).toBe(250.5);
+    expect(bp.nodes[0].height).toBe(150);
+  });
+
+  it("ignores invalid or zero dimensions (falls back to defaults)", () => {
+    const input1 = h("img", { width: "0px" });
+    const bp1 = generateStaticBlueprint(input1);
+    // Width is 0 (not positive), should fall back to default
+    expect(bp1.nodes[0].width).toBe(STATIC_DEFAULTS.image.width);
+
+    const input2 = h("img", { width: "invalid" });
+    const bp2 = generateStaticBlueprint(input2);
+    // Invalid string, should fall back to default
+    expect(bp2.nodes[0].width).toBe(STATIC_DEFAULTS.image.width);
+  });
 });
