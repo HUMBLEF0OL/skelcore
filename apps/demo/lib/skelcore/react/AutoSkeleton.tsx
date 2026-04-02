@@ -33,7 +33,7 @@ export default function AutoSkeleton({
   const config = useMemo(() => ({ ...DEFAULT_CONFIG, ...configOverride }), [configOverride]);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const { blueprint, phase } = useAutoSkeleton(loading, containerRef, config, {
+  const { blueprint, phase, lastDimsRef } = useAutoSkeleton(loading, containerRef, config, {
     onMeasured,
     remeasureOnResize,
     externalBlueprint,
@@ -44,7 +44,8 @@ export default function AutoSkeleton({
 
   const containerStyle: React.CSSProperties = {
     position: "relative",
-    display: "inline-block", // Shrink wrap children by default
+    display: "block", // Ensure we take full width for measurement
+    width: "100%",
     minWidth: "1px",
     minHeight: "1px",
   };
@@ -92,8 +93,28 @@ export default function AutoSkeleton({
         </div>
       )}
 
-      {/* 3. Fallback Layer (shown only while measuring) */}
-      {phase === "measuring" && !blueprint && fallback && (
+      {/* 3. Instant placeholder during measuring gap (before blueprint is ready) */}
+      {phase === "measuring" && !blueprint && (
+        <div
+          className="skel-overlay skel-measuring-placeholder"
+          style={{
+            ...overlayStyle,
+            opacity: 1,
+            minHeight: lastDimsRef.current?.height
+              ? `${lastDimsRef.current.height}px`
+              : "60px",
+          }}
+          aria-hidden="true"
+        >
+          <div
+            className={`skel-block skel-${config.animation}`}
+            style={{ width: "100%", height: "100%", borderRadius: "inherit" }}
+          />
+        </div>
+      )}
+
+      {/* 4. User-provided Fallback Layer (only if set, shown while measuring with no prior dims) */}
+      {phase === "measuring" && !blueprint && !lastDimsRef.current && fallback && (
         <div className="skel-fallback" style={overlayStyle}>
           {fallback}
         </div>

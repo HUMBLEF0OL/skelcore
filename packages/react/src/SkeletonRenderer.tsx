@@ -20,6 +20,20 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
   mode = "absolute",
   slots = {},
 }) => {
+  const nodesToRender = React.useMemo(() => {
+    if (mode === "flow") return blueprint.nodes;
+
+    const flattened: BlueprintNode[] = [];
+    const walk = (items: BlueprintNode[]) => {
+      items.forEach((item) => {
+        flattened.push(item);
+        if (item.children.length > 0) walk(item.children);
+      });
+    };
+    walk(blueprint.nodes);
+    return flattened;
+  }, [blueprint.nodes, mode]);
+
   const renderNode = (node: BlueprintNode): React.ReactNode => {
     if (node.role === "skip") return null;
 
@@ -55,10 +69,14 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
           style={{
             ...commonStyles,
             backgroundColor: "transparent", // Containers are invisible
-            ...(node.layout as React.CSSProperties),
-          }}
+            ...(mode === "absolute"
+              ? Object.fromEntries(
+                Object.entries(node.layout).filter(([key]) => !key.toLowerCase().includes("margin"))
+              )
+              : node.layout),
+          } as React.CSSProperties}
         >
-          {node.children.map(renderNode)}
+          {mode === "flow" ? node.children.map(renderNode) : null}
         </Tag>
       );
     }
@@ -114,14 +132,13 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
 
   const rootStyle: React.CSSProperties = {
     position: "relative",
-    width: blueprint.rootWidth > 0 ? `${blueprint.rootWidth}px` : "100%",
+    width: "100%",
     height: blueprint.rootHeight > 0 ? `${blueprint.rootHeight}px` : "auto",
-    overflow: "hidden",
   };
 
   return (
     <div className="skel-renderer-root" style={rootStyle}>
-      {blueprint.nodes.map(renderNode)}
+      {nodesToRender.map(renderNode)}
     </div>
   );
 };

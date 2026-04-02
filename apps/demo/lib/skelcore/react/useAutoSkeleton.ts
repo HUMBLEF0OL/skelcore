@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   generateDynamicBlueprint,
   blueprintCache,
-  computeStructuralHash,
   animationSystem,
   DEFAULT_CONFIG,
   type Blueprint,
@@ -26,29 +25,45 @@ export function useAutoSkeleton(
   const [blueprint, setBlueprint] = useState<Blueprint | null>(options.externalBlueprint || null);
   const [phase, setPhase] = useState<SkeletonPhase>(loading ? "measuring" : "idle");
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const lastStructuralHashRef = useRef<string | null>(null);
+  // Track last known dimensions so we can show an instant placeholder during re-measurement
+  const lastDimsRef = useRef<{ width: number; height: number } | null>(null);
 
   const measure = useCallback(async () => {
     if (!contentRef.current || !loading) return;
 
     setPhase("measuring");
 
-    // 1. Check Cache
-    const hash = computeStructuralHash(contentRef.current);
-    const cached = blueprintCache.get(contentRef.current, hash);
-    if (cached) {
-      setBlueprint(cached);
+    try {
+      const existingHash = lastStructuralHashRef.current;
+      if (existingHash) {
+        const cached = blueprintCache.get(contentRef.current, existingHash);
+        if (cached) {
+          lastDimsRef.current = { width: cached.rootWidth, height: cached.rootHeight };
+          setBlueprint(cached);
+          setPhase("showing");
+          options.onMeasured?.(cached);
+          return;
+        }
+      }
+
+      // Cache miss: measure once, then reuse the returned structural hash.
+      const b = await generateDynamicBlueprint(contentRef.current, config);
+      const structuralHash = (b as Blueprint & { structuralHash: string }).structuralHash;
+
+      lastStructuralHashRef.current = structuralHash;
+      blueprintCache.set(contentRef.current, b, structuralHash);
+
+      lastDimsRef.current = { width: b.rootWidth, height: b.rootHeight };
+      setBlueprint(b);
       setPhase("showing");
-      options.onMeasured?.(cached);
-      return;
+      options.onMeasured?.(b);
+    } catch (err) {
+      console.error("[SkelCore] Blueprint measurement failed:", err);
+      // Graceful fallback: hide skeleton, show content
+      setPhase("idle");
+      setBlueprint(null);
     }
-
-    // 2. Perform Dynamic Scann (await internal rAF/Font settling)
-    const b = await generateDynamicBlueprint(contentRef.current, config);
-    blueprintCache.set(contentRef.current, b, hash);
-
-    setBlueprint(b);
-    setPhase("showing");
-    options.onMeasured?.(b);
   }, [loading, contentRef, config, options.onMeasured]);
 
   // Initial Measurement and Loading Toggle
@@ -91,5 +106,5 @@ export function useAutoSkeleton(
     animationSystem.injectStyles(config);
   }, [config]);
 
-  return { blueprint, phase };
+  return { blueprint, phase, lastDimsRef };
 }

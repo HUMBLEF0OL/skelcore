@@ -19,7 +19,7 @@ function mockLayout(
       bottom: (rect.top ?? 0) + (rect.height ?? 0),
       x: rect.left ?? 0,
       y: rect.top ?? 0,
-      toJSON: () => {},
+      toJSON: () => { },
     }) as DOMRect;
 
   if (styles.display) {
@@ -203,5 +203,146 @@ describe("generateDynamicBlueprint", () => {
     // explicitly resolving to offsetTop=50 instead of relying on the skewed getBoundingClientRect!
     expect(bp.nodes[0].top).toBe(50);
     expect(bp.nodes[0].left).toBe(25);
+  });
+
+  it("preserves nested structure when intermediate elements are filtered out", async () => {
+    // BUG: When a parent has multiple children, and one is hidden,
+    // the depths become misaligned, causing siblings to attach to wrong parents.
+    //
+    // Structure:
+    // root
+    //   └─ container
+    //       ├─ hidden-section (FILTERED OUT)
+    //       └─ visible-paragraph
+    //
+    // Without fix, paragraph could attach to root instead of container
+    // because depth tracking gets corrupted when hidden-section is skipped.
+
+    const root = document.createElement("div");
+    mockLayout(root, { width: 500, height: 500, top: 0, left: 0 });
+
+    const container = document.createElement("div");
+    mockLayout(container, { width: 500, height: 400, top: 0, left: 0 });
+    root.appendChild(container);
+
+    // This hidden section breaks depth alignment
+    const hiddenSection = document.createElement("section");
+    hiddenSection.style.display = "none";
+    mockLayout(hiddenSection, { width: 500, height: 100, top: 0, left: 0 }, { display: "none" });
+    container.appendChild(hiddenSection);
+
+    // This paragraph should still be a child of container, not root
+    const paragraph = document.createElement("p");
+    paragraph.textContent = "Content";
+    mockLayout(paragraph, { width: 400, height: 24, top: 150, left: 10 });
+    container.appendChild(paragraph);
+
+    document.body.appendChild(root);
+
+    const bp = await generateDynamicBlueprint(root);
+
+    // Verify hierarchy is correct
+    expect(bp.nodes).toHaveLength(1);
+    expect(bp.nodes[0].tagName).toBe("DIV");
+    expect(bp.nodes[0].children).toHaveLength(1);
+    expect(bp.nodes[0].children[0].tagName).toBe("P");
+  });
+
+  it("correctly handles multiple nested levels with filtered elements", async () => {
+    // More complex scenario: deeply nested structure with multiple filtered points
+    // root > article > (hidden) > p
+    //             > nav > ul > li (nested three levels)
+    const root = document.createElement("div");
+    mockLayout(root, { width: 800, height: 600, top: 0, left: 0 });
+
+    const article = document.createElement("article");
+    mockLayout(article, { width: 800, height: 600, top: 0, left: 0 });
+    root.appendChild(article);
+
+    // Hidden section that should be filtered
+    const hidden = document.createElement("section");
+    hidden.style.display = "none";
+    mockLayout(hidden, { width: 400, height: 100, top: 0, left: 0 }, { display: "none" });
+    article.appendChild(hidden);
+
+    // Paragraph after hidden section should be child of article
+    const p = document.createElement("p");
+    p.textContent = "Article content";
+    mockLayout(p, { width: 300, height: 24, top: 150, left: 10 });
+    article.appendChild(p);
+
+    // Navigation structure: nav > ul > li (three levels deep)
+    const nav = document.createElement("nav");
+    mockLayout(nav, { width: 200, height: 300, top: 200, left: 10 });
+    article.appendChild(nav);
+
+    const ul = document.createElement("ul");
+    mockLayout(ul, { width: 200, height: 300, top: 200, left: 10 });
+    nav.appendChild(ul);
+
+    const li = document.createElement("li");
+    li.textContent = "Menu item";
+    mockLayout(li, { width: 150, height: 20, top: 200, left: 20 });
+    ul.appendChild(li);
+
+    document.body.appendChild(root);
+
+    const bp = await generateDynamicBlueprint(root);
+
+    // article should be top-level
+    expect(bp.nodes).toHaveLength(1);
+    expect(bp.nodes[0].tagName).toBe("ARTICLE");
+
+    // article should have: p, nav (not hidden)
+    expect(bp.nodes[0].children.length).toBeGreaterThanOrEqual(2);
+
+    // Find p and nav in children
+    const pChild = bp.nodes[0].children.find((c) => c.tagName === "P");
+    const navChild = bp.nodes[0].children.find((c) => c.tagName === "NAV");
+
+    expect(pChild).toBeDefined();
+    expect(pChild?.role).toBe("text");
+
+    expect(navChild).toBeDefined();
+    expect(navChild?.role).toBe("container");
+    // nav should have ul
+    expect(navChild?.children).toHaveLength(1);
+    expect(navChild?.children[0].tagName).toBe("UL");
+    // ul should have li
+    expect(navChild?.children[0].children).toHaveLength(1);
+    expect(navChild?.children[0].children[0].tagName).toBe("LI");
+  });
+
+  it("reparents to nearest surviving ancestor when direct parent is filtered", async () => {
+    const root = document.createElement("div");
+    mockLayout(root, { width: 500, height: 500, top: 0, left: 0 });
+
+    const container = document.createElement("div");
+    mockLayout(container, { width: 500, height: 300, top: 0, left: 0 });
+    root.appendChild(container);
+
+    // This parent is collected but filtered in PASS 3 due to fixed positioning.
+    const fixedParent = document.createElement("div");
+    mockLayout(fixedParent, { width: 300, height: 100, top: 50, left: 10 }, { position: "fixed" });
+    container.appendChild(fixedParent);
+
+    // Child remains valid and should attach to container (nearest surviving ancestor), not root.
+    const childText = document.createElement("p");
+    childText.textContent = "Reparented";
+    mockLayout(childText, { width: 120, height: 24, top: 70, left: 20 });
+    fixedParent.appendChild(childText);
+
+    document.body.appendChild(root);
+
+    const bp = await generateDynamicBlueprint(root);
+
+    expect(bp.nodes).toHaveLength(1);
+    expect(bp.nodes[0].tagName).toBe("DIV");
+
+    const containerChildren = bp.nodes[0].children;
+    const pChild = containerChildren.find((c) => c.tagName === "P");
+
+    expect(pChild).toBeDefined();
+    expect(pChild?.role).toBe("text");
   });
 });

@@ -166,7 +166,16 @@ const AutoSkeleton = ({
   slots,
   onMeasured,
   remeasureOnResize = false,
-}: any) => {
+}: {
+  loading: boolean;
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  config?: Partial<SkeletonConfig>;
+  blueprint?: Blueprint;
+  slots?: Record<string, () => React.ReactNode>;
+  onMeasured?: (b: Blueprint) => void;
+  remeasureOnResize?: boolean;
+}) => {
   const config = React.useMemo(() => ({ ...DEFAULT_CONFIG, ...configOverride }), [configOverride]);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const { blueprint, phase } = useAutoSkeleton(loading, containerRef, config, {

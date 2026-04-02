@@ -22,6 +22,7 @@ export function djb2(str: string): string {
  * Generates a structural hash of a DOM subtree.
  * Includes tagName, childCount, and depth.
  * Ignores text content and attributes (except data-skeleton ones).
+ * Maximum depth limits traversal cost for very large trees.
  */
 export function computeStructuralHash(root: Element, maxDepth: number = 12): string {
   const parts: string[] = [];
@@ -32,6 +33,9 @@ export function computeStructuralHash(root: Element, maxDepth: number = 12): str
     // Serialize node identity
     // Format: Tag:ChildrenCount:Depth
     parts.push(`${el.tagName}:${el.childElementCount}:${depth}`);
+
+    // Early exit for leaves
+    if (el.childElementCount === 0) return;
 
     const children = el.children;
     for (let i = 0; i < children.length; i++) {

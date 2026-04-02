@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   generateDynamicBlueprint,
   blueprintCache,
-  computeStructuralHash,
   animationSystem,
   DEFAULT_CONFIG,
   type Blueprint,
@@ -26,25 +25,30 @@ export function useAutoSkeleton(
   const [blueprint, setBlueprint] = useState<Blueprint | null>(options.externalBlueprint || null);
   const [phase, setPhase] = useState<SkeletonPhase>(loading ? "measuring" : "idle");
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const lastStructuralHashRef = useRef<string | null>(null);
 
   const measure = useCallback(async () => {
     if (!contentRef.current || !loading) return;
 
     setPhase("measuring");
 
-    // 1. Check Cache
-    const hash = computeStructuralHash(contentRef.current);
-    const cached = blueprintCache.get(contentRef.current, hash);
-    if (cached) {
-      setBlueprint(cached);
-      setPhase("showing");
-      options.onMeasured?.(cached);
-      return;
+    const existingHash = lastStructuralHashRef.current;
+    if (existingHash) {
+      const cached = blueprintCache.get(contentRef.current, existingHash);
+      if (cached) {
+        setBlueprint(cached);
+        setPhase("showing");
+        options.onMeasured?.(cached);
+        return;
+      }
     }
 
-    // 2. Perform Dynamic Scann (await internal rAF/Font settling)
+    // Cache miss: measure once, then reuse the returned structural hash.
     const b = await generateDynamicBlueprint(contentRef.current, config);
-    blueprintCache.set(contentRef.current, b, hash);
+    const structuralHash = (b as Blueprint & { structuralHash: string }).structuralHash;
+
+    lastStructuralHashRef.current = structuralHash;
+    blueprintCache.set(contentRef.current, b, structuralHash);
 
     setBlueprint(b);
     setPhase("showing");

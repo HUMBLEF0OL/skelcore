@@ -20,7 +20,7 @@ export interface AutoSkeletonProps {
  * The main AutoSkeleton component.
  * Automatically generates a skeleton based on children structure or provided blueprint.
  */
-export default function AutoSkeleton({
+export function AutoSkeleton({
   loading,
   children,
   fallback,
@@ -44,7 +44,7 @@ export default function AutoSkeleton({
 
   const containerStyle: React.CSSProperties = {
     position: "relative",
-    display: "inline-block", // Shrink wrap children by default
+    display: "block", // Ensure we take full width for measurement
     minWidth: "1px",
     minHeight: "1px",
   };
@@ -100,4 +100,6 @@ export default function AutoSkeleton({
       )}
     </div>
   );
-};
+}
+
+export default AutoSkeleton;

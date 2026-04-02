@@ -13,9 +13,11 @@ type ScoringRule = {
 // ─── Helper Utilities ──────────────────────────────────────────────────────────
 
 function parseBorderRadius(value: string): number {
-  // Handles '50%', '100%', '8px', etc. — just check for high % value for circle
   if (value.endsWith("%")) return parseFloat(value);
-  return 0; // non-percentage: treat as 0 for circle detection
+  // Tailwind `rounded-full` computes to 9999px — treat large px values as circular
+  const px = parseFloat(value);
+  if (!isNaN(px) && px >= 40) return 50;
+  return 0;
 }
 
 function isCircular(styles: MeasuredNode["computedStyles"]): boolean {

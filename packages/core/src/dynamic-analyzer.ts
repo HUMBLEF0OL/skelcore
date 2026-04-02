@@ -19,13 +19,11 @@ export async function generateDynamicBlueprint(
   root: HTMLElement,
   config: SkeletonConfig = DEFAULT_CONFIG
 ): Promise<Blueprint> {
-  // ─── Timing ─────────────────────────────────────────────────────────────────
+  // ─── Font Loading ────────────────────────────────────────────────────────────
+  // Wait for web fonts to load before measuring text layout
   if (typeof document !== "undefined" && document.fonts) {
     await document.fonts.ready;
   }
-
-  await new Promise((resolve) => requestAnimationFrame(resolve));
-  await new Promise((resolve) => requestAnimationFrame(resolve));
 
   // ─── PASS 1: COLLECT ─────────────────────────────────────────────────────────
   // No forced layout. We only read the DOM tree structure and attributes.
@@ -102,10 +100,10 @@ export async function generateDynamicBlueprint(
   const rootTop = rootRect.top;
 
   let nodeCounter = 0;
-  const flatNodes: (BlueprintNode & { parentDepth: number })[] = [];
+  const flatNodes: (BlueprintNode & { parentIndex: number; readIndex: number })[] = [];
 
   for (let i = 0; i < reads.length; i++) {
-    const { element: el, rect, styles, depth, parentIndex } = reads[i];
+    const { element: el, rect, styles, parentIndex } = reads[i];
 
     // Edge-case filtering resolved via CSS
     if (styles.display === "none" || styles.visibility === "hidden" || styles.opacity === "0")
@@ -252,10 +250,12 @@ export async function generateDynamicBlueprint(
       node.slotKey = measured.dataAttributes["skeletonSlot"];
     }
 
-    flatNodes.push({ ...node, parentDepth: depth });
+    flatNodes.push({ ...node, parentIndex, readIndex: i });
   }
 
-  // Re-assemble Tree
+  // Re-assemble Tree using parentIndex for accurate parent-child relationships
+  // This correctly handles filtered elements (display:none, too small, etc)
+
   const rootNode: BlueprintNode = {
     id: "root",
     role: "container",
@@ -269,18 +269,29 @@ export async function generateDynamicBlueprint(
     children: [],
   };
 
-  const stack: { node: BlueprintNode; depth: number }[] = [{ node: rootNode, depth: -1 }];
+  // Track which BlueprintNodes correspond to which reads indices
+  // -1 is reserved for root
+  const nodeByReadsIndex = new Map<number, BlueprintNode>();
+  nodeByReadsIndex.set(-1, rootNode);
 
+  // Now build the hierarchy using flatNodes and their stored parentIndex values
   for (let i = 0; i < flatNodes.length; i++) {
     const flat = flatNodes[i];
-    const { parentDepth, ...node } = flat;
+    const { parentIndex, readIndex, ...node } = flat;
 
-    while (stack.length > 1 && stack[stack.length - 1].depth >= parentDepth) {
-      stack.pop();
+    // Find nearest surviving ancestor; direct parent may have been filtered out.
+    let parentNode = rootNode;
+    let currentParentIndex = parentIndex;
+    while (currentParentIndex !== -1) {
+      if (nodeByReadsIndex.has(currentParentIndex)) {
+        parentNode = nodeByReadsIndex.get(currentParentIndex)!;
+        break;
+      }
+      currentParentIndex = reads[currentParentIndex]?.parentIndex ?? -1;
     }
 
-    stack[stack.length - 1].node.children.push(node);
-    stack.push({ node, depth: parentDepth });
+    parentNode.children.push(node);
+    nodeByReadsIndex.set(readIndex, node);
   }
 
   return {

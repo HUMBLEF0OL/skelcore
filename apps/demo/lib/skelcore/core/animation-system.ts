@@ -75,10 +75,12 @@ export class AnimationSystem {
   );
   background-size: 200% 100%;
   animation: skel-shimmer ${shimmerDuration}s infinite linear;
+  will-change: background-position;
 }
 
 .skel-pulse {
   animation: skel-pulse ${pulseDuration}s infinite ease-in-out;
+  will-change: opacity;
 }
 
 /* Reduced motion preference */
