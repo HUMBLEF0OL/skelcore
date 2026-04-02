@@ -6,7 +6,9 @@
   "module": "./src/index.tsx",
   "types": "./src/index.tsx",
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
   ],
   "scripts": {
     "build": "tsup src/index.tsx --format cjs,esm --dts",
