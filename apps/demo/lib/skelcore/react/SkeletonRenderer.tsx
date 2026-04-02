@@ -40,6 +40,7 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
     const isContainer = node.role === "container" || node.isTable || node.isTableRow;
     const isTableCell = node.role === "table-cell" || node.isTableCell;
     const isText = node.role === "text" && node.text;
+    const isStaticFlowText = mode === "flow" && blueprint.source === "static" && Boolean(isText);
     const animationClass = config.animation === "none" ? "" : `skel-${config.animation}`;
     const preserveNodeRadius = node.role === "avatar" || (mode === "flow" && blueprint.source === "static");
     const resolvedBorderRadius = preserveNodeRadius ? node.borderRadius : `${config.borderRadius}px`;
@@ -56,7 +57,7 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
       commonStyles.left = `${node.left}px`;
       commonStyles.width = `${node.width}px`;
       commonStyles.height = `${node.height}px`;
-    } else if (!isContainer) {
+    } else if (!isContainer && !isStaticFlowText) {
       commonStyles.width = `${node.width}px`;
       commonStyles.height = `${node.height}px`;
     }
@@ -133,7 +134,11 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
         <div
           key={node.id}
           className="skel-text-group"
-          style={{ ...commonStyles, backgroundColor: "transparent" }}
+          style={{
+            ...commonStyles,
+            backgroundColor: "transparent",
+            ...(isStaticFlowText ? { width: "100%", height: "auto" } : {}),
+          }}
         >
           {Array.from({ length: lines }).map((_, i) => (
             <span

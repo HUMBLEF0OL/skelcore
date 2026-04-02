@@ -40,10 +40,9 @@ export default function AutoSkeleton({
   });
 
   const showSkeleton = loading || phase === "exiting";
-  const hasOverlayLayer = Boolean(
-    (showSkeleton && blueprint) || phase === "measuring"
-  );
-  const contentVisible = !loading || !hasOverlayLayer;
+  // Keep content visible during measuring so the analyzer can inspect rendered styles.
+  const hasOverlayLayer = Boolean(showSkeleton && blueprint);
+  const contentVisible = !loading || (phase === "measuring" && !blueprint) || !hasOverlayLayer;
 
   const containerStyle: React.CSSProperties = {
     position: "relative",
@@ -57,7 +56,6 @@ export default function AutoSkeleton({
 
   const contentStyle: React.CSSProperties = {
     visibility: contentVisible ? "visible" : "hidden",
-    opacity: contentVisible ? 1 : 0,
     pointerEvents: contentVisible ? "auto" : "none",
     userSelect: "auto",
   };

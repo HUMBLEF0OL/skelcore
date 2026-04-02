@@ -22,7 +22,7 @@ describe("AutoSkeleton", () => {
     expect(getByText("Loaded Content")).toBeInTheDocument();
   });
 
-  it("hides content and shows measuring state when loading starts", async () => {
+  it("keeps content visible while measuring before blueprint is ready", async () => {
     const { getByTestId } = render(
       <AutoSkeleton loading={true}>
         <div data-testid="content">Secret Content</div>
@@ -30,7 +30,8 @@ describe("AutoSkeleton", () => {
     );
 
     const content = getByTestId("content").parentElement as HTMLElement;
-    expect(content.style.opacity).toBe("0");
+    expect(content.style.visibility).toBe("visible");
+    expect(content.style.pointerEvents).toBe("auto");
   });
 
   it("transitions to exiting and then idle when loading stops", async () => {
@@ -49,14 +50,14 @@ describe("AutoSkeleton", () => {
 
     const content = getByTestId("content").parentElement as HTMLElement;
     // Should be visible now (or starting to fade in)
-    expect(content.style.opacity).toBe("1");
+    expect(content.style.visibility).toBe("visible");
 
     // Check if it unmounts overlay after timeout
     act(() => {
       vi.runAllTimers();
     });
     // The overlay should be gone (verified by checking internal state/phase if possible)
-    // Here we just verify content is still 1
-    expect(content.style.opacity).toBe("1");
+    // Here we just verify content is still visible
+    expect(content.style.visibility).toBe("visible");
   });
 });

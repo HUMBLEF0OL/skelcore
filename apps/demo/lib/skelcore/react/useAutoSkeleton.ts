@@ -28,11 +28,16 @@ export function useAutoSkeleton(
   const lastStructuralHashRef = useRef<string | null>(null);
   // Track last known dimensions so we can show an instant placeholder during re-measurement
   const lastDimsRef = useRef<{ width: number; height: number } | null>(null);
+  const blueprintRef = useRef<Blueprint | null>(options.externalBlueprint || null);
   const onMeasuredRef = useRef(options.onMeasured);
 
   useEffect(() => {
     onMeasuredRef.current = options.onMeasured;
   }, [options.onMeasured]);
+
+  useEffect(() => {
+    blueprintRef.current = blueprint;
+  }, [blueprint]);
 
   const measure = useCallback(async (forceFresh: boolean = false) => {
     if (!contentRef.current || !loading) return;
@@ -61,6 +66,11 @@ export function useAutoSkeleton(
 
       // Cache miss: measure once, then reuse the returned structural hash.
       const b = await generateDynamicBlueprint(contentRef.current, config);
+      if (b.nodes.length === 0 && blueprintRef.current) {
+        setPhase("showing");
+        return;
+      }
+
       const structuralHash = (b as Blueprint & { structuralHash: string }).structuralHash;
 
       lastStructuralHashRef.current = structuralHash;
