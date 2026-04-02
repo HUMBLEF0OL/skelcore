@@ -26,6 +26,11 @@ export function useAutoSkeleton(
   const [phase, setPhase] = useState<SkeletonPhase>(loading ? "measuring" : "idle");
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const lastStructuralHashRef = useRef<string | null>(null);
+  const onMeasuredRef = useRef(options.onMeasured);
+
+  useEffect(() => {
+    onMeasuredRef.current = options.onMeasured;
+  }, [options.onMeasured]);
 
   const measure = useCallback(async () => {
     if (!contentRef.current || !loading) return;
@@ -38,7 +43,7 @@ export function useAutoSkeleton(
       if (cached) {
         setBlueprint(cached);
         setPhase("showing");
-        options.onMeasured?.(cached);
+        onMeasuredRef.current?.(cached);
         return;
       }
     }
@@ -54,8 +59,8 @@ export function useAutoSkeleton(
 
     setBlueprint(b);
     setPhase("showing");
-    options.onMeasured?.(b);
-  }, [loading, contentRef, config, options.onMeasured]);
+    onMeasuredRef.current?.(b);
+  }, [loading, contentRef, config]);
 
   // Initial Measurement and Loading Toggle
   useEffect(() => {

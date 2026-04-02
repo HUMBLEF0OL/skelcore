@@ -12,6 +12,33 @@ describe("AutoSkeleton", () => {
     vi.useFakeTimers();
   });
 
+  const staticBlueprint = {
+    version: 1,
+    rootWidth: 100,
+    rootHeight: 20,
+    nodes: [
+      {
+        id: "text-1",
+        role: "text",
+        tagName: "SPAN",
+        width: 80,
+        height: 12,
+        top: 4,
+        left: 4,
+        borderRadius: "4px",
+        layout: {},
+        text: {
+          lines: 1,
+          lineHeight: 12,
+          lastLineWidthRatio: 1,
+        },
+        children: [],
+      },
+    ],
+    generatedAt: Date.now(),
+    source: "static" as const,
+  };
+
   it("renders children when not loading", () => {
     const { getByText } = render(
       <AutoSkeleton loading={false}>
@@ -31,6 +58,20 @@ describe("AutoSkeleton", () => {
 
     const content = getByTestId("content").parentElement as HTMLElement;
     expect(content.style.opacity).toBe("0");
+  });
+
+  it("keeps content hidden while skeleton overlay is active", () => {
+    const { container, getByTestId } = render(
+      <AutoSkeleton loading={true} blueprint={staticBlueprint}>
+        <div data-testid="content">Secret Content</div>
+      </AutoSkeleton>
+    );
+
+    const content = getByTestId("content").parentElement as HTMLElement;
+    expect(content.style.visibility).toBe("hidden");
+    expect(content.style.opacity).toBe("0");
+    expect(content.style.pointerEvents).toBe("none");
+    expect(container.querySelector(".skel-overlay")).toBeTruthy();
   });
 
   it("transitions to exiting and then idle when loading stops", async () => {

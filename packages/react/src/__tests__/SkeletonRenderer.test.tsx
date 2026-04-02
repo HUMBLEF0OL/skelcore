@@ -33,6 +33,18 @@ const mockBlueprint: Blueprint = {
       layout: {},
       children: [],
     },
+    {
+      id: "node-3",
+      role: "avatar",
+      tagName: "IMG",
+      width: 56,
+      height: 56,
+      top: 180,
+      left: 10,
+      borderRadius: "50%",
+      layout: {},
+      children: [],
+    },
   ],
   generatedAt: Date.now(),
   source: "dynamic",
@@ -81,5 +93,138 @@ describe("SkeletonRenderer", () => {
     expect(imageNode.style.position).toBe("absolute");
     expect(imageNode.style.top).toBe("70px");
     expect(imageNode.style.left).toBe("10px");
+  });
+
+  it("applies configured radius to regular blocks and preserves avatar circles", () => {
+    const config = {
+      ...DEFAULT_CONFIG,
+      borderRadius: 24,
+    };
+
+    const { container } = render(<SkeletonRenderer blueprint={mockBlueprint} config={config} />);
+
+    const imageNode = container.querySelector(".skel-role-image") as HTMLElement;
+    const avatarNode = container.querySelector(".skel-role-avatar") as HTMLElement;
+
+    expect(imageNode.style.borderRadius).toBe("24px");
+    expect(avatarNode.style.borderRadius).toBe("50%");
+  });
+
+  it("renders table cells as inset bars instead of full-cell masks", () => {
+    const tableBlueprint: Blueprint = {
+      version: 1,
+      rootWidth: 400,
+      rootHeight: 80,
+      nodes: [
+        {
+          id: "cell-1",
+          role: "table-cell",
+          tagName: "TD",
+          width: 180,
+          height: 36,
+          top: 10,
+          left: 10,
+          borderRadius: "0px",
+          layout: {},
+          text: { lines: 1, lineHeight: 20, lastLineWidthRatio: 0.7 },
+          children: [],
+        },
+      ],
+      generatedAt: Date.now(),
+      source: "dynamic",
+    };
+
+    const { container } = render(
+      <SkeletonRenderer blueprint={tableBlueprint} config={DEFAULT_CONFIG} />
+    );
+
+    const cell = container.querySelector(".skel-table-cell") as HTMLElement;
+    const bar = container.querySelector(".skel-table-cell-bar") as HTMLElement;
+
+    expect(cell).not.toBeNull();
+    expect(bar).not.toBeNull();
+    expect(bar.style.width).toBe("70%");
+    expect(container.querySelector(".skel-role-table-cell")).toBeNull();
+  });
+
+  it("applies custom table-cell config for inset and bar sizing", () => {
+    const tableBlueprint: Blueprint = {
+      version: 1,
+      rootWidth: 400,
+      rootHeight: 80,
+      nodes: [
+        {
+          id: "cell-2",
+          role: "table-cell",
+          tagName: "TD",
+          width: 180,
+          height: 40,
+          top: 10,
+          left: 10,
+          borderRadius: "0px",
+          layout: {},
+          children: [],
+        },
+      ],
+      generatedAt: Date.now(),
+      source: "dynamic",
+    };
+
+    const config = {
+      ...DEFAULT_CONFIG,
+      tableCellInsetX: 12,
+      tableCellBarHeightRatio: 0.5,
+      tableCellBarMinHeight: 10,
+      tableCellDefaultWidthRatio: 0.6,
+    };
+
+    const { container } = render(
+      <SkeletonRenderer blueprint={tableBlueprint} config={config} />
+    );
+
+    const cell = container.querySelector(".skel-table-cell") as HTMLElement;
+    const bar = container.querySelector(".skel-table-cell-bar") as HTMLElement;
+
+    expect(cell.style.paddingInline).toBe("12px");
+    expect(bar.style.width).toBe("60%");
+    expect(bar.style.height).toBe("12px");
+  });
+
+  it("preserves node borderRadius for non-avatar nodes in flow mode with static blueprints", () => {
+    const config = {
+      ...DEFAULT_CONFIG,
+      borderRadius: 24,
+    };
+
+    const staticBlueprint: Blueprint = {
+      ...mockBlueprint,
+      source: "static",
+    };
+
+    const { container } = render(
+      <SkeletonRenderer blueprint={staticBlueprint} config={config} mode="flow" />
+    );
+
+    const imageNode = container.querySelector(".skel-role-image") as HTMLElement;
+    const avatarNode = container.querySelector(".skel-role-avatar") as HTMLElement;
+
+    expect(imageNode.style.borderRadius).toBe("8px");
+    expect(avatarNode.style.borderRadius).toBe("50%");
+  });
+
+  it("applies node width and height in flow mode", () => {
+    const staticBlueprint: Blueprint = {
+      ...mockBlueprint,
+      source: "static",
+    };
+
+    const { container } = render(
+      <SkeletonRenderer blueprint={staticBlueprint} config={DEFAULT_CONFIG} mode="flow" />
+    );
+
+    const imageNode = container.querySelector(".skel-role-image") as HTMLElement;
+    expect(imageNode.style.position).toBe("relative");
+    expect(imageNode.style.width).toBe("100px");
+    expect(imageNode.style.height).toBe("100px");
   });
 });

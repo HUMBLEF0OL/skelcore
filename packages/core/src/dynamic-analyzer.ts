@@ -165,6 +165,7 @@ export async function generateDynamicBlueprint(
         "TBODY",
         "TFOOT",
         "DIV",
+        "FORM",
         "SECTION",
         "ARTICLE",
         "HEADER",
@@ -177,8 +178,12 @@ export async function generateDynamicBlueprint(
     ) {
       role = "container";
     }
-    if (measured.tagName === "TR") role = "table-row";
-    if (measured.tagName === "TD" || measured.tagName === "TH") role = "table-cell";
+    const isTableTag = measured.tagName === "TABLE";
+    const isTableRowTag = measured.tagName === "TR";
+    const isTableCellTag = measured.tagName === "TD" || measured.tagName === "TH";
+
+    if (isTableRowTag) role = "table-row";
+    if (isTableCellTag) role = "table-cell";
 
     // Layout clipping inside overflow containers
     let width = rect.width;
@@ -252,6 +257,22 @@ export async function generateDynamicBlueprint(
     if (role === "custom" && measured.dataAttributes["skeletonSlot"]) {
       node.slotKey = measured.dataAttributes["skeletonSlot"];
     }
+
+    // Table cells should render as in-cell bars, not full-cell masks.
+    if (role === "table-cell") {
+      let lh = parseFloat(styles.lineHeight);
+      if (Number.isNaN(lh)) lh = parseFloat(styles.fontSize) * 1.2;
+
+      node.text = {
+        lines: 1,
+        lineHeight: lh > 0 ? lh : config.minTextHeight,
+        lastLineWidthRatio: measured.tagName === "TH" ? 0.5 : 0.7,
+      };
+    }
+
+    if (isTableTag) node.isTable = true;
+    if (isTableRowTag) node.isTableRow = true;
+    if (isTableCellTag) node.isTableCell = true;
 
     flatNodes.push({ ...node, parentIndex, readIndex: i });
   }

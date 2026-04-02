@@ -100,6 +100,10 @@ export type SkeletonConfig = {
   iconMaxSize: number; // px, below which SVG = icon, default 32
   minImageArea: number; // px², below which not classified as image, default 900
   transitionDuration: number; // ms, content fade-in, default 300
+  tableCellInsetX: number; // px horizontal inset for table-cell bars, default 8
+  tableCellBarHeightRatio: number; // relative to cell height, default 0.45
+  tableCellBarMinHeight: number; // px minimum table-cell bar height, default 6
+  tableCellDefaultWidthRatio: number; // 0-1 fallback width ratio for table bars, default 0.7
 };
 
 export const DEFAULT_CONFIG: SkeletonConfig = {
@@ -114,6 +118,10 @@ export const DEFAULT_CONFIG: SkeletonConfig = {
   iconMaxSize: 32,
   minImageArea: 900,
   transitionDuration: 300,
+  tableCellInsetX: 8,
+  tableCellBarHeightRatio: 0.45,
+  tableCellBarMinHeight: 6,
+  tableCellDefaultWidthRatio: 0.7,
 };
 
 // ─── Public React Component Props ─────────────────────────────────────────────

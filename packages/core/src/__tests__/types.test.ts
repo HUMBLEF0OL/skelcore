@@ -17,6 +17,10 @@ describe("DEFAULT_CONFIG", () => {
       "iconMaxSize",
       "minImageArea",
       "transitionDuration",
+      "tableCellInsetX",
+      "tableCellBarHeightRatio",
+      "tableCellBarMinHeight",
+      "tableCellDefaultWidthRatio",
     ];
     for (const key of required) {
       expect(DEFAULT_CONFIG).toHaveProperty(key);

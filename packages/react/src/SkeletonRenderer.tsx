@@ -38,12 +38,15 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
     if (node.role === "skip") return null;
 
     const isContainer = node.role === "container" || node.isTable || node.isTableRow;
+    const isTableCell = node.role === "table-cell" || node.isTableCell;
     const isText = node.role === "text" && node.text;
     const animationClass = config.animation === "none" ? "" : `skel-${config.animation}`;
+    const preserveNodeRadius = node.role === "avatar" || (mode === "flow" && blueprint.source === "static");
+    const resolvedBorderRadius = preserveNodeRadius ? node.borderRadius : `${config.borderRadius}px`;
 
     // Common style attributes
     const commonStyles: React.CSSProperties = {
-      borderRadius: node.borderRadius,
+      borderRadius: resolvedBorderRadius,
       backgroundColor: config.baseColor,
       position: mode === "absolute" ? "absolute" : "relative",
     };
@@ -53,14 +56,30 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
       commonStyles.left = `${node.left}px`;
       commonStyles.width = `${node.width}px`;
       commonStyles.height = `${node.height}px`;
+    } else if (!isContainer) {
+      commonStyles.width = `${node.width}px`;
+      commonStyles.height = `${node.height}px`;
     }
 
     // 1. Handle Container / Table Roles
     if (isContainer) {
       let Tag: React.ElementType = "div";
-      if (node.isTable) Tag = "table";
-      else if (node.isTableRow) Tag = "tr";
-      else if (node.role === "table-cell") Tag = "td";
+      // In absolute mode, table tags can trigger browser table layout quirks.
+      // Keep semantic tags for flow mode only.
+      if (mode === "flow") {
+        if (node.isTable) Tag = "table";
+        else if (node.isTableRow) Tag = "tr";
+      }
+
+      const filteredLayout = Object.fromEntries(
+        Object.entries(node.layout).filter(([key]) => {
+          const normalizedKey = key.toLowerCase();
+          return (
+            !normalizedKey.includes("margin") &&
+            !normalizedKey.includes("background")
+          );
+        })
+      );
 
       return (
         <Tag
@@ -70,14 +89,47 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
             ...commonStyles,
             backgroundColor: "transparent", // Containers are invisible
             ...(mode === "absolute"
-              ? Object.fromEntries(
-                Object.entries(node.layout).filter(([key]) => !key.toLowerCase().includes("margin"))
-              )
+              ? filteredLayout
               : node.layout),
           } as React.CSSProperties}
         >
           {mode === "flow" ? node.children.map(renderNode) : null}
         </Tag>
+      );
+    }
+
+    // 1.5 Handle Table Cell Role as inset content bars
+    if (isTableCell) {
+      const widthRatio = node.text?.lastLineWidthRatio ?? config.tableCellDefaultWidthRatio;
+      const barHeight = Math.min(
+        config.minTextHeight,
+        Math.max(config.tableCellBarMinHeight, node.height * config.tableCellBarHeightRatio)
+      );
+      const cellTag = node.tagName.toLowerCase() === "th" ? "th" : "td";
+      const CellTag = mode === "flow" ? cellTag : "div";
+
+      return (
+        <CellTag
+          key={node.id}
+          className="skel-table-cell"
+          style={{
+            ...commonStyles,
+            backgroundColor: "transparent",
+            display: "flex",
+            alignItems: "center",
+            paddingInline: `${config.tableCellInsetX}px`,
+          }}
+        >
+          <span
+            className={`skel-block ${animationClass} skel-table-cell-bar`}
+            style={{
+              width: `${Math.round(widthRatio * 100)}%`,
+              height: `${barHeight}px`,
+              borderRadius: "4px",
+              backgroundColor: config.baseColor,
+            }}
+          />
+        </CellTag>
       );
     }
 
