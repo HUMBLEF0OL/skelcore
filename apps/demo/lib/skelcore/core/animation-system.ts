@@ -45,7 +45,10 @@ export class AnimationSystem {
 }
 
 /* Reset visibility for opted-out children */
-.skel-content[data-loading="true"] [data-no-skeleton] {
+.skel-content[data-loading="true"] [data-no-skeleton],
+.skel-content[data-loading="true"] [data-skeleton-ignore] {
+  position: relative;
+  z-index: 11;
   visibility: visible !important;
   opacity: 1 !important;
   pointer-events: auto !important;

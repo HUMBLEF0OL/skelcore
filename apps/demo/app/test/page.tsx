@@ -273,7 +273,7 @@ export default function TestPage() {
                 <button className="px-3 py-1 bg-zinc-100 rounded text-xs">Tag A</button>
                 <button className="px-3 py-1 bg-zinc-100 rounded text-xs">Tag B</button>
                 <button 
-                  data-no-skeleton 
+                  data-skeleton-ignore 
                   id="cancel-btn"
                   className="px-3 py-1 bg-red-100 text-red-600 rounded text-xs"
                 >

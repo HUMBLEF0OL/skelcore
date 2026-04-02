@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { AutoSkeleton } from "../../../../lib/skelcore/react";
 import { CodeBlock, FeatureCard, InteractiveToggle } from "../../../../lib/demo-components";
 
-function ChatArea() {
+function ChatHistory() {
   return (
     <div className="flex h-64 flex-col overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 light:border-zinc-200 light:bg-white">
       <div className="flex-1 space-y-3 overflow-y-auto border-b border-zinc-800 p-4 light:border-zinc-200">
@@ -59,7 +59,7 @@ export default function IgnoreElementsPage() {
 
           <div className="border-t border-zinc-800 pt-4 light:border-zinc-200">
             <AutoSkeleton loading={loading}>
-              <ChatArea />
+              <ChatHistory />
             </AutoSkeleton>
           </div>
         </div>

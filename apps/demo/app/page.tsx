@@ -4,7 +4,6 @@ import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { AutoSkeleton } from "../lib/skelcore/react";
 import type { AnimationMode, SkeletonConfig } from "../lib/skelcore/core";
-import { useTheme } from "../lib/theme-context";
 
 const animationShowcaseConfigs: Record<AnimationMode, Partial<SkeletonConfig>> = {
   shimmer: { animation: "shimmer" },
@@ -238,8 +237,6 @@ function AnimationShowcase({ mode, loading }: { mode: AnimationMode; loading: bo
 export default function Home() {
   const [loading, setLoading] = useState(true);
   const [timingMs, setTimingMs] = useState<number | null>(null);
-  const { theme } = useTheme();
-  const isLight = theme === "light";
 
   useEffect(() => {
     if (!loading) return;
@@ -265,16 +262,12 @@ export default function Home() {
   }
 
   return (
-    <div suppressHydrationWarning className={`min-h-screen font-sans ${isLight ? "bg-zinc-50 text-zinc-900" : "bg-[#09090b] text-zinc-100"}`}>
+    <div className="min-h-screen bg-background text-foreground">
       <main className="max-w-5xl mx-auto px-6 py-12">
 
         {/* ── Hero ── */}
         <div className="mb-16 text-center">
-          <h1
-            className={`mb-4 bg-clip-text text-4xl font-bold tracking-tight text-transparent sm:text-5xl ${
-              isLight ? "bg-gradient-to-r from-zinc-900 via-zinc-700 to-zinc-500" : "bg-gradient-to-r from-white via-zinc-300 to-zinc-600"
-            }`}
-          >
+          <h1 className="mb-4 bg-gradient-to-r from-white via-zinc-300 to-zinc-600 bg-clip-text text-4xl font-bold tracking-tight text-transparent light:from-zinc-900 light:via-zinc-700 light:to-zinc-500 sm:text-5xl">
             Pixel-perfect skeletons.<br />Zero layout thrash.
           </h1>
           <p className="mx-auto max-w-xl text-lg text-zinc-500 light:text-zinc-600">

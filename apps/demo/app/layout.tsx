@@ -19,14 +19,33 @@ export const metadata: Metadata = {
   description: "Zero-config skeleton loaders for React",
 };
 
+const themeInitScript = `
+(() => {
+  try {
+    const key = "demo-theme";
+    const saved = localStorage.getItem(key);
+    const preferred = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    const theme = saved === "light" || saved === "dark" ? saved : preferred;
+    const html = document.documentElement;
+    html.classList.remove("light", "dark");
+    html.classList.add(theme);
+  } catch {
+    document.documentElement.classList.add("dark");
+  }
+})();
+`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col">
+    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body className="boxy-demo min-h-full flex flex-col">
         <ThemeProvider>
           <MainHeader />
           {children}

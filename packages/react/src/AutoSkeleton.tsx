@@ -40,7 +40,7 @@ export function AutoSkeleton({
   });
 
   const showSkeleton = loading || phase === "exiting";
-  const contentVisible = !loading && phase !== "measuring";
+  const contentVisible = phase === "measuring" || !loading;
 
   const containerStyle: React.CSSProperties = {
     position: "relative",
@@ -50,10 +50,9 @@ export function AutoSkeleton({
   };
 
   const contentStyle: React.CSSProperties = {
-    opacity: contentVisible ? 1 : 0,
-    pointerEvents: contentVisible ? "auto" : "none",
-    userSelect: contentVisible ? "auto" : "none",
-    transition: `opacity ${config.transitionDuration}ms ease-out`,
+    visibility: contentVisible ? "visible" : "hidden",
+    pointerEvents: "auto",
+    userSelect: "auto",
   };
 
   const overlayStyle: React.CSSProperties = {

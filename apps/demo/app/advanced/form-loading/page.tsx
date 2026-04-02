@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { AutoSkeleton } from "../../../lib/skelcore/react";
 import { CodeBlock, FeatureCard } from "../../../lib/demo-components";
 
-function CheckoutForm() {
+function CheckoutFormFields() {
   return (
     <form className="mx-auto max-w-lg space-y-4 rounded-xl border border-zinc-800 bg-zinc-900 p-6 light:border-zinc-200 light:bg-white">
       <div>
@@ -81,7 +81,7 @@ export default function FormLoadingPage() {
           </button>
 
           <AutoSkeleton loading={loading}>
-            <CheckoutForm />
+            <CheckoutFormFields />
           </AutoSkeleton>
         </div>
       </FeatureCard>

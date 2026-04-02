@@ -1,14 +1,16 @@
 @import "tailwindcss";
 
+@custom-variant light (&:where(.light, .light *));
+
 :root {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #f4f4f5;
+  --foreground: #18181b;
   --skeleton-base-light: #e5e7eb;
   --skeleton-highlight-light: #f9fafb;
   --skeleton-base-dark: #2525a8;
   --skeleton-highlight-dark: #090c46;
-  --skeleton-base: var(--skeleton-base-dark);
-  --skeleton-highlight: var(--skeleton-highlight-dark);
+  --skeleton-base: var(--skeleton-base-light);
+  --skeleton-highlight: var(--skeleton-highlight-light);
 }
 
 @theme inline {
@@ -19,8 +21,8 @@
 }
 
 html.light {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f4f4f5;
+  --foreground: #18181b;
   --skeleton-base: var(--skeleton-base-light);
   --skeleton-highlight: var(--skeleton-highlight-light);
   color-scheme: light;
@@ -38,4 +40,16 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), sans-serif;
+}
+
+.boxy-demo [class*="rounded"] {
+  border-radius: 0 !important;
+}
+
+.boxy-demo [class*="shadow"] {
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.35) !important;
+}
+
+html.light .boxy-demo [class*="shadow"] {
+  box-shadow: 4px 4px 0 rgba(24, 24, 27, 0.18) !important;
 }

@@ -35,7 +35,7 @@ test.describe("SkelCore React Adapter", () => {
     expect(Math.abs(cardRect!.height - overlayRect!.height)).toBeLessThanOrEqual(2);
   });
 
-  test("data-no-skeleton elements remain visible", async ({ page }) => {
+  test("data-skeleton-ignore elements remain visible", async ({ page }) => {
     const cancelBtn = page.locator("#cancel-btn");
     await expect(cancelBtn).toBeVisible();
     

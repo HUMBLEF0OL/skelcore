@@ -41,6 +41,16 @@ describe("AnimationSystem", () => {
     expect(content).toContain(".skel-pulse");
   });
 
+  it("restores visibility for data-skeleton-ignore and data-no-skeleton children", () => {
+    animationSystem.injectStyles(DEFAULT_CONFIG);
+    const styleTag = document.getElementById("skelcore-animations") as HTMLStyleElement;
+    const content = styleTag.textContent || "";
+
+    expect(content).toContain("[data-no-skeleton]");
+    expect(content).toContain("[data-skeleton-ignore]");
+    expect(content).toContain("z-index: 11");
+  });
+
   it("updates CSS variables when config changes", () => {
     animationSystem.injectStyles({ ...DEFAULT_CONFIG, baseColor: "#ff0000" });
     let content = document.getElementById("skelcore-animations")?.textContent || "";
