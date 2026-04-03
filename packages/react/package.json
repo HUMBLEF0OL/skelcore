@@ -31,7 +31,7 @@
     "react-dom": ">=18"
   },
   "dependencies": {
-    "@skelcore/core": "^0.1.0"
+    "@skelcore/core": "workspace:*"
   },
   "size-limit": [
     {
