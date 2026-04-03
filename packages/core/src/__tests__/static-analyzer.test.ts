@@ -144,4 +144,38 @@ describe("generateStaticBlueprint", () => {
     // Invalid string, should fall back to default
     expect(bp2.nodes[0].width).toBe(STATIC_DEFAULTS.image.width);
   });
+
+  it("supports include and exclude matchers with exclude precedence", () => {
+    const input = h(
+      "div",
+      {},
+      h("p", { className: "keep" }, "Visible"),
+      h("p", { className: "drop" }, "Hidden")
+    );
+
+    const bp = generateStaticBlueprint(input, {
+      include: [{ role: "text" }],
+      exclude: [{ selector: ".drop" }],
+    });
+
+    expect(bp.nodes).toHaveLength(1);
+    expect(bp.nodes[0].role).toBe("text");
+  });
+
+  it("honors data-skeleton-include and data-skeleton-exclude in static analysis", () => {
+    const input = h(
+      "div",
+      {},
+      h("span", { "data-skeleton-include": true }, "Included"),
+      h("span", { "data-skeleton-include": true, "data-skeleton-exclude": true }, "Excluded")
+    );
+
+    const bp = generateStaticBlueprint(input, {
+      include: [{ selector: ".never-matches" }],
+      exclude: [],
+    });
+
+    expect(bp.nodes).toHaveLength(1);
+    expect(bp.nodes[0].role).toBe("text");
+  });
 });

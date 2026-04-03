@@ -3,7 +3,7 @@
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { AutoSkeleton } from "../lib/skelcore/react";
-import type { AnimationMode, SkeletonConfig } from "../lib/skelcore/core";
+import type { AnimationMode, SkeletonConfig, PlaceholderSchema } from "../lib/skelcore/core";
 
 const animationShowcaseConfigs: Record<AnimationMode, Partial<SkeletonConfig>> = {
   shimmer: { animation: "shimmer" },
@@ -120,22 +120,20 @@ function DataTable() {
 
               <td className="px-5 py-4">
                 <span
-                  className={`inline-flex items-center gap-1.5 text-xs font-semibold ${
-                    row.status === "Active"
+                  className={`inline-flex items-center gap-1.5 text-xs font-semibold ${row.status === "Active"
                       ? "text-emerald-400"
                       : row.status === "Warning"
-                      ? "text-amber-400"
-                      : "text-zinc-500"
-                  }`}
+                        ? "text-amber-400"
+                        : "text-zinc-500"
+                    }`}
                 >
                   <span
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      row.status === "Active"
+                    className={`w-1.5 h-1.5 rounded-full ${row.status === "Active"
                         ? "bg-emerald-400"
                         : row.status === "Warning"
-                        ? "bg-amber-400"
-                        : "bg-zinc-500"
-                    }`}
+                          ? "bg-amber-400"
+                          : "bg-zinc-500"
+                      }`}
                   />
                   {row.status}
                 </span>
@@ -151,13 +149,12 @@ function DataTable() {
 
               <td className="px-5 py-4 text-right rounded-r-lg">
                 <span
-                  className={`font-bold ${
-                    row.health >= 90
+                  className={`font-bold ${row.health >= 90
                       ? "text-emerald-400"
                       : row.health >= 70
-                      ? "text-amber-400"
-                      : "text-red-400"
-                  }`}
+                        ? "text-amber-400"
+                        : "text-red-400"
+                    }`}
                 >
                   {row.health}%
                 </span>
@@ -272,6 +269,110 @@ function AnimationShowcase({ mode, loading }: { mode: AnimationMode; loading: bo
   );
 }
 
+// ─── Use-Case 9: Overlay Styling ──────────────────────────────────────────
+
+function OverlayStyledCard() {
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5 light:border-zinc-200 light:bg-white">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 shrink-0" />
+        <div>
+          <p className="text-sm font-semibold text-white light:text-zinc-900">Custom Overlay</p>
+          <p className="text-xs text-zinc-500 light:text-zinc-600">With ring border and shadow</p>
+        </div>
+      </div>
+      <p className="text-sm text-zinc-400 light:text-zinc-600">The skeleton overlay uses custom styling via overlayClassName and overlayStyle props.</p>
+    </div>
+  );
+}
+
+// ─── Use-Case 10: Include/Exclude Filtering ──────────────────────────────
+
+function SelectiveSkeletonContent() {
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5 light:border-zinc-200 light:bg-white">
+      <div className="flex items-start gap-4 mb-4">
+        <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 shrink-0" />
+        <div className="flex-1">
+          <p className="text-sm font-semibold text-white light:text-zinc-900">Product Title</p>
+          <p className="text-xs text-zinc-500 light:text-zinc-600 mt-1">High quality digital experience</p>
+          <div className="flex gap-2 mt-3">
+            <span className="px-2 py-1 rounded text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/30" data-skeleton-exclude>
+              Save
+            </span>
+            <span className="px-2 py-1 rounded text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" data-skeleton-exclude>
+              Learn More
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Use-Case 11: Custom Animation Registry ──────────────────────────────
+
+function CustomAnimationCard() {
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5 light:border-zinc-200 light:bg-white">
+      <div className="space-y-3">
+        <div className="h-4 bg-zinc-800 rounded-full w-3/4 light:bg-zinc-200" />
+        <div className="h-4 bg-zinc-800 rounded-full w-4/5 light:bg-zinc-200" />
+        <div className="h-4 bg-zinc-800 rounded-full w-2/3 light:bg-zinc-200" />
+      </div>
+      <p className="mt-4 text-xs text-zinc-500 light:text-zinc-600">Custom animation via animationRegistry prop.</p>
+    </div>
+  );
+}
+
+// ─── Use-Case 12: Placeholder Schema ────────────────────────────────────
+
+function SchemaPlaceholderDemo() {
+  const schema: PlaceholderSchema = {
+    blocks: [
+      { role: "avatar", width: 40, height: 40, borderRadius: "50%" },
+      { role: "text", width: 200, height: 16 },
+      { role: "text", width: 150, height: 12, repeat: 2 },
+    ],
+  };
+
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5 light:border-zinc-200 light:bg-white">
+      <p className="text-sm font-semibold text-white light:text-zinc-900 mb-4">Schema-driven placeholders</p>
+      <AutoSkeleton
+        loading={true}
+        placeholderStrategy="schema"
+        placeholderSchema={schema}
+      >
+        <div className="space-y-3" />
+      </AutoSkeleton>
+    </div>
+  );
+}
+
+// ─── Use-Case 13: Placeholder Slots ────────────────────────────────────
+
+function SlotPlaceholderDemo() {
+  const slots = {
+    avatar: () => (
+      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500" />
+    ),
+    title: () => (
+      <div className="h-5 bg-indigo-500/30 rounded w-2/3" />
+    ),
+  };
+
+  return (
+    <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-5 light:border-zinc-200 light:bg-white">
+      <p className="text-sm font-semibold text-white light:text-zinc-900 mb-4">Custom slot placeholders</p>
+      <div className="space-y-3">
+        {slots.avatar()}
+        {slots.title()}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Page ─────────────────────────────────────────────────────────────
 
 export default function Home() {
@@ -320,15 +421,80 @@ export default function Home() {
           <button
             id="toggle-loading"
             onClick={handleToggle}
-            className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-all ${
-              loading
+            className={`flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-all ${loading
                 ? "border border-zinc-700 bg-zinc-800 text-zinc-400 hover:border-zinc-500 light:border-zinc-300 light:bg-zinc-100 light:text-zinc-700 light:hover:border-zinc-400"
                 : "bg-white text-black hover:bg-zinc-100 light:border light:border-zinc-300"
-            }`}
+              }`}
           >
             <span className={`h-2 w-2 rounded-full ${loading ? "bg-amber-400 animate-pulse" : "bg-emerald-500"}`} />
             {loading ? "Loading…" : "Reset"}
           </button>
+          {/* ── 9. Overlay Styling ── */}
+          <Section title="09 — Overlay Styling" sub="Customize skeleton appearance with overlayClassName and overlayStyle. Apply CSS classes or inline styles to the overlay container.">
+            <AutoSkeleton
+              loading={loading}
+              overlayClassName="ring-2 ring-purple-400/50 shadow-lg shadow-purple-500/20"
+              overlayStyle={{
+                borderRadius: "0.75rem",
+              }}
+            >
+              <OverlayStyledCard />
+            </AutoSkeleton>
+            <p className="text-zinc-600 text-xs mt-3 font-mono">
+              &lt;AutoSkeleton <span className="text-purple-400">overlayClassName</span>=&quot;ring-2 ring-purple-400/50...&quot; <span className="text-purple-400">overlayStyle</span>=&#123;borderRadius...&#125;&gt;
+            </p>
+          </Section>
+
+          {/* ── 10. Include/Exclude Filtering ── */}
+          <Section title="10 — Include/Exclude Filtering" sub="Use include/exclude matchers or data-skeleton-exclude to selectively control which elements generate skeleton blocks.">
+            <AutoSkeleton
+              loading={loading}
+              exclude={[
+                { selector: "[data-skeleton-exclude]" },
+              ]}
+            >
+              <SelectiveSkeletonContent />
+            </AutoSkeleton>
+            <p className="text-zinc-600 text-xs mt-3 font-mono">
+              Buttons use <span className="text-emerald-400">data-skeleton-exclude</span> to stay interactive while content loads.
+            </p>
+          </Section>
+
+          {/* ── 11. Custom Animation Registry ── */}
+          <Section title="11 — Custom Animation Registry" sub="Define custom animations beyond pulse and shimmer using animationRegistry. Register keyed animation definitions with custom keyframes and timing.">
+            <AutoSkeleton
+              loading={loading}
+              animationPreset="bounce"
+              animationRegistry={{
+                bounce: {
+                  className: "animate-bounce",
+                  durationMs: 1000,
+                }
+              }}
+            >
+              <CustomAnimationCard />
+            </AutoSkeleton>
+            <p className="text-zinc-600 text-xs mt-3 font-mono">
+              <span className="text-indigo-400">animationRegistry</span> = &#123; bounce: &#123; className: &quot;animate-bounce&quot; &#125; &#125;
+            </p>
+          </Section>
+
+          {/* ── 12. Placeholder Schema ── */}
+          <Section title="12 — Placeholder Schema" sub="Define placeholders declaratively using schema. Specify exact block dimensions, roles, and repetitions without dynamic measurement.">
+            <SchemaPlaceholderDemo />
+            <p className="text-zinc-600 text-xs mt-3 font-mono">
+              <span className="text-sky-400">placeholderStrategy</span>=&quot;schema&quot; + <span className="text-sky-400">placeholderSchema</span>
+            </p>
+          </Section>
+
+          {/* ── 13. Placeholder Slots ── */}
+          <Section title="13 — Placeholder Slots" sub="Use custom React components as placeholder blocks via slots. Each slot renders your custom loading UI.">
+            <SlotPlaceholderDemo />
+            <p className="text-zinc-600 text-xs mt-3 font-mono">
+              <span className="text-orange-400">placeholderSlots</span> = &#123; avatar: () =&gt; &lt;Placeholder /&gt; &#125;
+            </p>
+          </Section>
+
           <Link
             href="/reference"
             className="rounded-full border border-zinc-700 bg-zinc-900 px-4 py-2 text-xs font-semibold text-zinc-300 transition-colors hover:border-zinc-500 light:border-zinc-300 light:bg-white light:text-zinc-700 light:hover:border-zinc-400"

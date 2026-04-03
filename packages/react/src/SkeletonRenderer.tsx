@@ -1,13 +1,77 @@
 "use client";
 
 import React from "react";
-import type { Blueprint, BlueprintNode, SkeletonConfig } from "@skelcore/core";
+import type {
+  AnimationPreset,
+  Blueprint,
+  BlueprintNode,
+  SkeletonAnimationDefinition,
+  SkeletonConfig,
+} from "@skelcore/core";
 
 export interface SkeletonRendererProps {
   blueprint: Blueprint;
   config: SkeletonConfig;
   mode?: "flow" | "absolute";
   slots?: Record<string, () => React.ReactNode>;
+  animationPreset?: AnimationPreset;
+  animationRegistry?: Record<string, SkeletonAnimationDefinition>;
+}
+
+type ResolvedAnimation = {
+  className: string;
+  inlineStyle: React.CSSProperties;
+  keyframeName?: string;
+  keyframes?: string;
+};
+
+const BUILT_IN_ANIMATIONS = new Set(["pulse", "shimmer", "none"]);
+
+function sanitizePresetName(preset: string): string {
+  return preset.replace(/[^a-zA-Z0-9_-]/g, "-").toLowerCase() || "custom";
+}
+
+function resolveAnimation(
+  preset: string,
+  registry: Record<string, SkeletonAnimationDefinition>
+): ResolvedAnimation {
+  const customDefinition = registry[preset];
+
+  if (customDefinition) {
+    const keyframeName = customDefinition.keyframes
+      ? `skel-custom-${sanitizePresetName(preset)}`
+      : undefined;
+    const durationMs = customDefinition.durationMs ?? 1500;
+
+    return {
+      className: customDefinition.className ?? "",
+      inlineStyle: {
+        ...(keyframeName
+          ? {
+              animationName: keyframeName,
+              animationDuration: `${durationMs}ms`,
+              animationIterationCount: "infinite",
+              animationTimingFunction: "ease-in-out",
+            }
+          : {}),
+        ...(customDefinition.inlineStyle ?? {}),
+      },
+      keyframeName,
+      keyframes: customDefinition.keyframes,
+    };
+  }
+
+  if (BUILT_IN_ANIMATIONS.has(preset)) {
+    return {
+      className: preset === "none" ? "" : `skel-${preset}`,
+      inlineStyle: {},
+    };
+  }
+
+  return {
+    className: "",
+    inlineStyle: {},
+  };
 }
 
 /**
@@ -19,7 +83,39 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
   config,
   mode = "absolute",
   slots = {},
+  animationPreset,
+  animationRegistry,
 }) => {
+  const requestedPreset = animationPreset ?? config.animation;
+  const resolvedAnimation = React.useMemo(
+    () => resolveAnimation(requestedPreset, animationRegistry ?? {}),
+    [requestedPreset, animationRegistry]
+  );
+
+  React.useEffect(() => {
+    if (
+      !resolvedAnimation.keyframeName ||
+      !resolvedAnimation.keyframes ||
+      typeof document === "undefined"
+    ) {
+      return;
+    }
+
+    const styleId = `skelcore-custom-animation-${resolvedAnimation.keyframeName}`;
+    if (document.getElementById(styleId)) return;
+
+    const styleTag = document.createElement("style");
+    styleTag.id = styleId;
+    styleTag.textContent = `@keyframes ${resolvedAnimation.keyframeName} { ${resolvedAnimation.keyframes} }`;
+    document.head.appendChild(styleTag);
+
+    return () => {
+      if (styleTag.parentNode) {
+        styleTag.parentNode.removeChild(styleTag);
+      }
+    };
+  }, [resolvedAnimation.keyframeName, resolvedAnimation.keyframes]);
+
   const nodesToRender = React.useMemo(() => {
     if (mode === "flow") return blueprint.nodes;
 
@@ -41,7 +137,7 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
     const isTableCell = node.role === "table-cell" || node.isTableCell;
     const isText = node.role === "text" && node.text;
     const isStaticFlowText = mode === "flow" && blueprint.source === "static" && Boolean(isText);
-    const animationClass = config.animation === "none" ? "" : `skel-${config.animation}`;
+    const animationClass = resolvedAnimation.className;
     const preserveNodeRadius =
       node.role === "avatar" || (mode === "flow" && blueprint.source === "static");
     const resolvedBorderRadius = preserveNodeRadius
@@ -128,6 +224,7 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
               height: `${barHeight}px`,
               borderRadius: "4px",
               backgroundColor: config.baseColor,
+              ...resolvedAnimation.inlineStyle,
             }}
           />
         </CellTag>
@@ -158,6 +255,7 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
                 marginBottom: i < lines - 1 ? `${lineHeight - config.minTextHeight}px` : 0,
                 borderRadius: "4px",
                 backgroundColor: config.baseColor,
+                ...resolvedAnimation.inlineStyle,
               }}
             />
           ))}
@@ -182,6 +280,7 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
         style={{
           ...commonStyles,
           aspectRatio: node.aspectRatio,
+          ...resolvedAnimation.inlineStyle,
         }}
       />
     );

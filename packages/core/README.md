@@ -104,7 +104,19 @@ import {
   type BlueprintNode,
   type SkeletonRole,
   type AnimationMode,
+  type AnimationPreset,
+  type SkeletonAnimationDefinition,
   type SkeletonConfig,
+  type ElementMatcher,
+  type ElementMatcherNodeMeta,
+  type PlaceholderStrategy,
+  type PlaceholderSchema,
+  type PlaceholderSchemaBlock,
+  type PlaceholderSlots,
+  type MeasurementPolicy,
+  type BlueprintSource,
+  type BlueprintInvalidationReason,
+  type BlueprintCachePolicy,
   type SkelCorePropsBase,
   type LayoutProps,
   type TextMeta,
@@ -114,6 +126,60 @@ import {
   // Constants
   DEFAULT_CONFIG,
 } from "@skelcore/core";
+```
+
+---
+
+## Phase 2 Extension Types
+
+These contracts are additive and are consumed by framework adapters (for example `@skelcore/react`) to support schema/slot placeholders and custom animation presets.
+
+```ts
+type PlaceholderStrategy = "none" | "auto" | "schema" | "slots";
+
+type PlaceholderSchemaBlock = {
+  role?: Exclude<SkeletonRole, "skip"> | "table-cell" | "container";
+  width: number;
+  height: number;
+  repeat?: number;
+  slotKey?: string;
+  borderRadius?: string | number;
+};
+
+type PlaceholderSchema = {
+  blocks: PlaceholderSchemaBlock[];
+};
+
+type SkeletonAnimationDefinition = {
+  className?: string;
+  inlineStyle?: Record<string, string | number>;
+  keyframes?: string;
+  durationMs?: number;
+};
+
+type AnimationPreset = "pulse" | "shimmer" | "none" | string;
+```
+
+## Phase 3 SSR + Performance Types
+
+```ts
+type MeasurementPolicy = {
+  mode: "eager" | "idle" | "viewport" | "manual";
+  budgetMs?: number;
+};
+
+type BlueprintSource = "client" | "server" | "cache";
+
+type BlueprintInvalidationReason =
+  | "missing-root"
+  | "missing-structural-hash"
+  | "version-mismatch"
+  | "structural-hash-mismatch";
+
+type BlueprintCachePolicy = {
+  ttlMs?: number;
+  version?: number;
+};
 ```
 
 ---
@@ -226,13 +292,40 @@ type VNode = {
 ```ts
 async function generateDynamicBlueprint(
   root: HTMLElement,
-  config?: SkeletonConfig       // defaults to DEFAULT_CONFIG
+  config?: SkeletonConfig,      // defaults to DEFAULT_CONFIG
+  options?: {
+    include?: ElementMatcher[];
+    exclude?: ElementMatcher[];
+    budgetMs?: number;
+  }
 ): Promise<Blueprint>
 ```
 
 Measures a **live DOM subtree** and produces a pixel-precise Blueprint using absolute positions. This is the engine behind `AutoSkeleton` in `@skelcore/react`.
 
 > **Browser only.** Requires `window`, `document`, `getComputedStyle`, and `getBoundingClientRect`.
+
+### Include/Exclude controls
+
+Both analyzers accept optional `include` and `exclude` matcher arrays. `exclude` always wins over `include`.
+
+```ts
+import { generateDynamicBlueprint } from "@skelcore/core";
+
+const blueprint = await generateDynamicBlueprint(root, undefined, {
+  include: [{ selector: ".skeleton-target" }],
+  exclude: [{ selector: ".skeleton-ignore" }],
+});
+```
+
+DOM attributes are also supported:
+
+- `data-skeleton-include`
+- `data-skeleton-exclude`
+
+`data-skeleton-exclude` has highest precedence.
+
+`budgetMs` is optional and enables a partial-traversal fallback: when the analyzer exceeds the configured budget, it returns the nodes computed so far instead of throwing.
 
 ### Three-pass architecture
 

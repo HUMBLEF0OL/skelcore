@@ -1,9 +1,42 @@
 "use client";
 
 import React, { useRef, useMemo } from "react";
-import { DEFAULT_CONFIG, type Blueprint, type SkeletonConfig } from "@skelcore/core";
+import {
+  DEFAULT_CONFIG,
+  type Blueprint,
+  type PlaceholderSchema,
+  type PlaceholderStrategy,
+  type PlaceholderSlots,
+  type ElementMatcher,
+  type AnimationPreset,
+  type SkeletonAnimationDefinition,
+  type SkeletonConfig,
+} from "@skelcore/core";
 import { useAutoSkeleton } from "./useAutoSkeleton";
 import { SkeletonRenderer } from "./SkeletonRenderer";
+import {
+  buildSchemaPlaceholderBlueprint,
+  buildSlotsPlaceholderBlueprint,
+  isValidPlaceholderSchema,
+} from "./placeholder-schema";
+
+type BlueprintSource = "client" | "server" | "cache";
+
+type BlueprintInvalidationReason =
+  | "missing-root"
+  | "missing-structural-hash"
+  | "version-mismatch"
+  | "structural-hash-mismatch";
+
+type MeasurementPolicy = {
+  mode: "eager" | "idle" | "viewport" | "manual";
+  budgetMs?: number;
+};
+
+type BlueprintCachePolicy = {
+  ttlMs?: number;
+  version?: number;
+};
 
 export interface AutoSkeletonProps {
   loading: boolean;
@@ -11,9 +44,23 @@ export interface AutoSkeletonProps {
   fallback?: React.ReactNode;
   config?: Partial<SkeletonConfig>;
   blueprint?: Blueprint;
+  hydrateBlueprint?: Blueprint;
+  blueprintSource?: BlueprintSource;
+  onBlueprintInvalidated?: (reason: BlueprintInvalidationReason) => void;
+  measurementPolicy?: MeasurementPolicy;
+  blueprintCachePolicy?: BlueprintCachePolicy;
   slots?: Record<string, () => React.ReactNode>;
   onMeasured?: (b: Blueprint) => void;
   remeasureOnResize?: boolean;
+  overlayClassName?: string;
+  overlayStyle?: React.CSSProperties;
+  include?: ElementMatcher[];
+  exclude?: ElementMatcher[];
+  placeholderStrategy?: PlaceholderStrategy;
+  placeholderSchema?: PlaceholderSchema;
+  placeholderSlots?: PlaceholderSlots<React.ReactNode>;
+  animationPreset?: AnimationPreset;
+  animationRegistry?: Record<string, SkeletonAnimationDefinition>;
 }
 
 /**
@@ -25,18 +72,62 @@ export function AutoSkeleton({
   children,
   fallback,
   config: configOverride,
-  blueprint: externalBlueprint,
+  blueprint: externalBlueprintProp,
+  hydrateBlueprint,
+  blueprintSource = "client",
+  onBlueprintInvalidated,
+  measurementPolicy,
+  blueprintCachePolicy,
   slots,
   onMeasured,
   remeasureOnResize = false,
+  overlayClassName,
+  overlayStyle,
+  include,
+  exclude,
+  placeholderStrategy = "none",
+  placeholderSchema,
+  placeholderSlots,
+  animationPreset,
+  animationRegistry,
 }: AutoSkeletonProps) {
   const config = useMemo(() => ({ ...DEFAULT_CONFIG, ...configOverride }), [configOverride]);
+  const resolvedSlots = useMemo(
+    () => ({ ...(slots ?? {}), ...(placeholderSlots ?? {}) }),
+    [slots, placeholderSlots]
+  );
+
+  const strategyBlueprint = useMemo(() => {
+    if (!loading) return null;
+    if (placeholderStrategy !== "schema" && placeholderStrategy !== "slots") return null;
+
+    if (isValidPlaceholderSchema(placeholderSchema)) {
+      return buildSchemaPlaceholderBlueprint(placeholderSchema);
+    }
+
+    if (placeholderStrategy === "schema") {
+      return null;
+    }
+
+    const slotKeys = Object.keys(resolvedSlots);
+    return buildSlotsPlaceholderBlueprint(slotKeys);
+  }, [loading, placeholderStrategy, placeholderSchema, resolvedSlots]);
+
+  const externalBlueprint = externalBlueprintProp ?? strategyBlueprint ?? undefined;
+  const hydratedBlueprint = hydrateBlueprint ?? undefined;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { blueprint, phase } = useAutoSkeleton(loading, containerRef, config, {
     onMeasured,
     remeasureOnResize,
     externalBlueprint,
+    hydrateBlueprint: hydratedBlueprint,
+    blueprintSource,
+    onBlueprintInvalidated,
+    measurementPolicy,
+    blueprintCachePolicy,
+    include,
+    exclude,
   });
 
   const showSkeleton = loading || phase === "exiting";
@@ -57,7 +148,7 @@ export function AutoSkeleton({
     userSelect: "auto",
   };
 
-  const overlayStyle: React.CSSProperties = {
+  const internalOverlayStyle: React.CSSProperties = {
     position: "absolute",
     top: 0,
     left: 0,
@@ -67,6 +158,14 @@ export function AutoSkeleton({
     zIndex: 10,
     opacity: phase === "exiting" ? 0 : 1,
     transition: `opacity ${config.transitionDuration}ms ease-in`,
+  };
+
+  const mergedOverlayStyle: React.CSSProperties = {
+    ...internalOverlayStyle,
+    ...overlayStyle,
+    // Keep overlay semantics safe even when user overrides styling.
+    position: "absolute",
+    pointerEvents: "none",
   };
 
   return (
@@ -83,11 +182,18 @@ export function AutoSkeleton({
 
       {/* 2. Skeleton Overlay Layer */}
       {showSkeleton && blueprint && (
-        <div className="skel-overlay" data-no-skeleton style={overlayStyle} aria-hidden="true">
+        <div
+          className={overlayClassName ? `skel-overlay ${overlayClassName}` : "skel-overlay"}
+          data-no-skeleton
+          style={mergedOverlayStyle}
+          aria-hidden="true"
+        >
           <SkeletonRenderer
             blueprint={blueprint}
             config={config}
-            slots={slots}
+            slots={resolvedSlots}
+            animationPreset={animationPreset}
+            animationRegistry={animationRegistry}
             mode={blueprint.source === "static" ? "flow" : "absolute"}
           />
         </div>
@@ -95,7 +201,7 @@ export function AutoSkeleton({
 
       {/* 3. Fallback Layer (shown only while measuring) */}
       {phase === "measuring" && !blueprint && fallback && (
-        <div className="skel-fallback" data-no-skeleton style={overlayStyle}>
+        <div className="skel-fallback" data-no-skeleton style={internalOverlayStyle}>
           {fallback}
         </div>
       )}

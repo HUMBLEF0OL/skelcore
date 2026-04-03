@@ -49,6 +49,70 @@ export type TextMeta = {
   lastLineWidthRatio: number; // 0–1, default 0.7
 };
 
+// ─── Include/Exclude Matcher Types ───────────────────────────────────────────
+
+export type ElementMatcherNodeMeta = {
+  tagName: string;
+  ariaRole: string | null;
+  classList: string[];
+  dataAttributes: Record<string, string>;
+  textContent: string;
+  hasChildren: boolean;
+  childCount: number;
+  role?: SkeletonRole | "container" | "table-row" | "table-cell";
+};
+
+export type ElementMatcher = {
+  selector?: string;
+  role?: SkeletonRole | "container" | "table-row" | "table-cell";
+  predicate?: (nodeMeta: ElementMatcherNodeMeta) => boolean;
+};
+
+// ─── Placeholder Strategy Types ──────────────────────────────────────────────
+
+export type PlaceholderStrategy = "none" | "auto" | "schema" | "slots";
+
+export type PlaceholderBlockRole = Exclude<SkeletonRole, "skip"> | "table-cell" | "container";
+
+export type PlaceholderSchemaBlock = {
+  role?: PlaceholderBlockRole;
+  width: number;
+  height: number;
+  repeat?: number;
+  slotKey?: string;
+  borderRadius?: string | number;
+};
+
+export type PlaceholderSchema = {
+  blocks: PlaceholderSchemaBlock[];
+};
+
+export type PlaceholderSlotFactory<TNode = unknown> = () => TNode;
+
+export type PlaceholderSlots<TNode = unknown> = Record<string, PlaceholderSlotFactory<TNode>>;
+
+// ─── SSR + Measurement Control Types ────────────────────────────────────────
+
+export type BlueprintSource = "client" | "server" | "cache";
+
+export type BlueprintInvalidationReason =
+  | "missing-root"
+  | "missing-structural-hash"
+  | "version-mismatch"
+  | "structural-hash-mismatch";
+
+export type MeasurementPolicyMode = "eager" | "idle" | "viewport" | "manual";
+
+export type MeasurementPolicy = {
+  mode: MeasurementPolicyMode;
+  budgetMs?: number;
+};
+
+export type BlueprintCachePolicy = {
+  ttlMs?: number;
+  version?: number;
+};
+
 // ─── Blueprint Node ───────────────────────────────────────────────────────────
 
 export type BlueprintNode = {
@@ -87,6 +151,15 @@ export type Blueprint = {
 // ─── Animation & Config ───────────────────────────────────────────────────────
 
 export type AnimationMode = "pulse" | "shimmer" | "none";
+
+export type AnimationPreset = AnimationMode | (string & {});
+
+export type SkeletonAnimationDefinition = {
+  className?: string;
+  inlineStyle?: Record<string, string | number>;
+  keyframes?: string;
+  durationMs?: number;
+};
 
 export type SkeletonConfig = {
   animation: AnimationMode;
@@ -133,8 +206,28 @@ export type SkelCorePropsBase = {
   config?: Partial<SkeletonConfig>;
   // A pre-computed blueprint from SSR — skip measurement if provided
   blueprint?: Blueprint;
+  // A hydrated blueprint that can be validated before first use
+  hydrateBlueprint?: Blueprint;
+  // Blueprint origin used to decide whether validation is required
+  blueprintSource?: BlueprintSource;
+  // Called when a hydrated blueprint is rejected and measurement must resume
+  onBlueprintInvalidated?: (reason: BlueprintInvalidationReason) => void;
+  // Measurement scheduling policy for the analyzer path
+  measurementPolicy?: MeasurementPolicy;
+  // Cache validation controls for hydrated and cached blueprints
+  blueprintCachePolicy?: BlueprintCachePolicy;
   // Opt-in to re-measure when container resizes
   remeasureOnResize?: boolean;
+  // Optional include/exclude controls used by analyzers
+  include?: ElementMatcher[];
+  exclude?: ElementMatcher[];
+  // Optional placeholder strategy controls
+  placeholderStrategy?: PlaceholderStrategy;
+  placeholderSchema?: PlaceholderSchema;
+  placeholderSlots?: PlaceholderSlots;
+  // Optional animation extensibility controls
+  animationPreset?: AnimationPreset;
+  animationRegistry?: Record<string, SkeletonAnimationDefinition>;
 };
 
 // ─── Measured Node (Role Inferencer Input) ─────────────────────────────────────

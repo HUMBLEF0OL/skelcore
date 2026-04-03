@@ -1,7 +1,17 @@
 "use client";
 
 import React, { useRef, useMemo } from "react";
-import { DEFAULT_CONFIG, type Blueprint, type SkeletonConfig } from "../core";
+import {
+  DEFAULT_CONFIG,
+  type Blueprint,
+  type PlaceholderSchema,
+  type PlaceholderStrategy,
+  type PlaceholderSlots,
+  type ElementMatcher,
+  type AnimationPreset,
+  type SkeletonAnimationDefinition,
+  type SkeletonConfig,
+} from "../core";
 import { useAutoSkeleton } from "./useAutoSkeleton";
 import { SkeletonRenderer } from "./SkeletonRenderer";
 
@@ -14,6 +24,15 @@ export interface AutoSkeletonProps {
   slots?: Record<string, () => React.ReactNode>;
   onMeasured?: (b: Blueprint) => void;
   remeasureOnResize?: boolean;
+  overlayClassName?: string;
+  overlayStyle?: React.CSSProperties;
+  include?: ElementMatcher[];
+  exclude?: ElementMatcher[];
+  placeholderStrategy?: PlaceholderStrategy;
+  placeholderSchema?: PlaceholderSchema;
+  placeholderSlots?: PlaceholderSlots<React.ReactNode>;
+  animationPreset?: AnimationPreset;
+  animationRegistry?: Record<string, SkeletonAnimationDefinition>;
 }
 
 /**
@@ -29,6 +48,9 @@ export function AutoSkeleton({
   slots,
   onMeasured,
   remeasureOnResize = false,
+  overlayClassName,
+  overlayStyle: overlayStyleProp,
+  placeholderSlots,
 }: AutoSkeletonProps) {
   const config = useMemo(() => ({ ...DEFAULT_CONFIG, ...configOverride }), [configOverride]);
 
@@ -67,6 +89,7 @@ export function AutoSkeleton({
     zIndex: 10,
     opacity: phase === "exiting" ? 0 : 1,
     transition: `opacity ${config.transitionDuration}ms ease-in`,
+    ...overlayStyleProp,
   };
 
   return (
@@ -83,11 +106,16 @@ export function AutoSkeleton({
 
       {/* 2. Skeleton Overlay Layer */}
       {showSkeleton && blueprint && (
-        <div className="skel-overlay" data-no-skeleton style={overlayStyle} aria-hidden="true">
+        <div
+          className={`skel-overlay ${overlayClassName || ""}`}
+          data-no-skeleton
+          style={overlayStyle}
+          aria-hidden="true"
+        >
           <SkeletonRenderer
             blueprint={blueprint}
             config={config}
-            slots={slots}
+            slots={slots || placeholderSlots}
             mode={blueprint.source === "static" ? "flow" : "absolute"}
           />
         </div>
