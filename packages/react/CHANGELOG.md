@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.1.0
+
+### Minor Changes
+
+- 3f61adb: Release check
+
+### Patch Changes
+
+- Updated dependencies [3f61adb]
+  - @skelcore/core@1.1.0
+
 ## 1.0.0
 
 ### Major Changes
