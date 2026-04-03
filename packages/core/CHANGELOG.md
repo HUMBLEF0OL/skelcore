@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0
+
+### Minor Changes
+
+- 1faa7e0: Enhencement of core package
+
 ## 1.1.0
 
 ### Minor Changes
