@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0
+
+### Major Changes
+
+- d9b10fb: Initial Version of Skilcore
+
 All notable changes to this package are documented in this file.
 
 ## Unreleased
