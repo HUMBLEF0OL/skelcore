@@ -5,10 +5,14 @@ import {
   generateDynamicBlueprint,
   blueprintCache,
   animationSystem,
+  computeStructuralHash,
   DEFAULT_CONFIG,
   type Blueprint,
   type SkeletonConfig,
+  type BlueprintManifest,
 } from "@skelcore/core";
+import { resolveBlueprint } from "./resolver";
+import type { ResolutionEvent, ResolutionPolicy } from "./resolution-types";
 
 export type SkeletonPhase = "idle" | "measuring" | "showing" | "exiting";
 
@@ -20,6 +24,10 @@ export function useAutoSkeleton(
     onMeasured?: (b: Blueprint) => void;
     remeasureOnResize?: boolean;
     externalBlueprint?: Blueprint;
+    skeletonKey?: string;
+    policyOverride?: Partial<ResolutionPolicy>;
+    onResolution?: (event: ResolutionEvent) => void;
+    manifest?: BlueprintManifest;
   } = {}
 ) {
   const [blueprint, setBlueprint] = useState<Blueprint | null>(options.externalBlueprint || null);
@@ -30,6 +38,8 @@ export function useAutoSkeleton(
   const measureRunIdRef = useRef(0);
   const blueprintRef = useRef<Blueprint | null>(options.externalBlueprint || null);
   const onMeasuredRef = useRef(options.onMeasured);
+  const onResolutionRef = useRef(options.onResolution);
+  const manifestRef = useRef(options.manifest);
 
   useEffect(() => {
     loadingRef.current = loading;
@@ -38,6 +48,14 @@ export function useAutoSkeleton(
   useEffect(() => {
     onMeasuredRef.current = options.onMeasured;
   }, [options.onMeasured]);
+
+  useEffect(() => {
+    onResolutionRef.current = options.onResolution;
+  }, [options.onResolution]);
+
+  useEffect(() => {
+    manifestRef.current = options.manifest;
+  }, [options.manifest]);
 
   useEffect(() => {
     blueprintRef.current = blueprint;
@@ -87,8 +105,17 @@ export function useAutoSkeleton(
   // Initial Measurement and Loading Toggle
   useEffect(() => {
     if (loading) {
-      if (options.externalBlueprint) {
-        setBlueprint(options.externalBlueprint);
+      const resolution = resolveBlueprint({
+        skeletonKey: options.skeletonKey,
+        externalBlueprint: options.externalBlueprint,
+        policyOverride: options.policyOverride,
+        manifest: options.manifest,
+      });
+
+      onResolutionRef.current?.(resolution.event);
+
+      if (resolution.blueprint) {
+        setBlueprint(resolution.blueprint);
         setPhase("showing");
       } else {
         measure();
@@ -107,7 +134,14 @@ export function useAutoSkeleton(
         setBlueprint(null);
       }
     }
-  }, [loading, measure, options.externalBlueprint, config.transitionDuration]);
+  }, [
+    loading,
+    measure,
+    options.externalBlueprint,
+    options.policyOverride,
+    options.skeletonKey,
+    config.transitionDuration,
+  ]);
 
   // Handle Resize
   useEffect(() => {

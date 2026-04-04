@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useRef, useMemo } from "react";
-import { DEFAULT_CONFIG, type Blueprint, type SkeletonConfig } from "@skelcore/core";
+import { DEFAULT_CONFIG, type Blueprint, type SkeletonConfig, type BlueprintManifest } from "@skelcore/core";
 import { useAutoSkeleton } from "./useAutoSkeleton";
 import { SkeletonRenderer } from "./SkeletonRenderer";
+import { useSkelcoreContext } from "./SkelcoreProvider";
+import type { ResolutionEvent, ResolutionPolicy } from "./resolution-types";
 
 export interface AutoSkeletonProps {
   loading: boolean;
@@ -14,6 +16,11 @@ export interface AutoSkeletonProps {
   slots?: Record<string, () => React.ReactNode>;
   onMeasured?: (b: Blueprint) => void;
   remeasureOnResize?: boolean;
+  skeletonKey?: string;
+  policyOverride?: Partial<ResolutionPolicy>;
+  onResolution?: (event: ResolutionEvent) => void;
+  /** Precomputed manifest for manifest-based resolution */
+  manifest?: BlueprintManifest;
 }
 
 /**
@@ -29,14 +36,27 @@ export function AutoSkeleton({
   slots,
   onMeasured,
   remeasureOnResize = false,
+  skeletonKey,
+  policyOverride,
+  onResolution,
+  manifest,
 }: AutoSkeletonProps) {
   const config = useMemo(() => ({ ...DEFAULT_CONFIG, ...configOverride }), [configOverride]);
+
+  // Use context as fallback for manifest and policy if not explicitly passed
+  const context = useSkelcoreContext();
+  const effectiveManifest = manifest ?? context?.manifest;
+  const effectivePolicy = policyOverride ?? context?.policy;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { blueprint, phase } = useAutoSkeleton(loading, containerRef, config, {
     onMeasured,
     remeasureOnResize,
     externalBlueprint,
+    skeletonKey,
+    policyOverride: effectivePolicy,
+    onResolution,
+    manifest: effectiveManifest,
   });
 
   const showSkeleton = loading || phase === "exiting";
