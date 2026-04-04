@@ -45,11 +45,25 @@ export interface ResolutionEvent {
   usedFallback: boolean;
   reason: string;
   timestamp: number;
+  latencyMs: number;
   candidateSource?: "manifest" | "none";
   rejectionCategory?: "miss" | "invalid";
   rejectionReason?: string;
   /** Manifest-specific validation details if source is manifest-related */
   manifestValidation?: ManifestEntryValidationResult;
+}
+
+export interface ResolverTelemetryCounters {
+  explicitHits: number;
+  manifestHits: number;
+  manifestMisses: number;
+  sessionHits: number;
+  dynamicFallbacks: number;
+  placeholderFallbacks: number;
+  invalidations: number;
+  shadowHits: number;
+  shadowMisses: number;
+  shadowInvalids: number;
 }
 
 export interface ValidationResult {

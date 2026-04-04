@@ -10,7 +10,7 @@ import {
   type SkeletonConfig,
   type BlueprintManifest,
 } from "@skelcore/core";
-import { resolveBlueprint } from "./resolver";
+import { recordRuntimeBlueprint, resolveBlueprint } from "./resolver";
 import type { ResolutionEvent, ResolutionPolicy } from "./resolution-types";
 
 export type SkeletonPhase = "idle" | "measuring" | "showing" | "exiting";
@@ -98,8 +98,11 @@ export function useAutoSkeleton(
 
     setBlueprint(b);
     setPhase("showing");
+    if (options.skeletonKey) {
+      recordRuntimeBlueprint(options.skeletonKey, b);
+    }
     onMeasuredRef.current?.(b);
-  }, [loading, contentRef, config]);
+  }, [loading, contentRef, config, options.skeletonKey]);
 
   // Initial Measurement and Loading Toggle
   useEffect(() => {
