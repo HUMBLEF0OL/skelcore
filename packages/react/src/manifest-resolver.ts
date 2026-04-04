@@ -1,8 +1,8 @@
 import {
-  lookupAndAcceptEntry,
-  type BlueprintManifest,
-  type ManifestAcceptanceResult,
-  type StructuralHash,
+    lookupAndAcceptEntry,
+    type BlueprintManifest,
+    type ManifestAcceptanceResult,
+    type StructuralHash,
 } from "@skelcore/core";
 
 /**
@@ -10,41 +10,41 @@ import {
  * Safe wrapper around manifest lookup and validation.
  */
 export function resolveManifestEntry(
-  manifest: BlueprintManifest | undefined,
-  skeletonKey: string | undefined,
-  {
-    structuralHash,
-    now,
-    strictStyleDrift = false,
-    styleDriftThreshold = 0,
-  }: {
-    structuralHash?: string;
-    now?: number;
-    strictStyleDrift?: boolean;
-    styleDriftThreshold?: number;
-  } = {}
+    manifest: BlueprintManifest | undefined,
+    skeletonKey: string | undefined,
+    {
+        structuralHash,
+        now,
+        strictStyleDrift = false,
+        styleDriftThreshold = 0,
+    }: {
+        structuralHash?: string;
+        now?: number;
+        strictStyleDrift?: boolean;
+        styleDriftThreshold?: number;
+    } = {}
 ): ManifestAcceptanceResult {
-  if (!manifest) {
-    return {
-      accepted: false,
-      reason: "no-manifest-provided",
-    };
-  }
+    if (!manifest) {
+        return {
+            accepted: false,
+            reason: "no-manifest-provided",
+        };
+    }
 
-  if (!skeletonKey) {
-    return {
-      accepted: false,
-      reason: "no-skeleton-key-provided",
-    };
-  }
+    if (!skeletonKey) {
+        return {
+            accepted: false,
+            reason: "no-skeleton-key-provided",
+        };
+    }
 
-  return lookupAndAcceptEntry(manifest, skeletonKey, {
-    manifestVersion: manifest.manifestVersion,
-    actualStructuralHash: structuralHash as StructuralHash | undefined,
-    now,
-    strictStyleDrift,
-    styleDriftThreshold,
-  });
+    return lookupAndAcceptEntry(manifest, skeletonKey, {
+        manifestVersion: manifest.manifestVersion,
+        actualStructuralHash: structuralHash as StructuralHash | undefined,
+        now,
+        strictStyleDrift,
+        styleDriftThreshold,
+    });
 }
 
 /**
@@ -52,13 +52,13 @@ export function resolveManifestEntry(
  * Returns true if the entry is a candidate for use.
  */
 export function isManifestEntryCandidate(
-  manifest: BlueprintManifest,
-  skeletonKey: string,
-  { structuralHash, now }: { structuralHash?: string; now?: number }
+    manifest: BlueprintManifest,
+    skeletonKey: string,
+    { structuralHash, now }: { structuralHash?: string; now?: number }
 ): boolean {
-  const result = resolveManifestEntry(manifest, skeletonKey, {
-    structuralHash,
-    now,
-  });
-  return result.accepted;
+    const result = resolveManifestEntry(manifest, skeletonKey, {
+        structuralHash,
+        now,
+    });
+    return result.accepted;
 }

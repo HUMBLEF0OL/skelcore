@@ -5,7 +5,6 @@ import {
   generateDynamicBlueprint,
   blueprintCache,
   animationSystem,
-  computeStructuralHash,
   DEFAULT_CONFIG,
   type Blueprint,
   type SkeletonConfig,

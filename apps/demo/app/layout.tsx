@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { MainHeader } from "../lib/demo-components";
-import { ThemeProvider } from "../lib/theme-context";
+import { ClientProviders } from "./providers";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -46,10 +46,10 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="boxy-demo min-h-full flex flex-col">
-        <ThemeProvider>
+        <ClientProviders>
           <MainHeader />
           {children}
-        </ThemeProvider>
+        </ClientProviders>
       </body>
     </html>
   );

@@ -5,14 +5,14 @@ import type { BlueprintManifest } from "@skelcore/core";
 import type { ResolutionPolicy } from "./resolution-types";
 
 export interface SkelcoreContextValue {
-  manifest?: BlueprintManifest;
-  policy?: Partial<ResolutionPolicy>;
+    manifest?: BlueprintManifest;
+    policy?: Partial<ResolutionPolicy>;
 }
 
 export interface SkelcoreProviderProps {
-  manifest?: BlueprintManifest;
-  policy?: Partial<ResolutionPolicy>;
-  children: React.ReactNode;
+    manifest?: BlueprintManifest;
+    policy?: Partial<ResolutionPolicy>;
+    children: React.ReactNode;
 }
 
 const SkelcoreContext = createContext<SkelcoreContextValue | undefined>(undefined);
@@ -30,18 +30,18 @@ const SkelcoreContext = createContext<SkelcoreContextValue | undefined>(undefine
  * ```
  */
 export function SkelcoreProvider(props: SkelcoreProviderProps): React.ReactElement {
-  const { manifest, policy, children } = props;
+    const { manifest, policy, children } = props;
 
-  const value: SkelcoreContextValue = {
-    manifest,
-    policy,
-  };
+    const value: SkelcoreContextValue = {
+        manifest,
+        policy,
+    };
 
-  return (
-    <SkelcoreContext.Provider value={value}>
-      {children}
-    </SkelcoreContext.Provider>
-  );
+    return (
+        <SkelcoreContext.Provider value={value}>
+            {children}
+        </SkelcoreContext.Provider>
+    );
 }
 
 /**
@@ -57,5 +57,5 @@ export function SkelcoreProvider(props: SkelcoreProviderProps): React.ReactEleme
  * ```
  */
 export function useSkelcoreContext(): SkelcoreContextValue | undefined {
-  return useContext(SkelcoreContext);
+    return useContext(SkelcoreContext);
 }

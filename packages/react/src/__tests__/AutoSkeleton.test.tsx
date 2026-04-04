@@ -101,4 +101,17 @@ describe("AutoSkeleton", () => {
     // Here we just verify content is still visible
     expect(content.style.visibility).toBe("visible");
   });
+
+  it("emits resolution event when loading starts", () => {
+    const onResolution = vi.fn();
+
+    render(
+      <AutoSkeleton loading={true} onResolution={onResolution} skeletonKey="card-1">
+        <div>Content</div>
+      </AutoSkeleton>
+    );
+
+    expect(onResolution).toHaveBeenCalled();
+    expect(onResolution.mock.calls[0][0].source).toBeDefined();
+  });
 });
