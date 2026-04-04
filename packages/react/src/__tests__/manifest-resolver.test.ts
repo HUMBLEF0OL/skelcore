@@ -70,4 +70,15 @@ describe("manifest-resolver", () => {
     });
     expect(result.accepted).toBe(true);
   });
+
+  it("returns no-index-match for manifest index misses", () => {
+    const manifestWithIndex: BlueprintManifest = {
+      ...mockManifest,
+      index: { byKey: { ProductCard: ["default"] } },
+    };
+
+    const result = resolveManifestEntry(manifestWithIndex, "HeroBanner", {});
+    expect(result.accepted).toBe(false);
+    expect(result.reason).toBe("manifest-index-miss");
+  });
 });

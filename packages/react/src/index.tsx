@@ -8,6 +8,7 @@ export {
   resetResolverSessionCache,
   resetResolverTelemetryCounters,
   recordRuntimeBlueprint,
+  derivePolicyForPath,
 } from "./resolver";
 export {
   DEFAULT_RESOLUTION_POLICY,

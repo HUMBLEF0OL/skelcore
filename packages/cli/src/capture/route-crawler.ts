@@ -11,10 +11,10 @@ export async function crawlRoutes(
 
   for (const route of config.routes) {
     let keyedTargetsForRoute = 0;
+    const page = await context.newPage();
 
-    for (const breakpoint of config.breakpoints) {
-      const page = await context.newPage();
-      try {
+    try {
+      for (const breakpoint of config.breakpoints) {
         await page.setViewportSize({ width: breakpoint, height: config.viewportHeight });
         const targetUrl = `${config.baseUrl}${route}`;
         await page.goto(targetUrl, { waitUntil: "networkidle", timeout: 15_000 });
@@ -29,9 +29,9 @@ export async function crawlRoutes(
           }
           emitted.set(artifact.key, artifact);
         }
-      } finally {
-        await page.close();
       }
+    } finally {
+      await page.close();
     }
 
     if (keyedTargetsForRoute === 0) {

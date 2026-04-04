@@ -1,6 +1,7 @@
 import type { Blueprint } from "@skelcore/core";
 import {
   DEFAULT_RESOLUTION_POLICY,
+  type ResolutionPolicy,
   type ResolverTelemetryCounters,
   type ResolverContext,
   type ResolutionResult,
@@ -43,6 +44,51 @@ function eventTimestamp(now: number | undefined): number {
 function eventLatency(startTimeMs: number): number {
   const elapsed = Date.now() - startTimeMs;
   return elapsed > 0 ? elapsed : 0;
+}
+
+function classifyManifestReason(reason: string): "miss" | "invalid" {
+  const normalized = reason.toLowerCase();
+  if (
+    normalized.includes("not found") ||
+    normalized.includes("no-skeleton-key") ||
+    normalized.includes("no-manifest") ||
+    normalized === "manifest-index-miss"
+  ) {
+    return "miss";
+  }
+
+  return "invalid";
+}
+
+export function derivePolicyForPath(input: {
+  pathname: string;
+  strictEnabled: boolean;
+  strictPaths: string[];
+  serveEnabled: boolean;
+  servePaths: string[];
+  shadowEnabled?: boolean;
+  shadowPaths?: string[];
+}): ResolutionPolicy {
+  const matchesPrefix = (prefixes: string[]): boolean =>
+    prefixes.some((prefix) => input.pathname === prefix || input.pathname.startsWith(`${prefix}/`));
+
+  const isStrictRoute = input.strictEnabled && matchesPrefix(input.strictPaths);
+  if (isStrictRoute) {
+    return { mode: "strict-precomputed", strict: true };
+  }
+
+  const isShadowRoute =
+    input.shadowEnabled === true && matchesPrefix(input.shadowPaths ?? []);
+  if (isShadowRoute) {
+    return { mode: "hybrid", strict: false, shadowTelemetryOnly: true };
+  }
+
+  const isServingRoute = input.serveEnabled && matchesPrefix(input.servePaths);
+  if (isServingRoute) {
+    return { mode: "hybrid", strict: false };
+  }
+
+  return { mode: "runtime-only", strict: false };
 }
 
 function trimSessionCacheIfNeeded(): void {
@@ -180,7 +226,8 @@ export function resolveBlueprint(context: ResolverContext): ResolutionResult {
       }
 
       const rejectionReason = manifestResult.reason ?? "unknown-rejection";
-      const isMiss = /not found|no-skeleton-key|no-manifest/i.test(rejectionReason);
+      const rejectionCategory = classifyManifestReason(rejectionReason);
+      const isMiss = rejectionCategory === "miss";
 
       if (isMiss) {
         incrementCounter("shadowMisses");
@@ -201,7 +248,7 @@ export function resolveBlueprint(context: ResolverContext): ResolutionResult {
           timestamp: nowMs,
           latencyMs: eventLatency(startTimeMs),
           candidateSource: isMiss ? "none" : "manifest",
-          rejectionCategory: isMiss ? "miss" : "invalid",
+          rejectionCategory,
           rejectionReason,
         },
       };
@@ -236,7 +283,7 @@ export function resolveBlueprint(context: ResolverContext): ResolutionResult {
     }
 
     if (manifestResult.reason) {
-      const isMiss = /not found|no-skeleton-key|no-manifest/i.test(manifestResult.reason);
+      const isMiss = classifyManifestReason(manifestResult.reason) === "miss";
       if (isMiss) {
         incrementCounter("manifestMisses");
       } else {

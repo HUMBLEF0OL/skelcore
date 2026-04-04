@@ -2,7 +2,11 @@
 
 import React, { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { SkelcoreProvider, getResolverTelemetryCounters } from "@skelcore/skelcore";
+import {
+    SkelcoreProvider,
+    derivePolicyForPath,
+    getResolverTelemetryCounters,
+} from "@skelcore/skelcore";
 import { ThemeProvider } from "../lib/theme-context";
 import generatedManifest from "../lib/skelcore/generated/manifest-loader";
 
@@ -38,6 +42,12 @@ export function ClientProviders({
     const pathname = usePathname();
     const telemetrySinkEnabled = process.env.NEXT_PUBLIC_SKEL_TELEMETRY_SINK === "true";
 
+    const strictEnabled = process.env.NEXT_PUBLIC_SKEL_STRICT_MODE === "true";
+    const strictPrefixes = (process.env.NEXT_PUBLIC_SKEL_STRICT_PATHS ?? "")
+        .split(",")
+        .map((segment) => segment.trim())
+        .filter(Boolean);
+
     const serveEnabled = process.env.NEXT_PUBLIC_SKEL_SERVE_HYBRID === "true";
     const servePrefixes = (process.env.NEXT_PUBLIC_SKEL_SERVE_PATHS ?? "")
         .split(",")
@@ -50,19 +60,15 @@ export function ClientProviders({
         .map((segment) => segment.trim())
         .filter(Boolean);
 
-    const isServingRoute =
-        serveEnabled &&
-        servePrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
-
-    const isShadowRoute =
-        shadowEnabled &&
-        allowedPrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
-
-    const policy = isShadowRoute
-        ? { mode: "hybrid" as const, shadowTelemetryOnly: true }
-        : isServingRoute
-            ? { mode: "hybrid" as const }
-            : { mode: "runtime-only" as const };
+    const policy = derivePolicyForPath({
+        pathname,
+        strictEnabled,
+        strictPaths: strictPrefixes,
+        serveEnabled,
+        servePaths: servePrefixes,
+        shadowEnabled,
+        shadowPaths: allowedPrefixes,
+    });
 
     useEffect(() => {
         if (!telemetrySinkEnabled) {

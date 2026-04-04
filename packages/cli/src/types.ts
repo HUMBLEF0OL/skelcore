@@ -16,6 +16,7 @@ export interface CaptureConfig {
   selector: string;
   waitForMs: number;
   retries: number;
+  prettyPrintManifest?: boolean;
 }
 
 export interface CapturedArtifact {
@@ -34,6 +35,7 @@ export interface CaptureReport {
   breakpoints: number[];
   targetsDiscovered: number;
   artifactsEmitted: number;
+  manifestBytes?: number;
 }
 
 export type GateMode = "strict" | "warn";

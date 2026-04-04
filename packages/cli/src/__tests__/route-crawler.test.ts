@@ -100,4 +100,32 @@ describe("crawlRoutes", () => {
     expect(result).toHaveLength(1);
     expect(result[0]?.key).toBe("ProductCard");
   });
+
+  it("reuses one page per route across breakpoints", async () => {
+    const { context } = makeContext();
+    mockedDiscoverTargets.mockResolvedValue([
+      {
+        key: "ProductCard",
+        selector: '[data-skeleton-key="ProductCard"]',
+      },
+    ]);
+    mockedExtractArtifact.mockResolvedValue(null);
+
+    await expect(
+      crawlRoutes(context as never, {
+        baseUrl: "http://localhost:3005",
+        routes: ["/test", "/reference"],
+        breakpoints: [375, 768, 1280],
+        viewportHeight: 900,
+        outputDir: "apps/demo/lib/skelcore/generated",
+        manifestFileName: "manifest.json",
+        loaderFileName: "manifest-loader.ts",
+        selector: "[data-skeleton-key]",
+        waitForMs: 0,
+        retries: 0,
+      })
+    ).resolves.toBeDefined();
+
+    expect(context.newPage).toHaveBeenCalledTimes(2);
+  });
 });

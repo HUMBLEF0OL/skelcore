@@ -10,4 +10,5 @@ export const DEFAULT_CAPTURE_CONFIG: Omit<CaptureConfig, "routes"> = {
   selector: "[data-skeleton-key]",
   waitForMs: 150,
   retries: 2,
+  prettyPrintManifest: true,
 };

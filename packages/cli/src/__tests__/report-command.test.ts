@@ -73,6 +73,35 @@ describe("runReportCommand", () => {
         const out = await fs.readFile(outputPath, "utf8");
         expect(out).toContain('"overallPass": true');
     });
+
+    it("includes coverage and invalid entry ratios in report JSON", async () => {
+        const dir = await mkTmpDir();
+        const validatePath = path.join(dir, "validate.json");
+        const io = {
+            log: vi.fn(),
+            error: vi.fn(),
+        };
+
+        await fs.writeFile(
+            validatePath,
+            JSON.stringify({ validate: createValidateResult(true) }, null, 2),
+            "utf8"
+        );
+
+        const code = await runReportCommand(
+            [
+                "--validate-json",
+                validatePath,
+                "--format",
+                "json",
+            ],
+            io
+        );
+
+        expect(code).toBe(0);
+        expect(io.log).toHaveBeenCalledWith(expect.stringContaining("\"coverageRatio\""));
+        expect(io.log).toHaveBeenCalledWith(expect.stringContaining("\"invalidEntries\""));
+    });
 });
 
 function createValidateResult(overall: boolean): ManifestQualityResult {

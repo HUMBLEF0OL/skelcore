@@ -62,14 +62,19 @@ export async function runCaptureCommand(
     const manifestPath = path.resolve(outputDir, config.manifestFileName);
     const loaderPath = path.resolve(outputDir, config.loaderFileName);
     const reportPath = path.resolve(outputDir, "capture-report.txt");
+    const manifestJson = renderManifestJson(manifest, {
+      prettyPrint: config.prettyPrintManifest !== false,
+    });
+    const manifestBytes = Buffer.byteLength(manifestJson, "utf8");
 
-    await fs.writeFile(manifestPath, renderManifestJson(manifest), "utf8");
+    await fs.writeFile(manifestPath, manifestJson, "utf8");
     await fs.writeFile(loaderPath, renderManifestLoader(manifest), "utf8");
 
-    const report = buildCaptureReport(config, captureResult.artifacts);
+    const report = buildCaptureReport(config, captureResult.artifacts, { manifestBytes });
     await fs.writeFile(reportPath, renderCaptureReport(report), "utf8");
 
     io.log(`Capture complete: ${captureResult.artifacts.length} artifacts`);
+    io.log(`Manifest size: ${manifestBytes} bytes`);
     io.log(`Manifest: ${manifestPath}`);
     io.log(`Loader: ${loaderPath}`);
     return 0;

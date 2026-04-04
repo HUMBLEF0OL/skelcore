@@ -38,6 +38,13 @@ export function resolveManifestEntry(
     };
   }
 
+  if (manifest.index?.byKey && !manifest.index.byKey[skeletonKey] && !manifest.entries[skeletonKey]) {
+    return {
+      accepted: false,
+      reason: "manifest-index-miss",
+    };
+  }
+
   return lookupAndAcceptEntry(manifest, skeletonKey, {
     manifestVersion: manifest.manifestVersion,
     actualStructuralHash: structuralHash as StructuralHash | undefined,

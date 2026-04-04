@@ -5,6 +5,7 @@ import {
     type ResolutionSource,
 } from "../resolution-types.js";
 import {
+    derivePolicyForPath,
     getResolverTelemetryCounters,
     recordRuntimeBlueprint,
     resetResolverSessionCache,
@@ -64,6 +65,32 @@ describe("resolver", () => {
 
     it("accepts candidate validation as no-op in phase 1", () => {
         expect(validatePrecomputed(null, {}).valid).toBe(false);
+    });
+
+    it("uses strict-precomputed only on explicit strict pilot routes", () => {
+        const policy = derivePolicyForPath({
+            pathname: "/reference/ssr",
+            strictEnabled: true,
+            strictPaths: ["/reference"],
+            serveEnabled: true,
+            servePaths: ["/test"],
+        });
+
+        expect(policy.mode).toBe("strict-precomputed");
+        expect(policy.strict).toBe(true);
+    });
+
+    it("falls back to hybrid serving route when strict route does not match", () => {
+        const policy = derivePolicyForPath({
+            pathname: "/test/path",
+            strictEnabled: true,
+            strictPaths: ["/reference"],
+            serveEnabled: true,
+            servePaths: ["/test"],
+        });
+
+        expect(policy.mode).toBe("hybrid");
+        expect(policy.strict).toBe(false);
     });
 });
 
@@ -192,6 +219,23 @@ describe("resolver with manifest support", () => {
         expect(result.event.candidateSource).toBe("none");
         expect(result.event.rejectionCategory).toBe("miss");
         expect(result.event.rejectionReason).toContain("not found in manifest");
+    });
+
+    it("classifies miss reasons without regex fallback", () => {
+        const manifestWithIndex: BlueprintManifest = {
+            ...mockManifest,
+            index: { byKey: { MyComponent: ["default"] } },
+        };
+
+        const result = resolveBlueprint({
+            manifest: manifestWithIndex,
+            skeletonKey: "MissingKey",
+            policyOverride: { mode: "hybrid", strict: false, shadowTelemetryOnly: true },
+        });
+
+        expect(result.event.reason).toBe("shadow-miss");
+        expect(result.event.rejectionCategory).toBe("miss");
+        expect(result.event.rejectionReason).toBe("manifest-index-miss");
     });
 
     it("reports shadow-invalid when manifest entry is stale", () => {

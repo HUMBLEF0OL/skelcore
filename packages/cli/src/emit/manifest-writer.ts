@@ -26,6 +26,10 @@ export function buildManifestDocument(input: {
   };
 }
 
-export function renderManifestJson(manifest: BlueprintManifest): string {
-  return `${JSON.stringify(manifest, null, 2)}\n`;
+export function renderManifestJson(
+  manifest: BlueprintManifest,
+  options: { prettyPrint?: boolean } = {}
+): string {
+  const spacing = options.prettyPrint === false ? 0 : 2;
+  return `${JSON.stringify(manifest, null, spacing)}\n`;
 }
