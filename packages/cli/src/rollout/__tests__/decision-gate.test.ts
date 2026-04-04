@@ -9,6 +9,7 @@ describe("RolloutDecisionGate", () => {
             maxRollbacksInWindow: 2,
             windowDurationMs: 60000,
             errorRateThreshold: 0.05,
+            p99LatencyThresholdMs: 500,
         });
 
         const decision = gate.checkSafetyGates({
@@ -27,6 +28,7 @@ describe("RolloutDecisionGate", () => {
             maxRollbacksInWindow: 2,
             windowDurationMs: 60000,
             errorRateThreshold: 0.05,
+            p99LatencyThresholdMs: 500,
         });
 
         const decision = gate.checkSafetyGates({
@@ -45,6 +47,7 @@ describe("RolloutDecisionGate", () => {
             maxRollbacksInWindow: 1,
             windowDurationMs: 60000,
             errorRateThreshold: 0.05,
+            p99LatencyThresholdMs: 500,
         });
 
         // For this test, we verify the gate structure works
@@ -58,5 +61,24 @@ describe("RolloutDecisionGate", () => {
 
         // With no rollbacks in history, should be allowed
         expect(decision.allowed).toBe(true);
+    });
+
+    it("prevents rollout if p99 latency exceeds threshold", () => {
+        const gate = new RolloutDecisionGate({
+            maxRollbacksInWindow: 2,
+            windowDurationMs: 60000,
+            errorRateThreshold: 0.05,
+            p99LatencyThresholdMs: 500,
+        });
+
+        const decision = gate.checkSafetyGates({
+            environment: "staging",
+            routeKey: "Card",
+            errorRate: 0.01,
+            p99LatencyMs: 1200,
+        });
+
+        expect(decision.allowed).toBe(false);
+        expect(decision.reason).toContain("p99-latency");
     });
 });

@@ -5,6 +5,7 @@ export interface SafetyGateConfig {
     maxRollbacksInWindow: number;
     windowDurationMs: number;
     errorRateThreshold: number;
+    p99LatencyThresholdMs: number;
 }
 
 export interface SafetyCheckInput {
@@ -28,6 +29,13 @@ export class RolloutDecisionGate {
             return {
                 allowed: false,
                 reason: `error-rate-${(input.errorRate * 100).toFixed(2)}%-exceeds-threshold`,
+            };
+        }
+
+        if (input.p99LatencyMs > this.config.p99LatencyThresholdMs) {
+            return {
+                allowed: false,
+                reason: `p99-latency-${input.p99LatencyMs}-exceeds-threshold-${this.config.p99LatencyThresholdMs}`,
             };
         }
 

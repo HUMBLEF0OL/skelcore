@@ -25,7 +25,7 @@ describe("runCli", () => {
     });
 
     expect(exitCode).toBe(1);
-    expect(io.error).toHaveBeenCalledWith("Supported commands: capture, validate, diff, report");
+    expect(io.error).toHaveBeenCalledWith("Supported commands: capture, validate, diff, report, rollout");
   });
 
   it("returns 1 when capture run fails", async () => {
