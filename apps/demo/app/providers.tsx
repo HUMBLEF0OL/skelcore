@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { SkelcoreProvider, getResolverTelemetryCounters } from "@skelcore/react";
+import { SkelcoreProvider, getResolverTelemetryCounters } from "@skelcore/skelcore";
 import { ThemeProvider } from "../lib/theme-context";
 import generatedManifest from "../lib/skelcore/generated/manifest-loader";
 

@@ -1,2 +1,2 @@
-import "@skelcore/core"; // Ensure core is available
+import "@skelcore/skelcore/runtime"; // Ensure runtime exports are available
 import "@testing-library/jest-dom";

@@ -6,7 +6,7 @@ import {
     asStructuralHash,
     type BlueprintManifest,
     type ResolutionEvent,
-} from "@skelcore/react";
+} from "@skelcore/skelcore";
 
 // Mock manifest for demo (would be loaded from server in real app)
 const mockManifest: BlueprintManifest = {
