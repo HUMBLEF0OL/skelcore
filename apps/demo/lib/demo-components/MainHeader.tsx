@@ -7,6 +7,10 @@ import { BrandMark } from "./BrandMark";
 
 const navItems = [
   { href: "/", label: "Showcase", isActive: (pathname: string) => pathname === "/" },
+  { href: "/ssr", label: "SSR", isActive: (pathname: string) => pathname === "/ssr" },
+  { href: "/stress", label: "Stress", isActive: (pathname: string) => pathname === "/stress" },
+  { href: "/rtl", label: "RTL", isActive: (pathname: string) => pathname === "/rtl" },
+  { href: "/slots", label: "Slots", isActive: (pathname: string) => pathname === "/slots" },
   { href: "/reference", label: "Reference", isActive: (pathname: string) => pathname.startsWith("/reference") },
   { href: "/config-playground", label: "Playground", isActive: (pathname: string) => pathname.startsWith("/config-playground") },
   { href: "/advanced", label: "Advanced", isActive: (pathname: string) => pathname.startsWith("/advanced") },
@@ -32,11 +36,10 @@ export function MainHeader() {
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  active
+                className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${active
                     ? "bg-indigo-500/20 text-indigo-200 light:bg-indigo-50 light:text-indigo-700"
                     : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200 light:text-zinc-600 light:hover:bg-zinc-100 light:hover:text-zinc-900"
-                }`}
+                  }`}
               >
                 {item.label}
               </Link>

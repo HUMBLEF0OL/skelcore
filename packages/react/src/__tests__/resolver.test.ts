@@ -149,6 +149,9 @@ describe("resolver with manifest support", () => {
         });
         expect(result.event.source).toBe("manifest");
         expect(result.blueprint?.rootWidth).toBe(200);
+        expect(result.event.componentKey).toBe("MyComponent");
+        expect(result.event.manifestVersion).toBe(mockManifest.manifestVersion);
+        expect(result.event.manifestAgeMs).toBeGreaterThanOrEqual(0);
     });
 
     it("falls back to dynamic when manifest lookup fails", () => {
@@ -159,6 +162,8 @@ describe("resolver with manifest support", () => {
         });
         expect(result.event.source).toBe("dynamic");
         expect(result.blueprint).toBeNull();
+        expect(result.event.componentKey).toBe("UnknownComponent");
+        expect(result.event.manifestVersion).toBe(mockManifest.manifestVersion);
     });
 
     it("skips manifest in runtime-only mode", () => {
@@ -219,6 +224,7 @@ describe("resolver with manifest support", () => {
         expect(result.event.candidateSource).toBe("none");
         expect(result.event.rejectionCategory).toBe("miss");
         expect(result.event.rejectionReason).toContain("not found in manifest");
+        expect(result.event.invalidationReason).toBeUndefined();
     });
 
     it("classifies miss reasons without regex fallback", () => {
@@ -265,6 +271,7 @@ describe("resolver with manifest support", () => {
         expect(result.event.candidateSource).toBe("manifest");
         expect(result.event.rejectionCategory).toBe("invalid");
         expect(result.event.rejectionReason).toContain("stale");
+        expect(result.event.invalidationReason).toBe("ttl-expired");
     });
 
     it("uses session fallback in hybrid mode when manifest entry is invalid", () => {
@@ -294,6 +301,7 @@ describe("resolver with manifest support", () => {
         expect(result.event.reason).toBe("session-cache-hit");
         expect(result.event.usedFallback).toBe(true);
         expect(result.blueprint).toEqual(mockDynamicBlueprint);
+        expect(result.event.invalidationReason).toBe("ttl-expired");
     });
 
     it("tracks phase 5 telemetry counters for invalidation and session fallback", () => {

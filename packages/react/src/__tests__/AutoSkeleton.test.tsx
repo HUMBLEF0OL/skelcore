@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render } from "@testing-library/react";
 import { act } from "react";
+import * as core from "@skelcore/core";
 import { asStructuralHash, type Blueprint, type BlueprintManifest } from "@skelcore/core";
 import { AutoSkeleton } from "../AutoSkeleton.js";
 
@@ -166,5 +167,38 @@ describe("AutoSkeleton", () => {
     expect(event.source).toBe("dynamic");
     expect(event.reason).toBe("shadow-hit");
     expect(event.candidateSource).toBe("manifest");
+  });
+
+  it("emits measurement duration after dynamic fallback completes", async () => {
+    const measuredBlueprint: Blueprint = {
+      version: 1,
+      rootWidth: 120,
+      rootHeight: 24,
+      nodes: [],
+      generatedAt: Date.now(),
+      source: "dynamic",
+    };
+    vi.spyOn(core, "generateDynamicBlueprint").mockResolvedValue(measuredBlueprint);
+    const onResolution = vi.fn();
+
+    render(
+      <AutoSkeleton loading={true} skeletonKey="dynamic-card" onResolution={onResolution}>
+        <div>Content</div>
+      </AutoSkeleton>
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(onResolution).toHaveBeenCalled();
+    const measuredEvent = onResolution.mock.calls
+      .map((call) => call[0])
+      .find((event) => event.reason === "dynamic-measured");
+
+    expect(measuredEvent).toBeDefined();
+    expect(measuredEvent.source).toBe("dynamic");
+    expect(measuredEvent.componentKey).toBe("dynamic-card");
+    expect(measuredEvent.measurementDurationMs).toBeGreaterThanOrEqual(0);
   });
 });

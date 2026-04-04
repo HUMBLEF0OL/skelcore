@@ -60,10 +60,11 @@ export function useAutoSkeleton(
     blueprintRef.current = blueprint;
   }, [blueprint]);
 
-  const measure = useCallback(async () => {
+  const measure = useCallback(async (baseEvent?: ResolutionEvent) => {
     if (!contentRef.current || !loading) return;
 
     const runId = ++measureRunIdRef.current;
+    const measurementStartMs = Date.now();
     setPhase("measuring");
 
     const existingHash = lastStructuralHashRef.current;
@@ -73,6 +74,13 @@ export function useAutoSkeleton(
         setBlueprint(cached);
         setPhase("showing");
         onMeasuredRef.current?.(cached);
+        if (baseEvent?.source === "dynamic") {
+          onResolutionRef.current?.({
+            ...baseEvent,
+            reason: "dynamic-measured",
+            measurementDurationMs: Math.max(Date.now() - measurementStartMs, 0),
+          });
+        }
         return;
       }
     }
@@ -86,6 +94,13 @@ export function useAutoSkeleton(
     // Keep the currently rendered skeleton if a re-measure temporarily yields no nodes.
     if (b.nodes.length === 0 && blueprintRef.current) {
       setPhase("showing");
+      if (baseEvent?.source === "dynamic") {
+        onResolutionRef.current?.({
+          ...baseEvent,
+          reason: "dynamic-measured-empty",
+          measurementDurationMs: Math.max(Date.now() - measurementStartMs, 0),
+        });
+      }
       return;
     }
 
@@ -102,6 +117,13 @@ export function useAutoSkeleton(
       recordRuntimeBlueprint(options.skeletonKey, b);
     }
     onMeasuredRef.current?.(b);
+    if (baseEvent?.source === "dynamic") {
+      onResolutionRef.current?.({
+        ...baseEvent,
+        reason: "dynamic-measured",
+        measurementDurationMs: Math.max(Date.now() - measurementStartMs, 0),
+      });
+    }
   }, [loading, contentRef, config, options.skeletonKey]);
 
   // Initial Measurement and Loading Toggle
@@ -120,7 +142,7 @@ export function useAutoSkeleton(
         setBlueprint(resolution.blueprint);
         setPhase("showing");
       } else {
-        measure();
+        measure(resolution.event);
       }
     } else {
       measureRunIdRef.current += 1;

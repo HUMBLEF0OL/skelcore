@@ -1,4 +1,4 @@
-import type { Blueprint } from "@skelcore/core";
+import type { Blueprint, ManifestEntryValidationResult } from "@skelcore/core";
 import {
   DEFAULT_RESOLUTION_POLICY,
   type ResolutionPolicy,
@@ -58,6 +58,33 @@ function classifyManifestReason(reason: string): "miss" | "invalid" {
   }
 
   return "invalid";
+}
+
+function mapInvalidationReason(
+  reason: string | undefined
+): ManifestEntryValidationResult["invalidationReason"] | undefined {
+  if (!reason) {
+    return undefined;
+  }
+
+  const normalized = reason.toLowerCase();
+  if (normalized.includes("version mismatch")) {
+    return "version-mismatch";
+  }
+  if (normalized.includes("stale") || normalized.includes("ttl")) {
+    return "ttl-expired";
+  }
+  if (normalized.includes("structural hash mismatch")) {
+    return "structural-hash-mismatch";
+  }
+  if (normalized.includes("style drift")) {
+    return "style-drift";
+  }
+  if (normalized.includes("manifest") || normalized.includes("validation") || normalized.includes("entry")) {
+    return "malformed";
+  }
+
+  return undefined;
 }
 
 export function derivePolicyForPath(input: {
@@ -172,6 +199,10 @@ export function resolveBlueprint(context: ResolverContext): ResolutionResult {
   const strict = context.policyOverride?.strict ?? DEFAULT_RESOLUTION_POLICY.strict;
   const shadowTelemetryOnly =
     policyMode === "hybrid" && context.policyOverride?.shadowTelemetryOnly === true;
+  const manifestAgeMs = context.manifest
+    ? Math.max(nowMs - context.manifest.build.builtAt, 0)
+    : undefined;
+  const manifestVersion = context.manifest?.manifestVersion;
 
   // 1. EXPLICIT: provided blueprint always wins
   if (context.externalBlueprint) {
@@ -185,6 +216,9 @@ export function resolveBlueprint(context: ResolverContext): ResolutionResult {
         reason: "external-blueprint",
         timestamp: nowMs,
         latencyMs: eventLatency(startTimeMs),
+        componentKey: context.skeletonKey,
+        manifestAgeMs,
+        manifestVersion,
       },
     };
   }
@@ -216,6 +250,9 @@ export function resolveBlueprint(context: ResolverContext): ResolutionResult {
             reason: "shadow-hit",
             timestamp: nowMs,
             latencyMs: eventLatency(startTimeMs),
+            componentKey: context.skeletonKey,
+            manifestAgeMs,
+            manifestVersion,
             candidateSource: "manifest",
             manifestValidation: {
               valid: true,
@@ -228,6 +265,7 @@ export function resolveBlueprint(context: ResolverContext): ResolutionResult {
       const rejectionReason = manifestResult.reason ?? "unknown-rejection";
       const rejectionCategory = classifyManifestReason(rejectionReason);
       const isMiss = rejectionCategory === "miss";
+      const invalidationReason = isMiss ? undefined : mapInvalidationReason(rejectionReason);
 
       if (isMiss) {
         incrementCounter("shadowMisses");
@@ -247,9 +285,20 @@ export function resolveBlueprint(context: ResolverContext): ResolutionResult {
           reason: isMiss ? "shadow-miss" : `shadow-invalid: ${rejectionReason}`,
           timestamp: nowMs,
           latencyMs: eventLatency(startTimeMs),
+          componentKey: context.skeletonKey,
+          manifestAgeMs,
+          manifestVersion,
           candidateSource: isMiss ? "none" : "manifest",
           rejectionCategory,
           rejectionReason,
+          invalidationReason,
+          manifestValidation: isMiss
+            ? undefined
+            : {
+              valid: false,
+              reason: rejectionReason,
+              invalidationReason,
+            },
         },
       };
     }
@@ -274,6 +323,9 @@ export function resolveBlueprint(context: ResolverContext): ResolutionResult {
           reason: "manifest-entry-valid",
           timestamp: nowMs,
           latencyMs: eventLatency(startTimeMs),
+          componentKey: context.skeletonKey,
+          manifestAgeMs,
+          manifestVersion,
           manifestValidation: {
             valid: true,
             entry: manifestResult.entry,
@@ -305,9 +357,16 @@ export function resolveBlueprint(context: ResolverContext): ResolutionResult {
             reason: "session-cache-hit",
             timestamp: nowMs,
             latencyMs: eventLatency(startTimeMs),
+            componentKey: context.skeletonKey,
+            manifestAgeMs,
+            manifestVersion,
             candidateSource: "manifest",
             rejectionCategory: "invalid",
             rejectionReason: manifestResult.reason,
+            invalidationReason:
+              manifestResult.reason && classifyManifestReason(manifestResult.reason) === "invalid"
+                ? mapInvalidationReason(manifestResult.reason)
+                : undefined,
           },
         };
       }
@@ -325,6 +384,13 @@ export function resolveBlueprint(context: ResolverContext): ResolutionResult {
           reason: `manifest-validation-failed: ${manifestResult.reason}`,
           timestamp: nowMs,
           latencyMs: eventLatency(startTimeMs),
+          componentKey: context.skeletonKey,
+          manifestAgeMs,
+          manifestVersion,
+          invalidationReason:
+            manifestResult.reason && classifyManifestReason(manifestResult.reason) === "invalid"
+              ? mapInvalidationReason(manifestResult.reason)
+              : undefined,
         },
       };
     }
@@ -341,6 +407,9 @@ export function resolveBlueprint(context: ResolverContext): ResolutionResult {
       reason: "dynamic-default",
       timestamp: nowMs,
       latencyMs: eventLatency(startTimeMs),
+      componentKey: context.skeletonKey,
+      manifestAgeMs,
+      manifestVersion,
     },
   };
 }

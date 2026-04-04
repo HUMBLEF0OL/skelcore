@@ -19,6 +19,7 @@
     "rollout:test": "pnpm --filter @skelcore/cli test -- src/rollout/__tests__/",
     "rollout:ready": "pnpm rollout:test && pnpm --filter @skelcore/cli build",
     "rollout-control-plane:ready": "pnpm --filter @skelcore/cli test -- src/rollout/__tests__/control-plane.test.ts src/rollout/__tests__/policy-resolver.test.ts src/rollout/__tests__/decision-gate.test.ts src/__tests__/rollout-command.test.ts && pnpm --filter @skelcore/cli typecheck && pnpm --filter @skelcore/cli build",
+    "hybrid-runtime-telemetry:ready": "pnpm --filter @skelcore/react test -- src/__tests__/resolver.test.ts src/__tests__/AutoSkeleton.test.tsx && pnpm --filter @skelcore/react typecheck && pnpm --filter @skelcore/react build && pnpm --filter demo typecheck",
     "facade-contract:ready": "pnpm turbo run build --filter=@skelcore/skelcore && pnpm turbo run test --filter=@skelcore/skelcore && pnpm turbo run typecheck --filter=@skelcore/skelcore",
     "single-package:ready": "pnpm --filter @skelcore/skelcore build && pnpm --filter @skelcore/skelcore test && pnpm --filter demo build",
     "size": "turbo run size",

@@ -46,9 +46,14 @@ export interface ResolutionEvent {
   reason: string;
   timestamp: number;
   latencyMs: number;
+  componentKey?: string;
+  measurementDurationMs?: number;
+  manifestAgeMs?: number;
+  manifestVersion?: number;
   candidateSource?: "manifest" | "none";
   rejectionCategory?: "miss" | "invalid";
   rejectionReason?: string;
+  invalidationReason?: ManifestEntryValidationResult["invalidationReason"];
   /** Manifest-specific validation details if source is manifest-related */
   manifestValidation?: ManifestEntryValidationResult;
 }
