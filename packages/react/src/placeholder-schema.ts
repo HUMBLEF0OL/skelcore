@@ -3,7 +3,7 @@ import type {
   BlueprintNode,
   PlaceholderSchema,
   PlaceholderSchemaBlock,
-} from "@skelcore/core";
+} from "@ghostframe/core";
 
 const MAX_SCHEMA_REPEAT = 50;
 const DEFAULT_TEXT_LINE_HEIGHT = 16;

@@ -1,13 +1,71 @@
 "use client";
 
 import React from "react";
-import type { Blueprint, BlueprintNode, SkeletonConfig } from "@ghostframe/core";
+import type {
+  AnimationPreset,
+  Blueprint,
+  BlueprintNode,
+  SkeletonAnimationDefinition,
+  SkeletonConfig,
+} from "@ghostframe/core";
+
+type ResolvedAnimation = {
+  className: string;
+  keyframeName?: string;
+  keyframes?: string;
+  inlineStyle?: React.CSSProperties;
+  durationMs?: number;
+};
+
+function resolveAnimation(
+  preset: AnimationPreset | string | undefined,
+  registry: Record<string, SkeletonAnimationDefinition>
+): ResolvedAnimation {
+  if (!preset || preset === "none") {
+    return { className: "" };
+  }
+
+  const normalizedPreset = String(preset);
+  const custom = registry[normalizedPreset];
+  if (custom) {
+    const keyframeName = `skel-custom-${normalizedPreset.replace(/[^a-z0-9]+/gi, "").toLowerCase()}`;
+    return {
+      className: custom.className ?? "",
+      keyframeName,
+      keyframes: custom.keyframes,
+      inlineStyle: {
+        ...(custom.inlineStyle ?? {}),
+        ...(custom.keyframes && custom.durationMs
+          ? {
+            animationName: keyframeName,
+            animationDuration: `${custom.durationMs}ms`,
+            animationTimingFunction: "linear",
+            animationIterationCount: "infinite",
+          }
+          : {}),
+      },
+      durationMs: custom.durationMs,
+    };
+  }
+
+  if (normalizedPreset === "shimmer") {
+    return { className: "skel-shimmer" };
+  }
+
+  if (normalizedPreset === "pulse") {
+    return { className: "skel-pulse" };
+  }
+
+  return { className: "" };
+}
 
 export interface SkeletonRendererProps {
   blueprint: Blueprint;
   config: SkeletonConfig;
   mode?: "flow" | "absolute";
   slots?: Record<string, () => React.ReactNode>;
+  animationPreset?: AnimationPreset | string;
+  animationRegistry?: Record<string, SkeletonAnimationDefinition>;
 }
 
 /**
