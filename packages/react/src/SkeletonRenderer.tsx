@@ -1,81 +1,17 @@
 "use client";
 
 import React from "react";
-import type {
-  AnimationPreset,
-  Blueprint,
-  BlueprintNode,
-  SkeletonAnimationDefinition,
-  SkeletonConfig,
-} from "@skelcore/core";
+import type { Blueprint, BlueprintNode, SkeletonConfig } from "@ghostframe/core";
 
 export interface SkeletonRendererProps {
   blueprint: Blueprint;
   config: SkeletonConfig;
   mode?: "flow" | "absolute";
   slots?: Record<string, () => React.ReactNode>;
-  animationPreset?: AnimationPreset;
-  animationRegistry?: Record<string, SkeletonAnimationDefinition>;
-}
-
-type ResolvedAnimation = {
-  className: string;
-  inlineStyle: React.CSSProperties;
-  keyframeName?: string;
-  keyframes?: string;
-};
-
-const BUILT_IN_ANIMATIONS = new Set(["pulse", "shimmer", "none"]);
-
-function sanitizePresetName(preset: string): string {
-  return preset.replace(/[^a-zA-Z0-9_-]/g, "-").toLowerCase() || "custom";
-}
-
-function resolveAnimation(
-  preset: string,
-  registry: Record<string, SkeletonAnimationDefinition>
-): ResolvedAnimation {
-  const customDefinition = registry[preset];
-
-  if (customDefinition) {
-    const keyframeName = customDefinition.keyframes
-      ? `skel-custom-${sanitizePresetName(preset)}`
-      : undefined;
-    const durationMs = customDefinition.durationMs ?? 1500;
-
-    return {
-      className: customDefinition.className ?? "",
-      inlineStyle: {
-        ...(keyframeName
-          ? {
-              animationName: keyframeName,
-              animationDuration: `${durationMs}ms`,
-              animationIterationCount: "infinite",
-              animationTimingFunction: "ease-in-out",
-            }
-          : {}),
-        ...(customDefinition.inlineStyle ?? {}),
-      },
-      keyframeName,
-      keyframes: customDefinition.keyframes,
-    };
-  }
-
-  if (BUILT_IN_ANIMATIONS.has(preset)) {
-    return {
-      className: preset === "none" ? "" : `skel-${preset}`,
-      inlineStyle: {},
-    };
-  }
-
-  return {
-    className: "",
-    inlineStyle: {},
-  };
 }
 
 /**
- * Pure React component to render a SkelCore Blueprint.
+ * Pure React component to render a Ghostframe Blueprint.
  * Decoupled from measurement logic; focuses entirely on visual mapping.
  */
 export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({

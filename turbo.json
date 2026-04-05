@@ -1,5 +1,12 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalDependencies": [
+    "pnpm-lock.yaml",
+    "turbo.json",
+    "tsconfig.json",
+    "tsconfig.base.json",
+    "eslint.config.mjs"
+  ],
   "tasks": {
     "build": {
       "dependsOn": [
@@ -18,18 +25,32 @@
       "inputs": [
         "src/**/*.ts",
         "src/**/*.tsx",
+        "src/**/__tests__/**/*.ts",
+        "src/**/__tests__/**/*.tsx",
         "test/**/*.ts",
         "test/**/*.tsx"
-      ]
+      ],
+      "outputs": []
     },
     "lint": {
       "dependsOn": [
-        "^build"
-      ]
+        "^lint"
+      ],
+      "outputs": []
     },
     "typecheck": {
       "dependsOn": [
-        "^build"
+        "^typecheck"
+      ],
+      "outputs": []
+    },
+    "size": {
+      "dependsOn": [
+        "build"
+      ],
+      "inputs": [
+        "dist/**",
+        "package.json"
       ],
       "outputs": []
     }

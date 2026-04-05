@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
-import { AutoSkeleton } from "../../lib/skelcore/react";
-import type { AnimationMode, SkeletonConfig } from "../../lib/skelcore/core";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { AutoSkeleton } from "../../lib/ghostframe/react";
+import type { AnimationMode, SkeletonConfig } from "../../lib/ghostframe/core";
 import { CodeBlock, FeatureCard } from "../../lib/demo-components";
 
 function PreviewCard() {
@@ -32,6 +32,28 @@ export default function ConfigPlaygroundPage() {
   const [borderRadius, setBorderRadius] = useState(10);
   const [speed, setSpeed] = useState(1);
   const [minTextHeight, setMinTextHeight] = useState(12);
+  const colorPreviewTimeoutRef = useRef<number | null>(null);
+
+  const startSkeletonPreview = () => {
+    setLoading(true);
+
+    if (colorPreviewTimeoutRef.current !== null) {
+      window.clearTimeout(colorPreviewTimeoutRef.current);
+    }
+
+    colorPreviewTimeoutRef.current = window.setTimeout(() => {
+      setLoading(false);
+      colorPreviewTimeoutRef.current = null;
+    }, 900);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (colorPreviewTimeoutRef.current !== null) {
+        window.clearTimeout(colorPreviewTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const config: Partial<SkeletonConfig> = useMemo(
     () => ({
@@ -46,10 +68,10 @@ export default function ConfigPlaygroundPage() {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-950 p-6 light:bg-white md:p-10">
-      <div className="mx-auto max-w-6xl space-y-8">
-        <header>
-          <h1 className="mb-2 text-4xl font-bold text-white light:text-zinc-900">Configuration Playground</h1>
+    <div className="app-surface guide-page">
+      <div className="app-content guide-flow">
+        <header className="guide-header">
+          <h1 className="guide-title font-bold text-white light:text-zinc-900">Configuration Playground</h1>
           <p className="text-zinc-500 light:text-zinc-600">Tune config values and preview skeleton behavior in real time.</p>
         </header>
 
@@ -64,11 +86,10 @@ export default function ConfigPlaygroundPage() {
                       <button
                         key={mode}
                         onClick={() => setAnimation(mode)}
-                        className={`rounded border px-3 py-2 text-xs font-semibold uppercase transition-colors ${
-                          animation === mode
-                            ? "border-indigo-500 bg-indigo-500/20 text-indigo-200 light:border-indigo-400 light:bg-indigo-50 light:text-indigo-700"
-                            : "border-zinc-700 text-zinc-400 hover:border-zinc-500 light:border-zinc-300 light:text-zinc-600 light:hover:border-zinc-400"
-                        }`}
+                        className={`rounded border px-3 py-2 text-xs font-semibold uppercase transition-colors ${animation === mode
+                          ? "border-indigo-500 bg-indigo-500/20 text-indigo-200 light:border-indigo-400 light:bg-indigo-50 light:text-indigo-700"
+                          : "border-zinc-700 text-zinc-400 hover:border-zinc-500 light:border-zinc-300 light:text-zinc-600 light:hover:border-zinc-400"
+                          }`}
                       >
                         {mode}
                       </button>
@@ -78,7 +99,15 @@ export default function ConfigPlaygroundPage() {
 
                 <div>
                   <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-zinc-500 light:text-zinc-600">Base Color</label>
-                  <input type="color" value={baseColor} onChange={(event) => setBaseColor(event.target.value)} className="h-10 w-full cursor-pointer" />
+                  <input
+                    type="color"
+                    value={baseColor}
+                    onChange={(event) => {
+                      setBaseColor(event.target.value);
+                      startSkeletonPreview();
+                    }}
+                    className="h-10 w-full cursor-pointer"
+                  />
                 </div>
 
                 <div>
@@ -86,9 +115,24 @@ export default function ConfigPlaygroundPage() {
                   <input
                     type="color"
                     value={highlightColor}
-                    onChange={(event) => setHighlightColor(event.target.value)}
+                    onChange={(event) => {
+                      setHighlightColor(event.target.value);
+                      startSkeletonPreview();
+                    }}
                     className="h-10 w-full cursor-pointer"
                   />
+                </div>
+
+                <div className="rounded-lg border border-zinc-700 bg-zinc-900/70 p-3 light:border-zinc-200 light:bg-zinc-50">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-zinc-500 light:text-zinc-600">Current Swatches</p>
+                  <div className="flex gap-2">
+                    <div className="flex-1 rounded p-2 text-[11px] font-semibold text-white" style={{ backgroundColor: baseColor }}>
+                      Base {baseColor}
+                    </div>
+                    <div className="flex-1 rounded p-2 text-[11px] font-semibold text-white" style={{ backgroundColor: highlightColor }}>
+                      Highlight {highlightColor}
+                    </div>
+                  </div>
                 </div>
 
                 <div>
@@ -142,9 +186,25 @@ export default function ConfigPlaygroundPage() {
 
           <div className="space-y-4">
             <FeatureCard title="Live Preview" description="The preview updates as controls change">
-              <AutoSkeleton loading={loading} config={config}>
-                <PreviewCard />
-              </AutoSkeleton>
+              <div className="space-y-3">
+                <p
+                  data-testid="config-preview-state"
+                  className="inline-flex items-center rounded-full border border-zinc-700 bg-zinc-800/60 px-2 py-1 text-xs text-zinc-300 light:border-zinc-300 light:bg-zinc-100 light:text-zinc-700"
+                >
+                  {loading ? "Previewing skeleton colors" : "Showing real content"}
+                </p>
+
+                <div
+                  className="rounded-lg p-3"
+                  style={{
+                    background: `linear-gradient(135deg, ${baseColor}22 0%, ${highlightColor}22 100%)`,
+                  }}
+                >
+                  <AutoSkeleton loading={loading} config={config}>
+                    <PreviewCard />
+                  </AutoSkeleton>
+                </div>
+              </div>
             </FeatureCard>
 
             <FeatureCard title="Generated Config" description="Copy and use this config in your app">

@@ -1,5 +1,6 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render } from "@testing-library/react";
+import { act } from "react";
 import { AutoSkeleton } from "../AutoSkeleton.js";
 
 describe("AutoSkeleton A11y & SSR", () => {
@@ -7,9 +8,27 @@ describe("AutoSkeleton A11y & SSR", () => {
     vi.useFakeTimers();
   });
 
+  afterEach(() => {
+    act(() => {
+      vi.runOnlyPendingTimers();
+    });
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+
   it("applies aria-busy to the container while loading", () => {
     const { container } = render(
-      <AutoSkeleton loading={true}>
+      <AutoSkeleton
+        loading={true}
+        blueprint={{
+          version: 1,
+          rootWidth: 100,
+          rootHeight: 20,
+          nodes: [],
+          generatedAt: 0,
+          source: "static",
+        }}
+      >
         <div>Content</div>
       </AutoSkeleton>
     );

@@ -12,11 +12,11 @@ interface FeatureCardProps {
 
 export function FeatureCard({ title, description, badge, children, codeLabel }: FeatureCardProps) {
   return (
-    <section className="min-w-0 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 light:border-zinc-200 light:bg-white">
-      <header className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+    <section className="guide-card min-w-0 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 light:border-zinc-200 light:bg-white">
+      <header className="guide-card-header mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
         <div className="min-w-0">
-          <h2 className="mb-1 break-words text-xl font-bold text-white light:text-zinc-900">{title}</h2>
-          <p className="text-sm text-zinc-500 light:text-zinc-600">{description}</p>
+          <h2 className="guide-card-title mb-1 break-words text-xl font-bold text-white light:text-zinc-900">{title}</h2>
+          <p className="guide-card-description text-sm text-zinc-500 light:text-zinc-600">{description}</p>
         </div>
         {badge ? (
           <span className="self-start rounded-full border border-indigo-500/30 bg-indigo-500/20 px-2 py-1 text-xs font-semibold text-indigo-300 sm:shrink-0 light:border-indigo-200 light:bg-indigo-50 light:text-indigo-700">

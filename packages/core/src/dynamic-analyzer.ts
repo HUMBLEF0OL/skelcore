@@ -150,7 +150,7 @@ export async function generateDynamicBlueprint(
 
   // Virtualized list heuristic: extremely tall scrollHeight compared to children count
   if (root.children.length * 100 < root.scrollHeight && root.scrollHeight > 2000) {
-    console.warn("SkelCore: Potential virtualized list detected. Skeletons bounded by maxDepth.");
+    console.warn("Ghostframe: Potential virtualized list detected. Skeletons bounded by maxDepth.");
   }
 
   walk(root, 0);

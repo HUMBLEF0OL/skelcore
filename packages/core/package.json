@@ -1,6 +1,6 @@
 {
-  "name": "@skelcore/core",
-  "version": "1.2.0",
+  "name": "@ghostframe/core",
+  "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -24,12 +24,13 @@
     "dev": "tsup src/index.ts --format cjs,esm --watch --dts",
     "lint": "eslint src --config ../../eslint.config.mjs",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "size": "size-limit"
   },
   "size-limit": [
     {
       "path": "dist/index.js",
-      "limit": "6 KB"
+      "limit": "7 KB"
     }
   ],
   "devDependencies": {

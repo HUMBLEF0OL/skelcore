@@ -5,6 +5,13 @@
 :root {
   --background: #f4f4f5;
   --foreground: #18181b;
+  --app-max-width: 1200px;
+  --app-content-max-width: 1040px;
+  --guide-vertical-padding-mobile: 2.5rem;
+  --guide-vertical-padding-desktop: 3rem;
+  --guide-section-gap: 1.5rem;
+  --guide-header-gap: 0.625rem;
+  --guide-card-padding: 1.5rem;
   --skeleton-base-light: #e5e7eb;
   --skeleton-highlight-light: #f9fafb;
   --skeleton-base-dark: #2525a8;
@@ -40,6 +47,66 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), sans-serif;
+}
+
+.app-shell {
+  margin-inline: auto;
+  width: min(100%, var(--app-max-width));
+}
+
+.app-surface {
+  padding-inline: 1.25rem;
+}
+
+.app-content {
+  margin-inline: auto;
+  width: 100%;
+  max-width: var(--app-content-max-width);
+}
+
+.guide-page {
+  padding-block: var(--guide-vertical-padding-mobile);
+}
+
+.guide-flow {
+  display: flex;
+  flex-direction: column;
+  gap: var(--guide-section-gap);
+}
+
+.guide-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--guide-header-gap);
+}
+
+.guide-title {
+  font-size: clamp(2rem, 3.8vw, 2.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.guide-card {
+  padding: var(--guide-card-padding);
+}
+
+.guide-card-header {
+  row-gap: var(--guide-header-gap);
+}
+
+.guide-card-title {
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.guide-card-description {
+  line-height: 1.6;
+}
+
+@media (min-width: 640px) {
+  .guide-page {
+    padding-block: var(--guide-vertical-padding-desktop);
+  }
 }
 
 .boxy-demo [class*="rounded"] {

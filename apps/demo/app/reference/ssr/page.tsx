@@ -1,5 +1,5 @@
 import React from "react";
-import { generateStaticBlueprint } from "../../../lib/skelcore/core";
+import { generateStaticBlueprint } from "@ghostframe/ghostframe/runtime";
 import { CodeBlock, FeatureCard } from "../../../lib/demo-components";
 import { PrecomputedBlueprintDemo } from "./PrecomputedBlueprintDemo";
 
@@ -33,8 +33,8 @@ function createStaticBlueprintTree() {
 
 const staticBlueprint = generateStaticBlueprint(createStaticBlueprintTree());
 
-const staticUsageCode = `import { generateStaticBlueprint } from "@skelcore/core";
-import { AutoSkeleton } from "@skelcore/react";
+const staticUsageCode = `import { generateStaticBlueprint } from "@ghostframe/ghostframe/runtime";
+import { AutoSkeleton } from "@ghostframe/ghostframe";
 
 const blueprint = generateStaticBlueprint(
   <article>

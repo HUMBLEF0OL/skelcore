@@ -4,9 +4,8 @@ async function runBenchmark() {
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
-  console.log("🚀 Starting SkelCore Performance Benchmark...");
+  console.log("🚀 Starting Ghostframe Performance Benchmark...");
 
-  const navStart = Date.now();
   await page.goto("http://localhost:3005/test");
   await page.waitForSelector("#test-card", { timeout: 15000 });
   await page.waitForSelector(".skel-overlay", { timeout: 15000 });

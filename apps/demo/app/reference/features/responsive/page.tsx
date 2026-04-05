@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { AutoSkeleton } from "../../../../lib/skelcore/react";
+import { AutoSkeleton } from "../../../../lib/ghostframe/react";
 import { CodeBlock, FeatureCard, InteractiveToggle } from "../../../../lib/demo-components";
 
 function ResponsiveCard({ width }: { width: number }) {

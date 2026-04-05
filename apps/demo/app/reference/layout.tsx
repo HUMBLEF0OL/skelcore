@@ -7,7 +7,7 @@ export default function ReferenceLayout({ children }: { children: React.ReactNod
       <ReferenceNav />
 
       <main className="flex-1 min-w-0 overflow-x-hidden overflow-y-auto">
-        <div className="mx-auto max-w-5xl px-5 py-10 sm:px-8">{children}</div>
+        <div className="app-surface app-content py-10 sm:py-12">{children}</div>
       </main>
     </div>
   );

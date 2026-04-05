@@ -4,39 +4,13 @@ import React, { useRef, useMemo } from "react";
 import {
   DEFAULT_CONFIG,
   type Blueprint,
-  type PlaceholderSchema,
-  type PlaceholderStrategy,
-  type PlaceholderSlots,
-  type ElementMatcher,
-  type AnimationPreset,
-  type SkeletonAnimationDefinition,
   type SkeletonConfig,
-} from "@skelcore/core";
+  type BlueprintManifest,
+} from "@ghostframe/core";
 import { useAutoSkeleton } from "./useAutoSkeleton";
 import { SkeletonRenderer } from "./SkeletonRenderer";
-import {
-  buildSchemaPlaceholderBlueprint,
-  buildSlotsPlaceholderBlueprint,
-  isValidPlaceholderSchema,
-} from "./placeholder-schema";
-
-type BlueprintSource = "client" | "server" | "cache";
-
-type BlueprintInvalidationReason =
-  | "missing-root"
-  | "missing-structural-hash"
-  | "version-mismatch"
-  | "structural-hash-mismatch";
-
-type MeasurementPolicy = {
-  mode: "eager" | "idle" | "viewport" | "manual";
-  budgetMs?: number;
-};
-
-type BlueprintCachePolicy = {
-  ttlMs?: number;
-  version?: number;
-};
+import { useGhostframeContext } from "./GhostframeProvider";
+import type { ResolutionEvent, ResolutionPolicy } from "./resolution-types";
 
 export interface AutoSkeletonProps {
   loading: boolean;
@@ -52,15 +26,11 @@ export interface AutoSkeletonProps {
   slots?: Record<string, () => React.ReactNode>;
   onMeasured?: (b: Blueprint) => void;
   remeasureOnResize?: boolean;
-  overlayClassName?: string;
-  overlayStyle?: React.CSSProperties;
-  include?: ElementMatcher[];
-  exclude?: ElementMatcher[];
-  placeholderStrategy?: PlaceholderStrategy;
-  placeholderSchema?: PlaceholderSchema;
-  placeholderSlots?: PlaceholderSlots<React.ReactNode>;
-  animationPreset?: AnimationPreset;
-  animationRegistry?: Record<string, SkeletonAnimationDefinition>;
+  skeletonKey?: string;
+  policyOverride?: Partial<ResolutionPolicy>;
+  onResolution?: (event: ResolutionEvent) => void;
+  /** Precomputed manifest for manifest-based resolution */
+  manifest?: BlueprintManifest;
 }
 
 /**
@@ -81,53 +51,27 @@ export function AutoSkeleton({
   slots,
   onMeasured,
   remeasureOnResize = false,
-  overlayClassName,
-  overlayStyle,
-  include,
-  exclude,
-  placeholderStrategy = "none",
-  placeholderSchema,
-  placeholderSlots,
-  animationPreset,
-  animationRegistry,
+  skeletonKey,
+  policyOverride,
+  onResolution,
+  manifest,
 }: AutoSkeletonProps) {
   const config = useMemo(() => ({ ...DEFAULT_CONFIG, ...configOverride }), [configOverride]);
-  const resolvedSlots = useMemo(
-    () => ({ ...(slots ?? {}), ...(placeholderSlots ?? {}) }),
-    [slots, placeholderSlots]
-  );
 
-  const strategyBlueprint = useMemo(() => {
-    if (!loading) return null;
-    if (placeholderStrategy !== "schema" && placeholderStrategy !== "slots") return null;
-
-    if (isValidPlaceholderSchema(placeholderSchema)) {
-      return buildSchemaPlaceholderBlueprint(placeholderSchema);
-    }
-
-    if (placeholderStrategy === "schema") {
-      return null;
-    }
-
-    const slotKeys = Object.keys(resolvedSlots);
-    return buildSlotsPlaceholderBlueprint(slotKeys);
-  }, [loading, placeholderStrategy, placeholderSchema, resolvedSlots]);
-
-  const externalBlueprint = externalBlueprintProp ?? strategyBlueprint ?? undefined;
-  const hydratedBlueprint = hydrateBlueprint ?? undefined;
+  // Use context as fallback for manifest and policy if not explicitly passed
+  const context = useGhostframeContext();
+  const effectiveManifest = manifest ?? context?.manifest;
+  const effectivePolicy = policyOverride ?? context?.policy;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { blueprint, phase } = useAutoSkeleton(loading, containerRef, config, {
     onMeasured,
     remeasureOnResize,
     externalBlueprint,
-    hydrateBlueprint: hydratedBlueprint,
-    blueprintSource,
-    onBlueprintInvalidated,
-    measurementPolicy,
-    blueprintCachePolicy,
-    include,
-    exclude,
+    skeletonKey,
+    policyOverride: effectivePolicy,
+    onResolution,
+    manifest: effectiveManifest,
   });
 
   const showSkeleton = loading || phase === "exiting";
@@ -174,6 +118,7 @@ export function AutoSkeleton({
       className="skel-auto-container"
       style={containerStyle}
       aria-busy={loading}
+      data-skeleton-key={skeletonKey}
     >
       {/* 1. Content Layer */}
       <div className="skel-content" style={contentStyle} data-loading={loading ? "true" : "false"}>

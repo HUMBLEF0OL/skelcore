@@ -29,20 +29,28 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 21
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm lint
+      - name: Turbo quality gates
+        run: pnpm turbo run test lint typecheck build
 
-      - name: Typecheck
-        run: pnpm typecheck
+      - name: Manifest quality gate
+        run: |
+          mkdir -p .tmp/ghostframe
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            git show "origin/${{ github.base_ref }}:apps/demo/lib/ghostframe/generated/manifest.json" > .tmp/ghostframe/base-manifest.json
+            QUALITY_BASE_MANIFEST=.tmp/ghostframe/base-manifest.json QUALITY_CANDIDATE_MANIFEST=apps/demo/lib/ghostframe/generated/manifest.json pnpm quality:gate
+          else
+            pnpm quality:gate
+          fi
 
-      - name: Build
-        run: pnpm build
-
-      - name: Test
-        run: pnpm test
+      - name: Upload quality artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-reports
+          path: .tmp/ghostframe

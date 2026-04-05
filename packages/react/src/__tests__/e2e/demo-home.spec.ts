@@ -1,17 +1,13 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("demo home reset flow", () => {
-  test("returns to loaded state after reset", async ({ page }) => {
+test.describe("home guide route", () => {
+  test("renders official guide content without loading controls", async ({ page }) => {
     await page.goto("/");
 
-    const toggle = page.locator("#toggle-loading");
-    await expect(toggle).toContainText("Reset", { timeout: 7000 });
-    await expect(page.getByText(/Blueprint in ~/)).toBeVisible();
-
-    await toggle.click();
-    await expect(toggle).toContainText("Loading…");
-
-    await expect(toggle).toContainText("Reset", { timeout: 7000 });
-    await expect(page.getByText(/Blueprint in ~/)).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Ghostframe Official Guide" })
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Open Feature Index" })).toBeVisible();
+    await expect(page.locator("#toggle-loading")).toHaveCount(0);
   });
 });

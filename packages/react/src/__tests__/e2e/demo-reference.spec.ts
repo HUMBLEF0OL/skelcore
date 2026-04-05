@@ -7,8 +7,8 @@ test.describe("demo reference routes", () => {
     const primaryNav = page.getByRole("navigation", { name: "Primary" });
     await expect(primaryNav).toBeVisible();
 
-    const showcaseLink = primaryNav.getByRole("link", { name: "Showcase" });
-    await expect(showcaseLink).toHaveAttribute("aria-current", "page");
+    const guideLink = primaryNav.getByRole("link", { name: "Guide" });
+    await expect(guideLink).toHaveAttribute("aria-current", "page");
 
     await primaryNav.getByRole("link", { name: "Reference" }).click();
     await expect(page).toHaveURL(/\/reference$/);
@@ -20,7 +20,9 @@ test.describe("demo reference routes", () => {
   test("reference overview and feature routes render expected content", async ({ page }) => {
     await page.goto("/reference");
 
-    await expect(page.getByRole("heading", { level: 1, name: "SkelCore Reference" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Ghostframe Reference" })
+    ).toBeVisible();
     await expect(page.getByRole("link", { name: "All Features" })).toBeVisible();
 
     await page.goto("/reference/features");

@@ -28,6 +28,8 @@ export default [
     rules: {
       ...ts.configs.recommended.rules,
       "prettier/prettier": "error",
+      "no-redeclare": "off",
+      "@typescript-eslint/no-redeclare": "error",
       "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
     },
   },

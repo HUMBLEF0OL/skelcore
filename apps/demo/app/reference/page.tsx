@@ -17,6 +17,11 @@ const overviewCards = [
     href: "/reference/configuration",
   },
   {
+    title: "CLI Workflow",
+    description: "Capture, validate, diff, report, and rollout with production-ready quality gates.",
+    href: "/reference/cli-workflow",
+  },
+  {
     title: "Advanced",
     description: "Move from isolated examples to real workflows like forms and async data.",
     href: "/advanced",
@@ -30,11 +35,13 @@ const overviewCards = [
 
 export default function ReferenceOverview() {
   return (
-    <div>
-      <h1 className="mb-4 text-4xl font-bold text-white light:text-zinc-900">SkelCore Reference</h1>
-      <p className="mb-8 text-lg text-zinc-500 light:text-zinc-600">
-        Comprehensive guides for every core feature, integration pattern, and configuration path.
-      </p>
+    <div className="guide-flow">
+      <header className="guide-header">
+        <h1 className="guide-title font-bold text-white light:text-zinc-900">Ghostframe Reference</h1>
+        <p className="text-lg text-zinc-500 light:text-zinc-600">
+          Developer-focused guides covering runtime behavior, server rendering, configuration, and operational workflows.
+        </p>
+      </header>
 
       <div className="grid gap-4 sm:grid-cols-2">
         {overviewCards.map((card) => (

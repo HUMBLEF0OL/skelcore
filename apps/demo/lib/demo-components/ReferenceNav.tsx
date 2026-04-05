@@ -19,6 +19,11 @@ const navSections = [
       { href: "/reference/features/responsive", label: "Responsive Behavior" },
       { href: "/reference/features/callbacks", label: "Callbacks & Hooks" },
       { href: "/reference/features/caching", label: "Blueprint Caching" },
+      { href: "/reference/features/fallback", label: "Fallback Prop" },
+      { href: "/reference/features/resolver-policy", label: "Resolver Policy" },
+      { href: "/reference/features/rollout-telemetry", label: "Rollout Telemetry" },
+      { href: "/reference/features/manifest-parse-validation", label: "Manifest Parse & Validation" },
+      { href: "/reference/features/no-skeleton-vs-ignore", label: "No Skeleton vs Ignore" },
     ],
   },
   {
@@ -31,6 +36,10 @@ const navSections = [
       { href: "/reference/configuration", label: "All Config Options" },
       { href: "/config-playground", label: "Config Playground" },
     ],
+  },
+  {
+    section: "Operations",
+    items: [{ href: "/reference/cli-workflow", label: "CLI Workflow" }],
   },
   {
     section: "Advanced",
@@ -50,7 +59,7 @@ export function ReferenceNav() {
       <div className="mb-6 flex items-center justify-between gap-2">
         <Link href="/" className="flex items-center gap-2 text-white transition-opacity hover:opacity-80 light:text-zinc-900">
           <BrandMark size={20} />
-          <span className="text-sm font-bold">SkelCore</span>
+          <span className="text-sm font-bold">Ghostframe</span>
         </Link>
 
         <button
@@ -74,11 +83,10 @@ export function ReferenceNav() {
                 <li key={item.href}>
                   <Link
                     href={item.href}
-                    className={`block rounded-lg px-3 py-2 text-sm transition-colors ${
-                      active
-                        ? "bg-indigo-500/20 text-indigo-300 light:bg-indigo-50 light:text-indigo-700"
-                        : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-300 light:text-zinc-600 light:hover:bg-zinc-100 light:hover:text-zinc-700"
-                    }`}
+                    className={`block rounded-lg px-3 py-2 text-sm transition-colors ${active
+                      ? "bg-indigo-500/20 text-indigo-300 light:bg-indigo-50 light:text-indigo-700"
+                      : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-300 light:text-zinc-600 light:hover:bg-zinc-100 light:hover:text-zinc-700"
+                      }`}
                   >
                     {item.label}
                   </Link>

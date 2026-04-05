@@ -1,0 +1,67 @@
+{
+    "name": "@ghostframe/ghostframe",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "bin": {
+        "ghostframe": "./dist/build.js"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "default": "./dist/index.js"
+        },
+        "./react": {
+            "types": "./dist/react.d.ts",
+            "import": "./dist/react.js",
+            "require": "./dist/react.cjs",
+            "default": "./dist/react.js"
+        },
+        "./runtime": {
+            "types": "./dist/runtime.d.ts",
+            "import": "./dist/runtime.js",
+            "require": "./dist/runtime.cjs",
+            "default": "./dist/runtime.js"
+        },
+        "./build": {
+            "types": "./dist/build.d.ts",
+            "import": "./dist/build.js",
+            "require": "./dist/build.cjs",
+            "default": "./dist/build.js"
+        }
+    },
+    "sideEffects": false,
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
+    "scripts": {
+        "build": "tsup --config tsup.config.ts",
+        "dev": "tsup --config tsup.config.ts --watch",
+        "lint": "eslint src --config ../../eslint.config.mjs",
+        "test": "vitest run",
+        "typecheck": "tsc --noEmit"
+    },
+    "peerDependencies": {
+        "react": ">=18",
+        "react-dom": ">=18"
+    },
+    "dependencies": {
+        "playwright": "^1.58.2"
+    },
+    "devDependencies": {
+        "@ghostframe/cli": "workspace:*",
+        "@ghostframe/core": "workspace:*",
+        "@ghostframe/react": "workspace:*",
+        "@types/react": "^19.0.0",
+        "@types/react-dom": "^19.0.0",
+        "tsup": "^8.5.1",
+        "typescript": "^6.0.2",
+        "vitest": "^4.1.2"
+    }
+}

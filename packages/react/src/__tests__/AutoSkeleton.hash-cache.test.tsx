@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, waitFor } from "@testing-library/react";
-import * as core from "@skelcore/core";
+import * as core from "@ghostframe/core";
 import { AutoSkeleton } from "../AutoSkeleton.js";
 
 describe("AutoSkeleton structural hash reuse", () => {

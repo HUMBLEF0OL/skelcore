@@ -2,8 +2,8 @@ import React from "react";
 
 export default function AdvancedLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-zinc-950 light:bg-white">
-      <main className="mx-auto max-w-5xl px-6 py-10">{children}</main>
+    <div className="app-surface py-10 sm:py-12">
+      <main className="app-content">{children}</main>
     </div>
   );
 }

@@ -1,14 +1,14 @@
-# @skelcore/react
+# @ghostframe/ghostframe
 
 > Automatic, zero-configuration skeleton loading states for React — powered by live DOM measurement.
 
-[![npm version](https://img.shields.io/npm/v/@skelcore/react)](https://www.npmjs.com/package/@skelcore/react)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/@skelcore/react)](https://bundlephobia.com/package/@skelcore/react)
-[![license](https://img.shields.io/npm/l/@skelcore/react)](../../LICENSE)
+[![npm version](https://img.shields.io/npm/v/@ghostframe/ghostframe)](https://www.npmjs.com/package/@ghostframe/ghostframe)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/@ghostframe/ghostframe)](https://bundlephobia.com/package/@ghostframe/ghostframe)
+[![license](https://img.shields.io/npm/l/@ghostframe/ghostframe)](../../LICENSE)
 
-`@skelcore/react` wraps SkelCore's engine with idiomatic React components and a hook. It measures your real UI — fonts, layout, borders, media — and replaces it with a pixel-perfect skeleton overlay while data loads. No manual schema. No configuration required to get started.
+`@ghostframe/ghostframe` wraps Ghostframe's engine with idiomatic React components and a hook. It measures your real UI — fonts, layout, borders, media — and replaces it with a pixel-perfect skeleton overlay while data loads. No manual schema. No configuration required to get started.
 
-**[→ Live Demo](https://skelcore.vercel.app/)**
+**[→ Live Demo](https://ghostframe.vercel.app/)**
 
 ---
 
@@ -40,13 +40,13 @@
 
 ```bash
 # npm
-npm install @skelcore/react
+npm install @ghostframe/ghostframe
 
 # pnpm
-pnpm add @skelcore/react
+pnpm add @ghostframe/ghostframe
 
 # yarn
-yarn add @skelcore/react
+yarn add @ghostframe/ghostframe
 ```
 
 
@@ -55,7 +55,7 @@ yarn add @skelcore/react
 ## Quick Start
 
 ```tsx
-import { AutoSkeleton } from "@skelcore/react";
+import { AutoSkeleton } from "@ghostframe/ghostframe";
 
 function UserCard({ userId }: { userId: string }) {
   const { user, loading } = useUser(userId);
@@ -90,7 +90,7 @@ import {
   // Hook
   useAutoSkeleton,
 
-  // Core types (re-exported from @skelcore/core)
+  // Core types (re-exported from @ghostframe/ghostframe/runtime)
   type AutoSkeletonProps,
   type SkeletonRendererProps,
   type SkeletonPhase,
@@ -100,14 +100,14 @@ import {
   type SkeletonRole,
   type AnimationMode,
 
-  // Core utilities (re-exported from @skelcore/core)
+  // Core utilities (re-exported from @ghostframe/ghostframe/runtime)
   DEFAULT_CONFIG,
   generateStaticBlueprint,
   generateDynamicBlueprint,
   blueprintCache,
   computeStructuralHash,
   animationSystem,
-} from "@skelcore/react";
+} from "@ghostframe/ghostframe";
 ```
 
 ---
@@ -294,8 +294,8 @@ Policy guidance:
 A **pure rendering component** that converts a `Blueprint` into DOM elements. Use it when you want to render a blueprint yourself without the measurement logic of `AutoSkeleton`.
 
 ```tsx
-import { SkeletonRenderer } from "@skelcore/react";
-import { generateStaticBlueprint } from "@skelcore/react";
+import { SkeletonRenderer } from "@ghostframe/ghostframe";
+import { generateStaticBlueprint } from "@ghostframe/ghostframe";
 
 const blueprint = generateStaticBlueprint(
   <div>
@@ -342,7 +342,7 @@ The **low-level hook** that powers `AutoSkeleton`. Use it to build completely cu
 
 ```tsx
 import { useRef } from "react";
-import { useAutoSkeleton, SkeletonRenderer, DEFAULT_CONFIG } from "@skelcore/react";
+import { useAutoSkeleton, SkeletonRenderer, DEFAULT_CONFIG } from "@ghostframe/ghostframe";
 
 function CustomSkeleton({ loading }: { loading: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -409,7 +409,7 @@ All visual and behavioral options are controlled through the `SkeletonConfig` ob
 ### Default Values
 
 ```ts
-import { DEFAULT_CONFIG } from "@skelcore/react";
+import { DEFAULT_CONFIG } from "@ghostframe/ghostframe";
 
 // DEFAULT_CONFIG equals:
 {
@@ -433,7 +433,7 @@ import { DEFAULT_CONFIG } from "@skelcore/react";
 
 ### CSS Custom Properties
 
-The animation system injects a `<style id="skelcore-animations">` tag into `<head>` that exposes these CSS variables:
+The animation system injects a `<style id="ghostframe-animations">` tag into `<head>` that exposes these CSS variables:
 
 | Variable | Maps to config |
 |----------|----------------|
@@ -513,7 +513,7 @@ type Blueprint = {
 For server-rendered pages or when you want zero measurement delay, generate a blueprint from your JSX tree statically:
 
 ```tsx
-import { generateStaticBlueprint } from "@skelcore/react";
+import { generateStaticBlueprint } from "@ghostframe/ghostframe";
 
 // No DOM required — works in Node.js / SSR
 const blueprint = generateStaticBlueprint(
@@ -619,7 +619,7 @@ Mark the component as a Client Component (required because `AutoSkeleton` uses b
 "use client";
 // AutoSkeleton internally marks itself as "use client" as well
 
-import { AutoSkeleton } from "@skelcore/react";
+import { AutoSkeleton } from "@ghostframe/ghostframe";
 
 export function ArticleCard({ article, loading }: Props) {
   return (
@@ -638,7 +638,7 @@ For RSC-compatible patterns, generate a static blueprint in a Server Component a
 
 ```tsx
 // server-component.tsx (no "use client")
-import { generateStaticBlueprint } from "@skelcore/react";
+import { generateStaticBlueprint } from "@ghostframe/ghostframe";
 import { ClientCard } from "./client-card";
 
 const cardBlueprint = generateStaticBlueprint(
@@ -792,7 +792,7 @@ Or pass colors directly via config:
 
 ## Accessibility
 
-`@skelcore/react` is built with accessibility in mind:
+`@ghostframe/ghostframe` is built with accessibility in mind:
 
 - The container root receives `aria-busy={loading}` — screen readers announce loading state changes
 - The skeleton overlay sets `aria-hidden="true"` — it is invisible to assistive technology
@@ -817,7 +817,7 @@ import type {
   AnimationMode,        // "shimmer" | "pulse" | "none"
   TextMeta,
   LayoutProps,
-} from "@skelcore/react";
+} from "@ghostframe/ghostframe";
 ```
 
 ---
@@ -843,4 +843,5 @@ See [CHANGELOG.md](./CHANGELOG.md) for the full release history.
 
 ## License
 
-[MIT](../../LICENSE) © SkelCore Contributors
+[MIT](../../LICENSE) © Ghostframe Contributors
+

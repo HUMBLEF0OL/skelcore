@@ -1,5 +1,5 @@
 {
-  "name": "skelcore",
+  "name": "ghostframe",
   "version": "1.0.0",
   "description": "",
   "private": true,
@@ -8,6 +8,23 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
+    "capture:demo": "pnpm --filter @ghostframe/ghostframe build && node packages/ghostframe/dist/build.js capture --config apps/demo/ghostframe.capture.config.mjs",
+    "quality:validate": "pnpm --filter @ghostframe/cli build && node -e \"const fs=require('node:fs'); const cp=require('node:child_process'); const manifestPath='apps/demo/lib/ghostframe/generated/manifest.json'; const manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8')); const requiredKeys=Object.keys(manifest.entries ?? {}).sort(); const result=cp.spawnSync(process.execPath,['packages/cli/dist/index.js','validate','--manifest',manifestPath,'--required-keys',requiredKeys.join(','),'--min-coverage','1','--max-invalid','0','--max-size-kb','512','--json-out','.tmp/ghostframe/validate.json','--text-out','.tmp/ghostframe/validate.txt'],{stdio:'inherit'}); process.exit(result.status ?? 1);\"",
+    "quality:diff": "pnpm --filter @ghostframe/cli build && node -e \"const cp=require('node:child_process'); const baseManifest=process.env.QUALITY_BASE_MANIFEST ?? 'apps/demo/lib/ghostframe/generated/manifest.json'; const candidateManifest=process.env.QUALITY_CANDIDATE_MANIFEST ?? 'apps/demo/lib/ghostframe/generated/manifest.json'; const result=cp.spawnSync(process.execPath,['packages/cli/dist/index.js','diff','--base',baseManifest,'--candidate',candidateManifest,'--max-changed','0','--json-out','.tmp/ghostframe/diff.json','--text-out','.tmp/ghostframe/diff.txt'],{stdio:'inherit'}); process.exit(result.status ?? 1);\"",
+    "quality:report": "pnpm --filter @ghostframe/cli build && node packages/cli/dist/index.js report --validate-json .tmp/ghostframe/validate.json --diff-json .tmp/ghostframe/diff.json --format json --out .tmp/ghostframe/report.json",
+    "quality:gate": "pnpm quality:validate && pnpm quality:diff && pnpm quality:report",
+    "resolver:perf": "pnpm --filter @ghostframe/react build && node scripts/hardening/benchmark-resolver.mjs",
+    "quality:slo": "pnpm quality:gate && node scripts/hardening/render-slo-dashboard.mjs",
+    "stabilize:ready": "pnpm --filter @ghostframe/react test -- src/__tests__/resolver.test.ts src/__tests__/manifest-resolver.test.ts && pnpm --filter @ghostframe/cli test -- src/__tests__/route-crawler.test.ts src/__tests__/manifest-writer.test.ts src/__tests__/capture-command.test.ts src/__tests__/report-command.test.ts && pnpm --filter @ghostframe/core test -- src/__tests__/manifest-validator.test.ts && pnpm --filter demo typecheck && pnpm resolver:perf && pnpm quality:slo",
+    "rollout:test": "pnpm --filter @ghostframe/cli test -- src/rollout/__tests__/",
+    "rollout:ready": "pnpm rollout:test && pnpm --filter @ghostframe/cli build",
+    "rollout-control-plane:ready": "pnpm --filter @ghostframe/cli test -- src/rollout/__tests__/control-plane.test.ts src/rollout/__tests__/policy-resolver.test.ts src/rollout/__tests__/decision-gate.test.ts src/__tests__/rollout-command.test.ts && pnpm --filter @ghostframe/cli typecheck && pnpm --filter @ghostframe/cli build",
+    "hybrid-runtime-telemetry:ready": "pnpm --filter @ghostframe/react test -- src/__tests__/resolver.test.ts src/__tests__/AutoSkeleton.test.tsx && pnpm --filter @ghostframe/react typecheck && pnpm --filter @ghostframe/react build && pnpm --filter demo typecheck",
+    "facade-contract:ready": "pnpm turbo run build --filter=@ghostframe/ghostframe && pnpm turbo run test --filter=@ghostframe/ghostframe && pnpm turbo run typecheck --filter=@ghostframe/ghostframe",
+    "single-package:ready": "pnpm --filter @ghostframe/ghostframe build && pnpm --filter @ghostframe/ghostframe test && pnpm --filter demo build",
+    "size": "turbo run size",
+    "validate": "pnpm lint && pnpm typecheck && pnpm build && pnpm test",
+    "release:check": "changeset status --verbose",
     "dev": "turbo run dev",
     "changeset": "changeset"
   },
@@ -15,6 +32,10 @@
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.32.1",
+  "engines": {
+    "node": ">=21",
+    "pnpm": ">=10"
+  },
   "devDependencies": {
     "@changesets/cli": "^2.30.0",
     "@eslint/js": "^10.0.1",

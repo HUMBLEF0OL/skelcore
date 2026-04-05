@@ -23,11 +23,13 @@ const patterns = [
 
 export default function AdvancedPage() {
   return (
-    <div>
-      <h1 className="mb-3 text-4xl font-bold text-white light:text-zinc-900">Advanced Patterns</h1>
-      <p className="mb-8 text-zinc-500 light:text-zinc-600">
-        Practical integration patterns for production-grade loading flows.
-      </p>
+    <div className="guide-flow">
+      <header className="guide-header">
+        <h1 className="guide-title font-bold text-white light:text-zinc-900">Advanced Patterns</h1>
+        <p className="text-zinc-500 light:text-zinc-600">
+          Practical integration patterns for production-grade loading flows.
+        </p>
+      </header>
 
       <div className="grid gap-4">
         {patterns.map((pattern) => (
