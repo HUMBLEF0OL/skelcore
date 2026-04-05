@@ -98,7 +98,7 @@ async function main() {
     "",
     "Notes:",
     "- Measurements use in-process timing and are intended for relative comparisons.",
-    "- Run after @skelcore/react build so dist imports are current.",
+    "- Run after @ghostframe/react build so dist imports are current.",
     "",
   ].join("\n");
 

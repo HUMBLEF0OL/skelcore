@@ -16,7 +16,7 @@ export function buildQualityReport(input: {
 
 export function renderQualityTextReport(result: ManifestQualityResult): string {
     return [
-        "Skelcore Manifest Validation",
+        "Ghostframe Manifest Validation",
         `Overall: ${result.gates.overall ? "PASS" : "FAIL"}`,
         `Schema valid: ${result.gates.schemaValid}`,
         `Coverage ratio: ${result.summary.coverageRatio.toFixed(3)}`,
@@ -30,7 +30,7 @@ export function renderQualityTextReport(result: ManifestQualityResult): string {
 
 export function renderDiffTextReport(result: ManifestDiffResult): string {
     return [
-        "Skelcore Manifest Diff",
+        "Ghostframe Manifest Diff",
         `Overall: ${result.gates.overall ? "PASS" : "FAIL"}`,
         `Added keys: ${result.summary.added}`,
         `Removed keys: ${result.summary.removed}`,
@@ -43,7 +43,7 @@ export function renderDiffTextReport(result: ManifestDiffResult): string {
 
 export function renderQualityReportText(report: QualityReport): string {
     const lines = [
-        "Skelcore Quality Report",
+        "Ghostframe Quality Report",
         `Generated at: ${report.generatedAt}`,
         `Overall: ${report.overallPass ? "PASS" : "FAIL"}`,
         "",

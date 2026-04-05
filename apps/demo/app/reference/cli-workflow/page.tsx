@@ -15,7 +15,7 @@ pnpm quality:report
 # 5) Run the full gate sequence
 pnpm quality:gate`;
 
-const rolloutCommands = `# Rollout command surface from @skelcore/cli
+const rolloutCommands = `# Rollout command surface from @ghostframe/cli
 node packages/cli/dist/index.js capture
 node packages/cli/dist/index.js validate
 node packages/cli/dist/index.js diff
@@ -74,7 +74,7 @@ export default function CliWorkflowReferencePage() {
                 </ol>
             </FeatureCard>
 
-            <FeatureCard title="Capabilities" description="Current @skelcore/cli command surface" badge="@skelcore/cli">
+            <FeatureCard title="Capabilities" description="Current @ghostframe/cli command surface" badge="@ghostframe/cli">
                 <div className="grid gap-3 sm:grid-cols-2">
                     {capabilityCards.map((card) => (
                         <article

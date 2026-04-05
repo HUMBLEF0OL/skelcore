@@ -3,11 +3,11 @@ import * as react from "../react";
 import * as runtime from "../runtime";
 import * as build from "../build";
 
-describe("@skelcore/skelcore export contract", () => {
+describe("@ghostframe/ghostframe export contract", () => {
   test("root exports React facade symbols", () => {
     expect(typeof root.AutoSkeleton).toBe("function");
     expect(typeof root.useAutoSkeleton).toBe("function");
-    expect(typeof root.SkelcoreProvider).toBe("function");
+    expect(typeof root.GhostframeProvider).toBe("function");
   });
 
   test("react subpath exports expected symbols", () => {

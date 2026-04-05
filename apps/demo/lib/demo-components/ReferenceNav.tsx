@@ -59,7 +59,7 @@ export function ReferenceNav() {
       <div className="mb-6 flex items-center justify-between gap-2">
         <Link href="/" className="flex items-center gap-2 text-white transition-opacity hover:opacity-80 light:text-zinc-900">
           <BrandMark size={20} />
-          <span className="text-sm font-bold">SkelCore</span>
+          <span className="text-sm font-bold">Ghostframe</span>
         </Link>
 
         <button

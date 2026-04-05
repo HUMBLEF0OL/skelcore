@@ -1,5 +1,5 @@
 {
-  "name": "@skelcore/react",
+  "name": "@ghostframe/react",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -32,7 +32,7 @@
     "react-dom": ">=18"
   },
   "dependencies": {
-    "@skelcore/core": "workspace:*"
+    "@ghostframe/core": "workspace:*"
   },
   "size-limit": [
     {

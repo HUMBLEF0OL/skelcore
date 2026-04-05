@@ -13,7 +13,7 @@ import {
     resolveBlueprint,
     validatePrecomputed,
 } from "../resolver.js";
-import { asStructuralHash, type BlueprintManifest } from "@skelcore/core";
+import { asStructuralHash, type BlueprintManifest } from "@ghostframe/core";
 
 beforeEach(() => {
     resetResolverTelemetryCounters();

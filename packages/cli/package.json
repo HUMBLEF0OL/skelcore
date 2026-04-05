@@ -1,12 +1,12 @@
 {
-  "name": "@skelcore/cli",
+  "name": "@ghostframe/cli",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "skelcore": "./dist/index.js"
+    "ghostframe": "./dist/index.js"
   },
   "exports": {
     ".": {
@@ -29,7 +29,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@skelcore/core": "workspace:*",
+    "@ghostframe/core": "workspace:*",
     "playwright": "^1.58.2"
   },
   "devDependencies": {

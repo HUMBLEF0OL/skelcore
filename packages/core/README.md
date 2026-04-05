@@ -1,14 +1,14 @@
-# @skelcore/skelcore Runtime APIs
+# @ghostframe/ghostframe Runtime APIs
 
-> Framework-agnostic analysis engine, blueprint system, animation utilities, and shared types powering SkelCore.
+> Framework-agnostic analysis engine, blueprint system, animation utilities, and shared types powering Ghostframe.
 
-[![npm version](https://img.shields.io/npm/v/@skelcore/skelcore)](https://www.npmjs.com/package/@skelcore/skelcore)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/@skelcore/skelcore)](https://bundlephobia.com/package/@skelcore/skelcore)
-[![license](https://img.shields.io/npm/l/@skelcore/skelcore)](../../LICENSE)
+[![npm version](https://img.shields.io/npm/v/@ghostframe/ghostframe)](https://www.npmjs.com/package/@ghostframe/ghostframe)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/@ghostframe/ghostframe)](https://bundlephobia.com/package/@ghostframe/ghostframe)
+[![license](https://img.shields.io/npm/l/@ghostframe/ghostframe)](../../LICENSE)
 
-The `@skelcore/skelcore/runtime` subpath is the framework-agnostic engine. It contains no React, Vue, or any UI-framework code. If you are building a React app, you almost certainly want [`@skelcore/skelcore`](../react/README.md), which includes the React facade.
+The `@ghostframe/ghostframe/runtime` subpath is the framework-agnostic engine. It contains no React, Vue, or any UI-framework code. If you are building a React app, you almost certainly want [`@ghostframe/ghostframe`](../react/README.md), which includes the React facade.
 
-Use `@skelcore/skelcore/runtime` directly when you are:
+Use `@ghostframe/ghostframe/runtime` directly when you are:
 
 - Building your **own framework adapter** (Vue, Svelte, Solid, etc.)
 - Generating blueprints **server-side** (Node.js / SSR — no DOM required)
@@ -20,13 +20,13 @@ Use `@skelcore/skelcore/runtime` directly when you are:
 
 ```bash
 # npm
-npm install @skelcore/skelcore
+npm install @ghostframe/ghostframe
 
 # pnpm
-pnpm add @skelcore/skelcore
+pnpm add @ghostframe/ghostframe
 
 # yarn
-yarn add @skelcore/skelcore
+yarn add @ghostframe/ghostframe
 ```
 
 > **Note:** This package ships both CJS (`dist/index.js`) and ESM (`dist/index.mjs`) builds with full TypeScript declarations. It has **zero runtime dependencies**.
@@ -105,7 +105,7 @@ import {
   type SkeletonRole,
   type AnimationMode,
   type SkeletonConfig,
-  type SkelCorePropsBase,
+  type GhostframePropsBase,
   type LayoutProps,
   type TextMeta,
   type MeasuredNode,
@@ -113,7 +113,7 @@ import {
 
   // Constants
   DEFAULT_CONFIG,
-} from "@skelcore/skelcore/runtime";
+} from "@ghostframe/ghostframe/runtime";
 ```
 
 ---
@@ -140,7 +140,7 @@ Traverses a virtual DOM tree (a React element tree, or any duck-typed `{ type, p
 ### Usage
 
 ```ts
-import { generateStaticBlueprint } from "@skelcore/skelcore/runtime";
+import { generateStaticBlueprint } from "@ghostframe/ghostframe/runtime";
 
 // Works in Node.js — no DOM, no browser APIs
 const blueprint = generateStaticBlueprint({
@@ -170,7 +170,7 @@ When using with React JSX, the JSX element IS a valid `VNode`, so you can pass J
 
 ```tsx
 // Works in a React Server Component or any tsx file
-import { generateStaticBlueprint } from "@skelcore/skelcore/runtime";
+import { generateStaticBlueprint } from "@ghostframe/ghostframe/runtime";
 
 const blueprint = generateStaticBlueprint(
   <div style={{ display: "flex", gap: "12px" }}>
@@ -230,7 +230,7 @@ async function generateDynamicBlueprint(
 ): Promise<Blueprint>
 ```
 
-Measures a **live DOM subtree** and produces a pixel-precise Blueprint using absolute positions. This is the engine behind `AutoSkeleton` in `@skelcore/skelcore`.
+Measures a **live DOM subtree** and produces a pixel-precise Blueprint using absolute positions. This is the engine behind `AutoSkeleton` in `@ghostframe/ghostframe`.
 
 > **Browser only.** Requires `window`, `document`, `getComputedStyle`, and `getBoundingClientRect`.
 
@@ -267,7 +267,7 @@ The function is carefully designed to avoid [layout thrashing](https://www.afast
 ### Usage
 
 ```ts
-import { generateDynamicBlueprint, DEFAULT_CONFIG } from "@skelcore/skelcore/runtime";
+import { generateDynamicBlueprint, DEFAULT_CONFIG } from "@ghostframe/ghostframe/runtime";
 
 const root = document.getElementById("my-card")!;
 const blueprint = await generateDynamicBlueprint(root, {
@@ -343,7 +343,7 @@ type MeasuredNode = {
 ### Usage
 
 ```ts
-import { inferRole, DEFAULT_CONFIG } from "@skelcore/skelcore/runtime";
+import { inferRole, DEFAULT_CONFIG } from "@ghostframe/ghostframe/runtime";
 
 const role = inferRole(measuredNode, DEFAULT_CONFIG);
 ```
@@ -357,7 +357,7 @@ const role = inferRole(measuredNode, DEFAULT_CONFIG);
 A pre-created instance of `BlueprintCache`. Use this in your adapter to avoid re-measuring when the DOM structure hasn't changed.
 
 ```ts
-import { blueprintCache, computeStructuralHash } from "@skelcore/skelcore/runtime";
+import { blueprintCache, computeStructuralHash } from "@ghostframe/ghostframe/runtime";
 
 const root = document.getElementById("my-widget")!;
 const hash = computeStructuralHash(root, 12);
@@ -397,7 +397,7 @@ Generates a djb2 hash of the DOM subtree structure. The hash encodes `tagName`, 
 - Changing text content or non-skeleton attributes does **not** invalidate the cache (by design)
 
 ```ts
-import { computeStructuralHash } from "@skelcore/skelcore/runtime";
+import { computeStructuralHash } from "@ghostframe/ghostframe/runtime";
 
 const hash = computeStructuralHash(root);       // default maxDepth: 12
 const hash2 = computeStructuralHash(root, 6);   // shallower, cheaper
@@ -413,7 +413,7 @@ function djb2(str: string): string
 The underlying fast non-cryptographic hash used by `computeStructuralHash`. Returns a hex string.
 
 ```ts
-import { djb2 } from "@skelcore/skelcore/runtime";
+import { djb2 } from "@ghostframe/ghostframe/runtime";
 
 djb2("hello world"); // "4a17b156"
 ```
@@ -427,7 +427,7 @@ djb2("hello world"); // "4a17b156"
 A pre-created instance of `AnimationSystem`. Used by framework adapters to inject and manage the required CSS into `<head>`.
 
 ```ts
-import { animationSystem, DEFAULT_CONFIG } from "@skelcore/skelcore/runtime";
+import { animationSystem, DEFAULT_CONFIG } from "@ghostframe/ghostframe/runtime";
 
 // Inject CSS (idempotent — safe to call on every render)
 animationSystem.injectStyles(DEFAULT_CONFIG);
@@ -440,7 +440,7 @@ animationSystem.removeStyles();
 
 | Method | Signature | Description |
 |--------|-----------|-------------|
-| `injectStyles` | `(config?: SkeletonConfig) => void` | Injects a `<style id="skelcore-animations">` tag into `<head>`. Idempotent — only updates if the config changes. No-ops in non-browser environments. |
+| `injectStyles` | `(config?: SkeletonConfig) => void` | Injects a `<style id="ghostframe-animations">` tag into `<head>`. Idempotent — only updates if the config changes. No-ops in non-browser environments. |
 | `removeStyles` | `() => void` | Removes the managed style tag from `<head>`. |
 
 ### Injected CSS
@@ -524,7 +524,7 @@ All visual and behavioral options are controlled through a single `SkeletonConfi
 ### `DEFAULT_CONFIG`
 
 ```ts
-import { DEFAULT_CONFIG } from "@skelcore/skelcore/runtime";
+import { DEFAULT_CONFIG } from "@ghostframe/ghostframe/runtime";
 
 // DEFAULT_CONFIG:
 {
@@ -618,12 +618,12 @@ type LayoutProps = {
 };
 ```
 
-### `SkelCorePropsBase`
+### `GhostframePropsBase`
 
-The base props type for framework adapters (e.g. `@skelcore/skelcore` extends this):
+The base props type for framework adapters (e.g. `@ghostframe/ghostframe` extends this):
 
 ```ts
-type SkelCorePropsBase = {
+type GhostframePropsBase = {
   loading: boolean;
   config?: Partial<SkeletonConfig>;
   blueprint?: Blueprint;          // SSR pre-computed blueprint
@@ -709,5 +709,5 @@ See [CHANGELOG.md](./CHANGELOG.md) for the full release history.
 
 ## License
 
-[MIT](../../LICENSE) © SkelCore Contributors
+[MIT](../../LICENSE) © Ghostframe Contributors
 

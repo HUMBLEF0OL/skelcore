@@ -1,4 +1,4 @@
-import type { BlueprintManifest } from '@skelcore/skelcore/runtime';
+import type { BlueprintManifest } from '@ghostframe/ghostframe/runtime';
 export const generatedManifest: BlueprintManifest = {
   "manifestVersion": 1,
   "packageVersion": "0.1.0",

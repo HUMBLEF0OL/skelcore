@@ -76,7 +76,7 @@ describe("runValidateCommand", () => {
 });
 
 async function mkTmpDir(): Promise<string> {
-    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "skelcore-validate-test-"));
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "ghostframe-validate-test-"));
     createdDirs.push(dir);
     return dir;
 }

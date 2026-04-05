@@ -4,7 +4,7 @@ async function runBenchmark() {
   const browser = await chromium.launch();
   const page = await browser.newPage();
   
-  console.log("🚀 Starting SkelCore Performance Benchmark...");
+  console.log("🚀 Starting Ghostframe Performance Benchmark...");
   
   await page.goto("http://localhost:3005/test");
   await page.waitForSelector("#test-card");

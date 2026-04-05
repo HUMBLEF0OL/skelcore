@@ -1,4 +1,4 @@
-import { parseManifest } from "@skelcore/core";
+import { parseManifest } from "@ghostframe/core";
 import type { ManifestDiffResult, ManifestDiffThresholds } from "../types";
 
 export function evaluateManifestDiff(input: {

@@ -18,9 +18,9 @@ export {
   type ResolutionPolicyMode,
 } from "./resolution-types";
 export {
-  SkelcoreProvider,
-  useSkelcoreContext,
-  type SkelcoreContextValue,
-  type SkelcoreProviderProps,
-} from "./SkelcoreProvider";
-export * from "@skelcore/core";
+  GhostframeProvider,
+  useGhostframeContext,
+  type GhostframeContextValue,
+  type GhostframeProviderProps,
+} from "./GhostframeProvider";
+export * from "@ghostframe/core";

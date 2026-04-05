@@ -1,4 +1,4 @@
-import { parseEntry, parseManifest } from "@skelcore/core";
+import { parseEntry, parseManifest } from "@ghostframe/core";
 import type { ManifestQualityResult, ManifestQualityThresholds } from "../types";
 
 export function evaluateManifestQuality(input: {

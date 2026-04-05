@@ -6,7 +6,7 @@ import {
     asStructuralHash,
     type BlueprintManifest,
     type ResolutionEvent,
-} from "@skelcore/skelcore";
+} from "@ghostframe/ghostframe";
 import { FeatureCard } from "../../../../lib/demo-components";
 
 const mockManifest: BlueprintManifest = {

@@ -1,12 +1,12 @@
 {
-    "name": "@skelcore/skelcore",
+    "name": "@ghostframe/ghostframe",
     "version": "0.1.0",
     "type": "module",
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "bin": {
-        "skelcore": "./dist/build.js"
+        "ghostframe": "./dist/build.js"
     },
     "exports": {
         ".": {
@@ -55,9 +55,9 @@
         "playwright": "^1.58.2"
     },
     "devDependencies": {
-        "@skelcore/cli": "workspace:*",
-        "@skelcore/core": "workspace:*",
-        "@skelcore/react": "workspace:*",
+        "@ghostframe/cli": "workspace:*",
+        "@ghostframe/core": "workspace:*",
+        "@ghostframe/react": "workspace:*",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
         "tsup": "^8.5.1",

@@ -16,7 +16,7 @@ describe("AnimationSystem", () => {
 
   it("injects a style tag into the head", () => {
     animationSystem.injectStyles(DEFAULT_CONFIG);
-    const styleTag = document.getElementById("skelcore-animations");
+    const styleTag = document.getElementById("ghostframe-animations");
     expect(styleTag).not.toBeNull();
     expect(styleTag?.tagName).toBe("STYLE");
   });
@@ -24,13 +24,13 @@ describe("AnimationSystem", () => {
   it("is idempotent and does not inject multiple tags", () => {
     animationSystem.injectStyles(DEFAULT_CONFIG);
     animationSystem.injectStyles(DEFAULT_CONFIG);
-    const tags = document.querySelectorAll("#skelcore-animations");
+    const tags = document.querySelectorAll("#ghostframe-animations");
     expect(tags).toHaveLength(1);
   });
 
   it("contains required keyframes and classes", () => {
     animationSystem.injectStyles(DEFAULT_CONFIG);
-    const styleTag = document.getElementById("skelcore-animations") as HTMLStyleElement;
+    const styleTag = document.getElementById("ghostframe-animations") as HTMLStyleElement;
     const content = styleTag.textContent || "";
 
     expect(content).toContain("@keyframes skel-shimmer");
@@ -42,19 +42,19 @@ describe("AnimationSystem", () => {
 
   it("updates CSS variables when config changes", () => {
     animationSystem.injectStyles({ ...DEFAULT_CONFIG, baseColor: "#ff0000" });
-    let content = document.getElementById("skelcore-animations")?.textContent || "";
+    let content = document.getElementById("ghostframe-animations")?.textContent || "";
     expect(content).toContain("--skel-base: #ff0000");
 
     animationSystem.injectStyles({ ...DEFAULT_CONFIG, baseColor: "#00ff00" });
-    content = document.getElementById("skelcore-animations")?.textContent || "";
+    content = document.getElementById("ghostframe-animations")?.textContent || "";
     expect(content).toContain("--skel-base: #00ff00");
   });
 
   it("removes the style tag on request", () => {
     animationSystem.injectStyles(DEFAULT_CONFIG);
-    expect(document.getElementById("skelcore-animations")).not.toBeNull();
+    expect(document.getElementById("ghostframe-animations")).not.toBeNull();
 
     animationSystem.removeStyles();
-    expect(document.getElementById("skelcore-animations")).toBeNull();
+    expect(document.getElementById("ghostframe-animations")).toBeNull();
   });
 });

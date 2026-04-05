@@ -1,4 +1,4 @@
-import type { Blueprint, BlueprintManifest, ManifestEntryValidationResult } from "@skelcore/core";
+import type { Blueprint, BlueprintManifest, ManifestEntryValidationResult } from "@ghostframe/core";
 
 export type ResolutionPolicyMode =
   | "runtime-only"

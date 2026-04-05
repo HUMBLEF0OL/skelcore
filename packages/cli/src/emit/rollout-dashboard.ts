@@ -1,4 +1,4 @@
-import type { RolloutMetrics } from "@skelcore/core";
+import type { RolloutMetrics } from "@ghostframe/core";
 
 export function renderRolloutDashboard(metrics: RolloutMetrics): string {
     const environmentLines = Object.entries(metrics.environmentMetrics)

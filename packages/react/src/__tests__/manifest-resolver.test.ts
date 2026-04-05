@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { resolveManifestEntry } from "../manifest-resolver.js";
-import { asStructuralHash, type BlueprintManifest } from "@skelcore/core";
+import { asStructuralHash, type BlueprintManifest } from "@ghostframe/core";
 
 describe("manifest-resolver", () => {
   const mockManifest: BlueprintManifest = {

@@ -1,4 +1,4 @@
-import type { Blueprint, ManifestEntryValidationResult } from "@skelcore/core";
+import type { Blueprint, ManifestEntryValidationResult } from "@ghostframe/core";
 import {
   DEFAULT_RESOLUTION_POLICY,
   type ResolutionPolicy,

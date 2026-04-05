@@ -1,5 +1,5 @@
-import { globalRolloutCollector } from "@skelcore/core";
-import type { RolloutEnvironment } from "@skelcore/core";
+import { globalRolloutCollector } from "@ghostframe/core";
+import type { RolloutEnvironment } from "@ghostframe/core";
 
 export interface SafetyGateConfig {
     maxRollbacksInWindow: number;

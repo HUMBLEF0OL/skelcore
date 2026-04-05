@@ -2,12 +2,12 @@
 
 import React, { useState } from "react";
 import { FeatureCard } from "../../lib/demo-components";
-import { AutoSkeleton } from "../../lib/skelcore/react";
+import { AutoSkeleton } from "../../lib/ghostframe/react";
 
 function RtlContent() {
     return (
         <div className="space-y-3 rounded-xl border border-zinc-800 bg-zinc-900 p-5 light:border-zinc-200 light:bg-white">
-            <h2 className="text-2xl font-bold text-white light:text-zinc-900">مرحبا بكم في عرض SkelCore</h2>
+            <h2 className="text-2xl font-bold text-white light:text-zinc-900">مرحبا بكم في عرض Ghostframe</h2>
             <p className="text-sm leading-relaxed text-zinc-400 light:text-zinc-600">
                 هذا النص يستخدم تخطيط من اليمين إلى اليسار لاختبار تموضع عناصر الهيكل العظمي ومطابقة الاتجاه.
             </p>

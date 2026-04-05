@@ -1,4 +1,4 @@
-import type { ManifestEntry } from "@skelcore/core";
+import type { ManifestEntry } from "@ghostframe/core";
 
 export interface CliIo {
   log: (message: string) => void;

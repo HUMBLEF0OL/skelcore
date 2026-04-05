@@ -1,5 +1,5 @@
-import { globalRolloutCollector } from "@skelcore/core";
-import type { RolloutEnvironment } from "@skelcore/core";
+import { globalRolloutCollector } from "@ghostframe/core";
+import type { RolloutEnvironment } from "@ghostframe/core";
 import { renderRolloutDashboard } from "../emit/rollout-dashboard.js";
 import { evaluateRolloutControlPlane } from "../rollout/control-plane.js";
 import type { RolloutStrategy } from "../rollout/policy-resolver.js";

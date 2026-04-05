@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { AutoSkeleton } from "../../../lib/skelcore/react";
+import { AutoSkeleton } from "../../../lib/ghostframe/react";
 import { CodeBlock, FeatureCard } from "../../../lib/demo-components";
 
 function CheckoutFormFields() {

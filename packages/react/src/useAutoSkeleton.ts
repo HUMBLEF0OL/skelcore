@@ -9,7 +9,7 @@ import {
   type Blueprint,
   type SkeletonConfig,
   type BlueprintManifest,
-} from "@skelcore/core";
+} from "@ghostframe/core";
 import { recordRuntimeBlueprint, resolveBlueprint } from "./resolver";
 import type { ResolutionEvent, ResolutionPolicy } from "./resolution-types";
 

@@ -128,7 +128,7 @@ export const DEFAULT_CONFIG: SkeletonConfig = {
 // Note: `React.ReactNode` cannot be imported here (framework-agnostic core).
 // The react package re-exports this type with the React-specific generic applied.
 
-export type SkelCorePropsBase = {
+export type GhostframePropsBase = {
   loading: boolean;
   config?: Partial<SkeletonConfig>;
   // A pre-computed blueprint from SSR — skip measurement if provided

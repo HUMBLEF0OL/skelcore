@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { AutoSkeleton } from "../../lib/skelcore/react";
-import type { AnimationMode, SkeletonConfig } from "../../lib/skelcore/core";
+import { AutoSkeleton } from "../../lib/ghostframe/react";
+import type { AnimationMode, SkeletonConfig } from "../../lib/ghostframe/core";
 import { CodeBlock, FeatureCard } from "../../lib/demo-components";
 
 function PreviewCard() {

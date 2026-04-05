@@ -40,11 +40,11 @@ jobs:
 
       - name: Manifest quality gate
         run: |
-          mkdir -p .tmp/skelcore
+          mkdir -p .tmp/ghostframe
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             git fetch origin "${{ github.base_ref }}" --depth=1
-            git show "origin/${{ github.base_ref }}:apps/demo/lib/skelcore/generated/manifest.json" > .tmp/skelcore/base-manifest.json
-            QUALITY_BASE_MANIFEST=.tmp/skelcore/base-manifest.json QUALITY_CANDIDATE_MANIFEST=apps/demo/lib/skelcore/generated/manifest.json pnpm quality:gate
+            git show "origin/${{ github.base_ref }}:apps/demo/lib/ghostframe/generated/manifest.json" > .tmp/ghostframe/base-manifest.json
+            QUALITY_BASE_MANIFEST=.tmp/ghostframe/base-manifest.json QUALITY_CANDIDATE_MANIFEST=apps/demo/lib/ghostframe/generated/manifest.json pnpm quality:gate
           else
             pnpm quality:gate
           fi
@@ -53,4 +53,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: quality-reports
-          path: .tmp/skelcore
+          path: .tmp/ghostframe

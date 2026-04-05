@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("SkelCore React Adapter", () => {
+test.describe("Ghostframe React Adapter", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/test");
   });

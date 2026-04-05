@@ -24,7 +24,7 @@ describe("resolveCaptureConfig", () => {
   it("loads from config file", async () => {
     const config = await resolveCaptureConfig({
       rootDir: process.cwd(),
-      configPath: "../../apps/demo/skelcore.capture.config.mjs",
+      configPath: "../../apps/demo/ghostframe.capture.config.mjs",
     });
 
     expect(config.routes.length).toBeGreaterThan(0);

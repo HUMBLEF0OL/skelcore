@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { SkelcoreProvider, useSkelcoreContext } from "../SkelcoreProvider";
-import type { BlueprintManifest } from "@skelcore/core";
+import { GhostframeProvider, useGhostframeContext } from "../GhostframeProvider";
+import type { BlueprintManifest } from "@ghostframe/core";
 
 const mockManifest: BlueprintManifest = {
   manifestVersion: 1,
@@ -15,7 +15,7 @@ const mockManifest: BlueprintManifest = {
 };
 
 function TestComponent() {
-  const context = useSkelcoreContext();
+  const context = useGhostframeContext();
   const hasManifest = context?.manifest ? "true" : "false";
   const policyMode = context?.policy?.mode || "none";
   return (
@@ -26,30 +26,30 @@ function TestComponent() {
   );
 }
 
-describe("SkelcoreProvider", () => {
+describe("GhostframeProvider", () => {
   it("provides manifest to children", () => {
     render(
-      <SkelcoreProvider manifest={mockManifest}>
+      <GhostframeProvider manifest={mockManifest}>
         <TestComponent />
-      </SkelcoreProvider>
+      </GhostframeProvider>
     );
     expect(screen.getByTestId("has-manifest")).toHaveTextContent("true");
   });
 
   it("provides policy to children", () => {
     render(
-      <SkelcoreProvider policy={{ mode: "hybrid" }}>
+      <GhostframeProvider policy={{ mode: "hybrid" }}>
         <TestComponent />
-      </SkelcoreProvider>
+      </GhostframeProvider>
     );
     expect(screen.getByTestId("policy-mode")).toHaveTextContent("hybrid");
   });
 
   it("allows consumers to access both manifest and policy", () => {
     render(
-      <SkelcoreProvider manifest={mockManifest} policy={{ mode: "precomputed-only" }}>
+      <GhostframeProvider manifest={mockManifest} policy={{ mode: "precomputed-only" }}>
         <TestComponent />
-      </SkelcoreProvider>
+      </GhostframeProvider>
     );
     expect(screen.getByTestId("has-manifest")).toHaveTextContent("true");
     expect(screen.getByTestId("policy-mode")).toHaveTextContent("precomputed-only");
@@ -57,7 +57,7 @@ describe("SkelcoreProvider", () => {
 
   it("returns undefined when not inside provider", () => {
     function ComponentOutsideProvider() {
-      const context = useSkelcoreContext();
+      const context = useGhostframeContext();
       const hasContext = context ? "true" : "false";
       return <div data-testid="has-context">{hasContext}</div>;
     }
@@ -73,17 +73,17 @@ describe("SkelcoreProvider", () => {
     };
 
     function InnerComponent() {
-      const context = useSkelcoreContext();
+      const context = useGhostframeContext();
       const version = context?.manifest?.packageVersion || "none";
       return <div data-testid="version">{version}</div>;
     }
 
     render(
-      <SkelcoreProvider manifest={mockManifest}>
-        <SkelcoreProvider manifest={innerManifest}>
+      <GhostframeProvider manifest={mockManifest}>
+        <GhostframeProvider manifest={innerManifest}>
           <InnerComponent />
-        </SkelcoreProvider>
-      </SkelcoreProvider>
+        </GhostframeProvider>
+      </GhostframeProvider>
     );
     expect(screen.getByTestId("version")).toHaveTextContent("0.2.0");
   });

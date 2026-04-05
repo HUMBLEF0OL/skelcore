@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { AutoSkeleton } from "../lib/skelcore/react";
-import type { SkeletonConfig } from "../lib/skelcore/core";
+import { AutoSkeleton } from "../lib/ghostframe/react";
+import type { SkeletonConfig } from "../lib/ghostframe/core";
 
 type GuideLink = {
     title: string;
@@ -139,9 +139,9 @@ export default function Home() {
             <main className="app-content guide-flow">
                 <header className="guide-header rounded-2xl border border-zinc-800 bg-gradient-to-br from-zinc-900 via-zinc-900 to-indigo-950 p-7 light:border-zinc-200 light:from-white light:via-zinc-50 light:to-indigo-50">
                     <p className="text-xs font-semibold uppercase tracking-[0.18em] text-indigo-300 light:text-indigo-700">Developer Guide</p>
-                    <h1 className="guide-title font-bold text-white light:text-zinc-900">SkelCore Official Guide</h1>
+                    <h1 className="guide-title font-bold text-white light:text-zinc-900">Ghostframe Official Guide</h1>
                     <p className="max-w-3xl text-sm text-zinc-400 light:text-zinc-600 sm:text-base">
-                        This guide provides implementation, validation, and operational workflows for adopting SkelCore in production React systems.
+                        This guide provides implementation, validation, and operational workflows for adopting Ghostframe in production React systems.
                     </p>
                 </header>
 

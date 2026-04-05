@@ -1,4 +1,4 @@
-import type { BlueprintManifest, ManifestEntry } from "@skelcore/core";
+import type { BlueprintManifest, ManifestEntry } from "@ghostframe/core";
 import type { CapturedArtifact } from "../types";
 
 export function buildManifestDocument(input: {

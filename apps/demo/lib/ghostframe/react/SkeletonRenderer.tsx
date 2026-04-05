@@ -11,7 +11,7 @@ export interface SkeletonRendererProps {
 }
 
 /**
- * Pure React component to render a SkelCore Blueprint.
+ * Pure React component to render a Ghostframe Blueprint.
  * Decoupled from measurement logic; focuses entirely on visual mapping.
  */
 export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({

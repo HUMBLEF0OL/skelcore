@@ -16,7 +16,7 @@ export function buildCaptureReport(
 
 export function renderCaptureReport(report: CaptureReport): string {
   const lines = [
-    "Skelcore Capture Report",
+    "Ghostframe Capture Report",
     `Routes visited: ${report.routesVisited}`,
     `Breakpoints: ${report.breakpoints.join(", ")}`,
     `Targets discovered: ${report.targetsDiscovered}`,

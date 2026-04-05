@@ -1,4 +1,4 @@
-import { asStructuralHash, type ManifestEntry } from "@skelcore/core";
+import { asStructuralHash, type ManifestEntry } from "@ghostframe/core";
 import type { Page } from "playwright";
 import type { CapturedArtifact } from "../types";
 import type { CaptureTarget } from "./target-discovery";

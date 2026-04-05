@@ -1,4 +1,4 @@
-import type { RolloutDecision, DecisionProof } from "@skelcore/core";
+import type { RolloutDecision, DecisionProof } from "@ghostframe/core";
 
 export interface CanaryPolicy {
     sampledRequests: number;

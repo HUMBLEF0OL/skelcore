@@ -3,12 +3,12 @@
 import React, { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import {
-    SkelcoreProvider,
+    GhostframeProvider,
     derivePolicyForPath,
     getResolverTelemetryCounters,
-} from "@skelcore/skelcore";
+} from "@ghostframe/ghostframe";
 import { ThemeProvider } from "../lib/theme-context";
-import generatedManifest from "../lib/skelcore/generated/manifest-loader";
+import generatedManifest from "../lib/ghostframe/generated/manifest-loader";
 
 type TelemetrySnapshot = {
     route: string;
@@ -118,14 +118,14 @@ export function ClientProviders({
         sink.snapshots.push(snapshot);
         window.__SKEL_TELEMETRY__ = sink;
 
-        console.info("[skelcore][telemetry] resolver snapshot", snapshot);
+        console.info("[ghostframe][telemetry] resolver snapshot", snapshot);
     }, [pathname, telemetrySinkEnabled]);
 
     return (
         <ThemeProvider>
-            <SkelcoreProvider manifest={generatedManifest} policy={policy}>
+            <GhostframeProvider manifest={generatedManifest} policy={policy}>
                 {children}
-            </SkelcoreProvider>
+            </GhostframeProvider>
         </ThemeProvider>
     );
 }

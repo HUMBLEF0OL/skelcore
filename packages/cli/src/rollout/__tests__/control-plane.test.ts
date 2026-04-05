@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { globalRolloutCollector } from "@skelcore/core";
+import { globalRolloutCollector } from "@ghostframe/core";
 import { evaluateRolloutControlPlane } from "../control-plane.js";
 
 describe("evaluateRolloutControlPlane", () => {

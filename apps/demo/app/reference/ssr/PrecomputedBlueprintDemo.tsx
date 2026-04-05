@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { AutoSkeleton } from "../../../lib/skelcore/react";
+import { AutoSkeleton } from "../../../lib/ghostframe/react";
 import { InteractiveToggle } from "../../../lib/demo-components";
-import type { Blueprint } from "../../../lib/skelcore/core";
+import type { Blueprint } from "../../../lib/ghostframe/core";
 
 function FastPathCard() {
   return (

@@ -1,5 +1,5 @@
 {
-  "name": "@skelcore/test-utils",
+  "name": "@ghostframe/test-utils",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -32,6 +32,6 @@
   "devDependencies": {
     "typescript": "^6.0.2",
     "tsup": "^8.0.0",
-    "@skelcore/skelcore": "workspace:*"
+    "@ghostframe/ghostframe": "workspace:*"
   }
 }

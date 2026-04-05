@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { parseManifest } from "@skelcore/skelcore/runtime";
+import { parseManifest } from "@ghostframe/ghostframe/runtime";
 import { CodeBlock, FeatureCard } from "../../../../lib/demo-components";
-import generatedManifest from "../../../../lib/skelcore/generated/manifest-loader";
+import generatedManifest from "../../../../lib/ghostframe/generated/manifest-loader";
 
 function prettyJson(value: unknown): string {
     if (!value) {

@@ -3,7 +3,7 @@ import {
   type BlueprintManifest,
   type ManifestAcceptanceResult,
   type StructuralHash,
-} from "@skelcore/core";
+} from "@ghostframe/core";
 
 /**
  * Resolve a manifest entry for a skeleton component.

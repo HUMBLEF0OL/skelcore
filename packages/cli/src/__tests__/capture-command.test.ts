@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { asStructuralHash, type ManifestEntry } from "@skelcore/core";
+import { asStructuralHash, type ManifestEntry } from "@ghostframe/core";
 import { runCli } from "../index";
 import { runCaptureCommand } from "../commands/capture-command";
 
@@ -32,7 +32,7 @@ describe("runCli", () => {
     const exitCode = await runCaptureCommand(
       [
         "--config",
-        "../../apps/demo/skelcore.capture.config.mjs",
+        "../../apps/demo/ghostframe.capture.config.mjs",
         "--baseUrl",
         "http://localhost:3999",
       ],
@@ -53,7 +53,7 @@ describe("runCli", () => {
   });
 
   it("writes compact manifest and logs manifest size", async () => {
-    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "skelcore-capture-test-"));
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "ghostframe-capture-test-"));
     createdDirs.push(tmpDir);
     const outputDir = path.join(tmpDir, "generated");
     const configPath = path.join(tmpDir, "capture.config.mjs");
