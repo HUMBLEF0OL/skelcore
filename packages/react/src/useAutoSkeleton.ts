@@ -5,35 +5,19 @@ import {
   generateDynamicBlueprint,
   blueprintCache,
   animationSystem,
-  computeStructuralHash,
   DEFAULT_CONFIG,
   type Blueprint,
-  type ElementMatcher,
   type SkeletonConfig,
   type BlueprintManifest,
+  type BlueprintSource,
+  type BlueprintInvalidationReason,
+  type MeasurementPolicy,
+  type BlueprintCachePolicy,
 } from "@ghostframe/core";
 import { recordRuntimeBlueprint, resolveBlueprint } from "./resolver";
 import type { ResolutionEvent, ResolutionPolicy } from "./resolution-types";
 
 export type SkeletonPhase = "idle" | "measuring" | "showing" | "exiting";
-
-type BlueprintSource = "client" | "server" | "cache";
-
-type BlueprintInvalidationReason =
-  | "missing-root"
-  | "missing-structural-hash"
-  | "version-mismatch"
-  | "structural-hash-mismatch";
-
-type MeasurementPolicy = {
-  mode: "eager" | "idle" | "viewport" | "manual";
-  budgetMs?: number;
-};
-
-type BlueprintCachePolicy = {
-  ttlMs?: number;
-  version?: number;
-};
 
 export function useAutoSkeleton(
   loading: boolean,
@@ -43,6 +27,11 @@ export function useAutoSkeleton(
     onMeasured?: (b: Blueprint) => void;
     remeasureOnResize?: boolean;
     externalBlueprint?: Blueprint;
+    hydrateBlueprint?: Blueprint;
+    blueprintSource?: BlueprintSource;
+    onBlueprintInvalidated?: (reason: BlueprintInvalidationReason) => void;
+    measurementPolicy?: MeasurementPolicy;
+    blueprintCachePolicy?: BlueprintCachePolicy;
     skeletonKey?: string;
     policyOverride?: Partial<ResolutionPolicy>;
     onResolution?: (event: ResolutionEvent) => void;
@@ -90,20 +79,6 @@ export function useAutoSkeleton(
     blueprintRef.current = blueprint;
   }, [blueprint]);
 
-  const invalidateHydratedBlueprint = useCallback(
-    (reason: BlueprintInvalidationReason) => {
-      options.onBlueprintInvalidated?.(reason);
-      setBlueprint(null);
-      setPhase("measuring");
-    },
-    [options.onBlueprintInvalidated]
-  );
-
-  const hydrateBlueprint = options.hydrateBlueprint;
-  const blueprintSource = options.blueprintSource ?? "client";
-  const measurementPolicy = options.measurementPolicy ?? { mode: "eager" as const };
-  const cachePolicy = options.blueprintCachePolicy;
-
   const clearScheduledMeasurement = useCallback(() => {
     if (intersectionObserverRef.current) {
       intersectionObserverRef.current.disconnect();
@@ -126,25 +101,6 @@ export function useAutoSkeleton(
       timeoutRef.current = null;
     }
   }, []);
-
-  const isBlueprintValidForCachePolicy = useCallback(
-    (candidate: Blueprint) => {
-      if (!cachePolicy) return true;
-
-      if (cachePolicy.version !== undefined && candidate.version !== cachePolicy.version) {
-        return false;
-      }
-
-      if (cachePolicy.ttlMs !== undefined && cachePolicy.ttlMs > 0) {
-        if (Date.now() - candidate.generatedAt > cachePolicy.ttlMs) {
-          return false;
-        }
-      }
-
-      return true;
-    },
-    [cachePolicy]
-  );
 
   const measure = useCallback(
     async (baseEvent?: ResolutionEvent) => {
@@ -272,6 +228,10 @@ export function useAutoSkeleton(
   useEffect(() => {
     animationSystem.injectStyles(config);
   }, [config]);
+
+  const measureNow = useCallback(() => {
+    void measure();
+  }, [measure]);
 
   return { blueprint, phase, measureNow };
 }

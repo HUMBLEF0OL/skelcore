@@ -4,6 +4,11 @@ import React, { useRef, useMemo } from "react";
 import {
   DEFAULT_CONFIG,
   type Blueprint,
+  type BlueprintSource,
+  type BlueprintInvalidationReason,
+  type MeasurementPolicy,
+  type BlueprintCachePolicy,
+  type SkeletonAnimationDefinition,
   type SkeletonConfig,
   type BlueprintManifest,
 } from "@ghostframe/core";
@@ -26,6 +31,10 @@ export interface AutoSkeletonProps {
   slots?: Record<string, () => React.ReactNode>;
   onMeasured?: (b: Blueprint) => void;
   remeasureOnResize?: boolean;
+  overlayClassName?: string;
+  overlayStyle?: React.CSSProperties;
+  animationPreset?: SkeletonConfig["animation"] | string;
+  animationRegistry?: Record<string, SkeletonAnimationDefinition>;
   skeletonKey?: string;
   policyOverride?: Partial<ResolutionPolicy>;
   onResolution?: (event: ResolutionEvent) => void;
@@ -42,7 +51,7 @@ export function AutoSkeleton({
   children,
   fallback,
   config: configOverride,
-  blueprint: externalBlueprintProp,
+  blueprint: externalBlueprint,
   hydrateBlueprint,
   blueprintSource = "client",
   onBlueprintInvalidated,
@@ -51,6 +60,10 @@ export function AutoSkeleton({
   slots,
   onMeasured,
   remeasureOnResize = false,
+  overlayClassName,
+  overlayStyle,
+  animationPreset,
+  animationRegistry,
   skeletonKey,
   policyOverride,
   onResolution,
@@ -62,12 +75,18 @@ export function AutoSkeleton({
   const context = useGhostframeContext();
   const effectiveManifest = manifest ?? context?.manifest;
   const effectivePolicy = policyOverride ?? context?.policy;
+  const resolvedSlots = slots ?? {};
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { blueprint, phase } = useAutoSkeleton(loading, containerRef, config, {
     onMeasured,
     remeasureOnResize,
     externalBlueprint,
+    hydrateBlueprint,
+    blueprintSource,
+    onBlueprintInvalidated,
+    measurementPolicy,
+    blueprintCachePolicy,
     skeletonKey,
     policyOverride: effectivePolicy,
     onResolution,

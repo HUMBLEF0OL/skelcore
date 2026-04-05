@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.0
+
+### Minor Changes
+
+- 1faa7e0: Enhencement of core package
+
+### Patch Changes
+
+- Updated dependencies [1faa7e0]
+  - @skelcore/core@1.2.0
+
 ## 1.1.0
 
 ### Minor Changes
