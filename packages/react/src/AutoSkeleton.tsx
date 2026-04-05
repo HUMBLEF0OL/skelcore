@@ -4,6 +4,10 @@ import React, { useRef, useMemo } from "react";
 import {
   DEFAULT_CONFIG,
   type Blueprint,
+  type ElementMatcher,
+  type PlaceholderStrategy,
+  type PlaceholderSchema,
+  type PlaceholderSlots,
   type BlueprintSource,
   type BlueprintInvalidationReason,
   type MeasurementPolicy,
@@ -15,6 +19,11 @@ import {
 import { useAutoSkeleton } from "./useAutoSkeleton";
 import { SkeletonRenderer } from "./SkeletonRenderer";
 import { useGhostframeContext } from "./GhostframeProvider";
+import {
+  buildSchemaPlaceholderBlueprint,
+  buildSlotsPlaceholderBlueprint,
+  isValidPlaceholderSchema,
+} from "./placeholder-schema";
 import type { ResolutionEvent, ResolutionPolicy } from "./resolution-types";
 
 export interface AutoSkeletonProps {
@@ -33,6 +42,11 @@ export interface AutoSkeletonProps {
   remeasureOnResize?: boolean;
   overlayClassName?: string;
   overlayStyle?: React.CSSProperties;
+  include?: ElementMatcher[];
+  exclude?: ElementMatcher[];
+  placeholderStrategy?: PlaceholderStrategy;
+  placeholderSchema?: PlaceholderSchema;
+  placeholderSlots?: PlaceholderSlots<React.ReactNode>;
   animationPreset?: SkeletonConfig["animation"] | string;
   animationRegistry?: Record<string, SkeletonAnimationDefinition>;
   skeletonKey?: string;
@@ -62,6 +76,11 @@ export function AutoSkeleton({
   remeasureOnResize = false,
   overlayClassName,
   overlayStyle,
+  include,
+  exclude,
+  placeholderStrategy = "none",
+  placeholderSchema,
+  placeholderSlots,
   animationPreset,
   animationRegistry,
   skeletonKey,
@@ -75,18 +94,46 @@ export function AutoSkeleton({
   const context = useGhostframeContext();
   const effectiveManifest = manifest ?? context?.manifest;
   const effectivePolicy = policyOverride ?? context?.policy;
-  const resolvedSlots = slots ?? {};
+
+  const resolvedSlots = useMemo(
+    () => ({ ...(placeholderSlots ?? {}), ...(slots ?? {}) }),
+    [placeholderSlots, slots]
+  );
+
+  const placeholderBlueprint = useMemo(() => {
+    if (!loading) return undefined;
+
+    if (placeholderStrategy === "schema") {
+      if (!isValidPlaceholderSchema(placeholderSchema)) return undefined;
+      return buildSchemaPlaceholderBlueprint(placeholderSchema);
+    }
+
+    if (placeholderStrategy === "slots") {
+      if (isValidPlaceholderSchema(placeholderSchema)) {
+        return buildSchemaPlaceholderBlueprint(placeholderSchema);
+      }
+
+      const slotBlueprint = buildSlotsPlaceholderBlueprint(Object.keys(placeholderSlots ?? {}));
+      return slotBlueprint ?? undefined;
+    }
+
+    return undefined;
+  }, [loading, placeholderStrategy, placeholderSchema, placeholderSlots]);
+
+  const resolvedExternalBlueprint = externalBlueprint ?? placeholderBlueprint;
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { blueprint, phase } = useAutoSkeleton(loading, containerRef, config, {
     onMeasured,
     remeasureOnResize,
-    externalBlueprint,
+    externalBlueprint: resolvedExternalBlueprint,
     hydrateBlueprint,
     blueprintSource,
     onBlueprintInvalidated,
     measurementPolicy,
     blueprintCachePolicy,
+    include,
+    exclude,
     skeletonKey,
     policyOverride: effectivePolicy,
     onResolution,

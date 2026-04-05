@@ -4,9 +4,11 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   generateDynamicBlueprint,
   blueprintCache,
+  computeStructuralHash,
   animationSystem,
   DEFAULT_CONFIG,
   type Blueprint,
+  type ElementMatcher,
   type SkeletonConfig,
   type BlueprintManifest,
   type BlueprintSource,
@@ -32,17 +34,19 @@ export function useAutoSkeleton(
     onBlueprintInvalidated?: (reason: BlueprintInvalidationReason) => void;
     measurementPolicy?: MeasurementPolicy;
     blueprintCachePolicy?: BlueprintCachePolicy;
+    include?: ElementMatcher[];
+    exclude?: ElementMatcher[];
     skeletonKey?: string;
     policyOverride?: Partial<ResolutionPolicy>;
     onResolution?: (event: ResolutionEvent) => void;
     manifest?: BlueprintManifest;
   } = {}
 ) {
+  const measurementPolicy = options.measurementPolicy ?? { mode: "eager" as const };
+  const cachePolicy = options.blueprintCachePolicy;
+
   const [blueprint, setBlueprint] = useState<Blueprint | null>(() => {
     if (options.externalBlueprint) return options.externalBlueprint;
-    if (options.blueprintSource === "client" && options.hydrateBlueprint) {
-      return options.hydrateBlueprint;
-    }
 
     return null;
   });
@@ -102,6 +106,54 @@ export function useAutoSkeleton(
     }
   }, []);
 
+  const isBlueprintValidForCachePolicy = useCallback(
+    (candidate: Blueprint) => {
+      if (!cachePolicy) return true;
+
+      if (cachePolicy.version !== undefined && candidate.version !== cachePolicy.version) {
+        return false;
+      }
+
+      if (cachePolicy.ttlMs !== undefined && cachePolicy.ttlMs > 0) {
+        if (Date.now() - candidate.generatedAt > cachePolicy.ttlMs) {
+          return false;
+        }
+      }
+
+      return true;
+    },
+    [cachePolicy]
+  );
+
+  const validateHydratedBlueprint = useCallback(
+    (candidate: Blueprint): BlueprintInvalidationReason | null => {
+      if (!isBlueprintValidForCachePolicy(candidate)) {
+        return "version-mismatch";
+      }
+
+      const source = options.blueprintSource ?? "client";
+      if (source === "client") {
+        return null;
+      }
+
+      if (!contentRef.current) {
+        return "missing-root";
+      }
+
+      if (!candidate.structuralHash) {
+        return "missing-structural-hash";
+      }
+
+      const currentStructuralHash = computeStructuralHash(contentRef.current, config.maxDepth);
+      if (currentStructuralHash !== candidate.structuralHash) {
+        return "structural-hash-mismatch";
+      }
+
+      return null;
+    },
+    [config.maxDepth, contentRef, isBlueprintValidForCachePolicy, options.blueprintSource]
+  );
+
   const measure = useCallback(
     async (baseEvent?: ResolutionEvent) => {
       if (!contentRef.current || !loading) return;
@@ -113,7 +165,7 @@ export function useAutoSkeleton(
       const existingHash = lastStructuralHashRef.current;
       if (existingHash) {
         const cached = blueprintCache.get(contentRef.current, existingHash);
-        if (cached) {
+        if (cached && isBlueprintValidForCachePolicy(cached)) {
           setBlueprint(cached);
           setPhase("showing");
           onMeasuredRef.current?.(cached);
@@ -126,10 +178,18 @@ export function useAutoSkeleton(
           }
           return;
         }
+
+        if (cached) {
+          blueprintCache.invalidate(contentRef.current);
+        }
       }
 
       // Cache miss: measure once, then reuse the returned structural hash.
-      const b = await generateDynamicBlueprint(contentRef.current, config);
+      const b = await generateDynamicBlueprint(contentRef.current, config, {
+        include: options.include,
+        exclude: options.exclude,
+        budgetMs: measurementPolicy.budgetMs,
+      });
       if (runId !== measureRunIdRef.current || !loadingRef.current) {
         return;
       }
@@ -168,7 +228,68 @@ export function useAutoSkeleton(
         });
       }
     },
-    [loading, contentRef, config, options.skeletonKey]
+    [
+      loading,
+      contentRef,
+      config,
+      options.skeletonKey,
+      options.include,
+      options.exclude,
+      measurementPolicy.budgetMs,
+      isBlueprintValidForCachePolicy,
+    ]
+  );
+
+  const scheduleMeasurement = useCallback(
+    (baseEvent?: ResolutionEvent) => {
+      clearScheduledMeasurement();
+
+      if (measurementPolicy.mode === "manual") {
+        return;
+      }
+
+      if (measurementPolicy.mode === "idle") {
+        if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+          idleCallbackRef.current = (
+            window as Window & {
+              requestIdleCallback: (callback: () => void, options?: { timeout: number }) => number;
+            }
+          ).requestIdleCallback(
+            () => {
+              idleCallbackRef.current = null;
+              void measure(baseEvent);
+            },
+            { timeout: 120 }
+          );
+          return;
+        }
+
+        timeoutRef.current = globalThis.setTimeout(() => {
+          timeoutRef.current = null;
+          void measure(baseEvent);
+        }, 0);
+        return;
+      }
+
+      if (measurementPolicy.mode === "viewport") {
+        if (!contentRef.current || typeof IntersectionObserver === "undefined") {
+          void measure(baseEvent);
+          return;
+        }
+
+        intersectionObserverRef.current = new IntersectionObserver((entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            clearScheduledMeasurement();
+            void measure(baseEvent);
+          }
+        });
+        intersectionObserverRef.current.observe(contentRef.current);
+        return;
+      }
+
+      void measure(baseEvent);
+    },
+    [clearScheduledMeasurement, contentRef, measure, measurementPolicy.mode]
   );
 
   // Initial Measurement and Loading Toggle
@@ -187,7 +308,30 @@ export function useAutoSkeleton(
         setBlueprint(resolution.blueprint);
         setPhase("showing");
       } else {
-        measure(resolution.event);
+        const hydratedBlueprint = options.hydrateBlueprint;
+        if (hydratedBlueprint) {
+          const invalidReason = validateHydratedBlueprint(hydratedBlueprint);
+          if (!invalidReason) {
+            setBlueprint(hydratedBlueprint);
+            setPhase("showing");
+
+            if (contentRef.current && hydratedBlueprint.structuralHash) {
+              lastStructuralHashRef.current = hydratedBlueprint.structuralHash;
+              blueprintCache.set(
+                contentRef.current,
+                hydratedBlueprint,
+                hydratedBlueprint.structuralHash
+              );
+            }
+            return;
+          }
+
+          options.onBlueprintInvalidated?.(invalidReason);
+          setBlueprint(null);
+          setPhase("measuring");
+        }
+
+        scheduleMeasurement(resolution.event);
       }
     } else {
       clearScheduledMeasurement();
@@ -206,12 +350,21 @@ export function useAutoSkeleton(
     }
   }, [
     loading,
-    measure,
+    scheduleMeasurement,
     options.externalBlueprint,
+    options.hydrateBlueprint,
+    options.onBlueprintInvalidated,
     options.policyOverride,
     options.skeletonKey,
+    validateHydratedBlueprint,
     config.transitionDuration,
   ]);
+
+  useEffect(() => {
+    return () => {
+      clearScheduledMeasurement();
+    };
+  }, [clearScheduledMeasurement]);
 
   // Handle Resize
   useEffect(() => {

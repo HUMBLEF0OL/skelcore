@@ -201,4 +201,81 @@ describe("AutoSkeleton", () => {
     expect(measuredEvent.componentKey).toBe("dynamic-card");
     expect(measuredEvent.measurementDurationMs).toBeGreaterThanOrEqual(0);
   });
+
+  it("forwards include/exclude and measurement budget to dynamic analyzer", async () => {
+    const measuredBlueprint: Blueprint = {
+      version: 1,
+      rootWidth: 120,
+      rootHeight: 24,
+      nodes: [],
+      generatedAt: Date.now(),
+      source: "dynamic",
+    };
+    const dynamicSpy = vi
+      .spyOn(core, "generateDynamicBlueprint")
+      .mockResolvedValue(measuredBlueprint);
+
+    render(
+      <AutoSkeleton
+        loading={true}
+        include={[{ selector: ".target" }]}
+        exclude={[{ selector: ".ignore" }]}
+        measurementPolicy={{ mode: "eager", budgetMs: 11 }}
+      >
+        <div>Content</div>
+      </AutoSkeleton>
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(dynamicSpy).toHaveBeenCalled();
+    const call = dynamicSpy.mock.calls[0];
+    expect(call[2]).toEqual({
+      include: [{ selector: ".target" }],
+      exclude: [{ selector: ".ignore" }],
+      budgetMs: 11,
+    });
+  });
+
+  it("invokes onBlueprintInvalidated when server hydrate blueprint is missing structural hash", async () => {
+    const onBlueprintInvalidated = vi.fn();
+
+    render(
+      <AutoSkeleton
+        loading={true}
+        hydrateBlueprint={{ ...staticBlueprint, structuralHash: undefined }}
+        blueprintSource="server"
+        onBlueprintInvalidated={onBlueprintInvalidated}
+      >
+        <div>Content</div>
+      </AutoSkeleton>
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(onBlueprintInvalidated).toHaveBeenCalledWith("missing-structural-hash");
+  });
+
+  it("uses schema placeholder strategy as a loading blueprint", () => {
+    const dynamicSpy = vi.spyOn(core, "generateDynamicBlueprint");
+
+    const { container } = render(
+      <AutoSkeleton
+        loading={true}
+        placeholderStrategy="schema"
+        placeholderSchema={{
+          blocks: [{ role: "text", width: 160, height: 16, repeat: 2 }],
+        }}
+      >
+        <div>Content</div>
+      </AutoSkeleton>
+    );
+
+    expect(container.querySelector(".skel-overlay")).toBeTruthy();
+    expect(dynamicSpy).not.toHaveBeenCalled();
+  });
 });

@@ -278,4 +278,34 @@ describe("SkeletonRenderer", () => {
     expect(imageNode.className.includes("skel-pulse")).toBe(false);
     expect(imageNode.style.animationName).toBe("");
   });
+
+  it("keeps shared custom animation styles while another instance is mounted", () => {
+    const renderWithCustomAnimation = () =>
+      render(
+        <SkeletonRenderer
+          blueprint={mockBlueprint}
+          config={DEFAULT_CONFIG}
+          animationPreset="brandPulse"
+          animationRegistry={{
+            brandPulse: {
+              className: "brand-pulse",
+              keyframes: "0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; }",
+              durationMs: 900,
+            },
+          }}
+        />
+      );
+
+    const first = renderWithCustomAnimation();
+    const second = renderWithCustomAnimation();
+    const styleId = "skelcore-custom-animation-skel-custom-brandpulse";
+
+    expect(document.getElementById(styleId)).toBeTruthy();
+
+    first.unmount();
+    expect(document.getElementById(styleId)).toBeTruthy();
+
+    second.unmount();
+    expect(document.getElementById(styleId)).toBeNull();
+  });
 });

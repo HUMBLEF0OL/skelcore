@@ -17,6 +17,13 @@ type ResolvedAnimation = {
   durationMs?: number;
 };
 
+type AnimationStyleRef = {
+  styleElement: HTMLStyleElement;
+  refCount: number;
+};
+
+const customAnimationStyleRefs = new Map<string, AnimationStyleRef>();
+
 function resolveAnimation(
   preset: AnimationPreset | string | undefined,
   registry: Record<string, SkeletonAnimationDefinition>
@@ -96,16 +103,45 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
     }
 
     const styleId = `skelcore-custom-animation-${resolvedAnimation.keyframeName}`;
-    if (document.getElementById(styleId)) return;
+    const existingRef = customAnimationStyleRefs.get(styleId);
+    if (existingRef) {
+      existingRef.refCount += 1;
+      return () => {
+        existingRef.refCount -= 1;
+        if (existingRef.refCount <= 0) {
+          if (existingRef.styleElement.parentNode) {
+            existingRef.styleElement.parentNode.removeChild(existingRef.styleElement);
+          }
+          customAnimationStyleRefs.delete(styleId);
+        }
+      };
+    }
 
-    const styleTag = document.createElement("style");
+    const existingStyleTag = document.getElementById(styleId) as HTMLStyleElement | null;
+    const styleTag = existingStyleTag ?? document.createElement("style");
     styleTag.id = styleId;
     styleTag.textContent = `@keyframes ${resolvedAnimation.keyframeName} { ${resolvedAnimation.keyframes} }`;
-    document.head.appendChild(styleTag);
+    if (!existingStyleTag) {
+      document.head.appendChild(styleTag);
+    }
+
+    customAnimationStyleRefs.set(styleId, {
+      styleElement: styleTag,
+      refCount: 1,
+    });
 
     return () => {
-      if (styleTag.parentNode) {
-        styleTag.parentNode.removeChild(styleTag);
+      const currentRef = customAnimationStyleRefs.get(styleId);
+      if (!currentRef) {
+        return;
+      }
+
+      currentRef.refCount -= 1;
+      if (currentRef.refCount <= 0) {
+        if (currentRef.styleElement.parentNode) {
+          currentRef.styleElement.parentNode.removeChild(currentRef.styleElement);
+        }
+        customAnimationStyleRefs.delete(styleId);
       }
     };
   }, [resolvedAnimation.keyframeName, resolvedAnimation.keyframes]);
