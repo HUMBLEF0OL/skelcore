@@ -38,7 +38,11 @@ export function resolveManifestEntry(
     };
   }
 
-  if (manifest.index?.byKey && !manifest.index.byKey[skeletonKey] && !manifest.entries[skeletonKey]) {
+  if (
+    manifest.index?.byKey &&
+    !manifest.index.byKey[skeletonKey] &&
+    !manifest.entries[skeletonKey]
+  ) {
     return {
       accepted: false,
       reason: "manifest-index-miss",

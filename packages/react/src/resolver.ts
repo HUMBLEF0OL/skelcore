@@ -80,7 +80,11 @@ function mapInvalidationReason(
   if (normalized.includes("style drift")) {
     return "style-drift";
   }
-  if (normalized.includes("manifest") || normalized.includes("validation") || normalized.includes("entry")) {
+  if (
+    normalized.includes("manifest") ||
+    normalized.includes("validation") ||
+    normalized.includes("entry")
+  ) {
     return "malformed";
   }
 
@@ -104,8 +108,7 @@ export function derivePolicyForPath(input: {
     return { mode: "strict-precomputed", strict: true };
   }
 
-  const isShadowRoute =
-    input.shadowEnabled === true && matchesPrefix(input.shadowPaths ?? []);
+  const isShadowRoute = input.shadowEnabled === true && matchesPrefix(input.shadowPaths ?? []);
   if (isShadowRoute) {
     return { mode: "hybrid", strict: false, shadowTelemetryOnly: true };
   }
@@ -295,10 +298,10 @@ export function resolveBlueprint(context: ResolverContext): ResolutionResult {
           manifestValidation: isMiss
             ? undefined
             : {
-              valid: false,
-              reason: rejectionReason,
-              invalidationReason,
-            },
+                valid: false,
+                reason: rejectionReason,
+                invalidationReason,
+              },
         },
       };
     }
@@ -307,12 +310,7 @@ export function resolveBlueprint(context: ResolverContext): ResolutionResult {
       incrementCounter("manifestHits");
       const ttlMs = manifestResult.entry.ttlMs ?? context.manifest.defaults?.ttlMs;
       if (context.skeletonKey) {
-        recordRuntimeBlueprint(
-          context.skeletonKey,
-          manifestResult.entry.blueprint,
-          ttlMs,
-          nowMs
-        );
+        recordRuntimeBlueprint(context.skeletonKey, manifestResult.entry.blueprint, ttlMs, nowMs);
       }
       return {
         blueprint: manifestResult.entry.blueprint,

@@ -34,7 +34,4 @@ export {
 } from "./manifest-validator.js";
 
 // Phase 10: Rollout Telemetry Infrastructure
-export {
-  RolloutEventCollector,
-  globalRolloutCollector,
-} from "./rollout-telemetry.js";
+export { RolloutEventCollector, globalRolloutCollector } from "./rollout-telemetry.js";

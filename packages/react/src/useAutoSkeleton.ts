@@ -60,71 +60,74 @@ export function useAutoSkeleton(
     blueprintRef.current = blueprint;
   }, [blueprint]);
 
-  const measure = useCallback(async (baseEvent?: ResolutionEvent) => {
-    if (!contentRef.current || !loading) return;
+  const measure = useCallback(
+    async (baseEvent?: ResolutionEvent) => {
+      if (!contentRef.current || !loading) return;
 
-    const runId = ++measureRunIdRef.current;
-    const measurementStartMs = Date.now();
-    setPhase("measuring");
+      const runId = ++measureRunIdRef.current;
+      const measurementStartMs = Date.now();
+      setPhase("measuring");
 
-    const existingHash = lastStructuralHashRef.current;
-    if (existingHash) {
-      const cached = blueprintCache.get(contentRef.current, existingHash);
-      if (cached) {
-        setBlueprint(cached);
+      const existingHash = lastStructuralHashRef.current;
+      if (existingHash) {
+        const cached = blueprintCache.get(contentRef.current, existingHash);
+        if (cached) {
+          setBlueprint(cached);
+          setPhase("showing");
+          onMeasuredRef.current?.(cached);
+          if (baseEvent?.source === "dynamic") {
+            onResolutionRef.current?.({
+              ...baseEvent,
+              reason: "dynamic-measured",
+              measurementDurationMs: Math.max(Date.now() - measurementStartMs, 0),
+            });
+          }
+          return;
+        }
+      }
+
+      // Cache miss: measure once, then reuse the returned structural hash.
+      const b = await generateDynamicBlueprint(contentRef.current, config);
+      if (runId !== measureRunIdRef.current || !loadingRef.current) {
+        return;
+      }
+
+      // Keep the currently rendered skeleton if a re-measure temporarily yields no nodes.
+      if (b.nodes.length === 0 && blueprintRef.current) {
         setPhase("showing");
-        onMeasuredRef.current?.(cached);
         if (baseEvent?.source === "dynamic") {
           onResolutionRef.current?.({
             ...baseEvent,
-            reason: "dynamic-measured",
+            reason: "dynamic-measured-empty",
             measurementDurationMs: Math.max(Date.now() - measurementStartMs, 0),
           });
         }
         return;
       }
-    }
 
-    // Cache miss: measure once, then reuse the returned structural hash.
-    const b = await generateDynamicBlueprint(contentRef.current, config);
-    if (runId !== measureRunIdRef.current || !loadingRef.current) {
-      return;
-    }
+      const structuralHash = b.structuralHash;
 
-    // Keep the currently rendered skeleton if a re-measure temporarily yields no nodes.
-    if (b.nodes.length === 0 && blueprintRef.current) {
+      if (structuralHash) {
+        lastStructuralHashRef.current = structuralHash;
+        blueprintCache.set(contentRef.current, b, structuralHash);
+      }
+
+      setBlueprint(b);
       setPhase("showing");
+      if (options.skeletonKey) {
+        recordRuntimeBlueprint(options.skeletonKey, b);
+      }
+      onMeasuredRef.current?.(b);
       if (baseEvent?.source === "dynamic") {
         onResolutionRef.current?.({
           ...baseEvent,
-          reason: "dynamic-measured-empty",
+          reason: "dynamic-measured",
           measurementDurationMs: Math.max(Date.now() - measurementStartMs, 0),
         });
       }
-      return;
-    }
-
-    const structuralHash = b.structuralHash;
-
-    if (structuralHash) {
-      lastStructuralHashRef.current = structuralHash;
-      blueprintCache.set(contentRef.current, b, structuralHash);
-    }
-
-    setBlueprint(b);
-    setPhase("showing");
-    if (options.skeletonKey) {
-      recordRuntimeBlueprint(options.skeletonKey, b);
-    }
-    onMeasuredRef.current?.(b);
-    if (baseEvent?.source === "dynamic") {
-      onResolutionRef.current?.({
-        ...baseEvent,
-        reason: "dynamic-measured",
-        measurementDurationMs: Math.max(Date.now() - measurementStartMs, 0),
-      });
-    }
-  }, [loading, contentRef, config, options.skeletonKey]);
+    },
+    [loading, contentRef, config, options.skeletonKey]
+  );
 
   // Initial Measurement and Loading Toggle
   useEffect(() => {

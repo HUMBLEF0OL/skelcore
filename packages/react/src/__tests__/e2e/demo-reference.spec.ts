@@ -20,7 +20,9 @@ test.describe("demo reference routes", () => {
   test("reference overview and feature routes render expected content", async ({ page }) => {
     await page.goto("/reference");
 
-    await expect(page.getByRole("heading", { level: 1, name: "Ghostframe Reference" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Ghostframe Reference" })
+    ).toBeVisible();
     await expect(page.getByRole("link", { name: "All Features" })).toBeVisible();
 
     await page.goto("/reference/features");

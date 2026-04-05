@@ -22,7 +22,7 @@ describe("buildManifestDocument", () => {
     });
 
     const text = renderManifestJson(manifest, { prettyPrint: false });
-    expect(text).not.toContain("\n  \"");
+    expect(text).not.toContain('\n  "');
   });
 
   it("renders pretty JSON by default", () => {
@@ -33,6 +33,6 @@ describe("buildManifestDocument", () => {
     });
 
     const text = renderManifestJson(manifest);
-    expect(text).toContain("\n  \"");
+    expect(text).toContain('\n  "');
   });
 });

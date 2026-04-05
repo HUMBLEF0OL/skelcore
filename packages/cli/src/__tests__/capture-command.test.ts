@@ -9,7 +9,9 @@ import { runCaptureCommand } from "../commands/capture-command";
 const createdDirs: string[] = [];
 
 afterEach(async () => {
-  await Promise.all(createdDirs.splice(0).map((dir) => fs.rm(dir, { recursive: true, force: true })));
+  await Promise.all(
+    createdDirs.splice(0).map((dir) => fs.rm(dir, { recursive: true, force: true }))
+  );
 });
 
 describe("runCli", () => {
@@ -25,7 +27,9 @@ describe("runCli", () => {
     });
 
     expect(exitCode).toBe(1);
-    expect(io.error).toHaveBeenCalledWith("Supported commands: capture, validate, diff, report, rollout");
+    expect(io.error).toHaveBeenCalledWith(
+      "Supported commands: capture, validate, diff, report, rollout"
+    );
   });
 
   it("returns 1 when capture run fails", async () => {
@@ -103,22 +107,17 @@ describe("runCli", () => {
       },
     };
 
-    const exitCode = await runCaptureCommand(
-      ["--config", configPath],
-      io,
-      {
-        runCapture: vi.fn().mockResolvedValue({
-          ok: true,
-          artifacts: [{ key: "ProductCard", entry }],
-        }),
-      }
-    );
+    const exitCode = await runCaptureCommand(["--config", configPath], io, {
+      runCapture: vi.fn().mockResolvedValue({
+        ok: true,
+        artifacts: [{ key: "ProductCard", entry }],
+      }),
+    });
 
     expect(exitCode).toBe(0);
     expect(io.log).toHaveBeenCalledWith(expect.stringContaining("Manifest size:"));
 
     const manifestText = await fs.readFile(path.join(outputDir, "manifest.json"), "utf8");
-    expect(manifestText).not.toContain("\n  \"");
-
+    expect(manifestText).not.toContain('\n  "');
   });
 });
