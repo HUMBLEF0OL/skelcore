@@ -9,6 +9,10 @@ import {
   type Blueprint,
   type SkeletonConfig,
   type BlueprintManifest,
+  type BlueprintSource,
+  type BlueprintInvalidationReason,
+  type MeasurementPolicy,
+  type BlueprintCachePolicy,
 } from "@ghostframe/core";
 import { recordRuntimeBlueprint, resolveBlueprint } from "./resolver";
 import type { ResolutionEvent, ResolutionPolicy } from "./resolution-types";
@@ -23,19 +27,34 @@ export function useAutoSkeleton(
     onMeasured?: (b: Blueprint) => void;
     remeasureOnResize?: boolean;
     externalBlueprint?: Blueprint;
+    hydrateBlueprint?: Blueprint;
+    blueprintSource?: BlueprintSource;
+    onBlueprintInvalidated?: (reason: BlueprintInvalidationReason) => void;
+    measurementPolicy?: MeasurementPolicy;
+    blueprintCachePolicy?: BlueprintCachePolicy;
     skeletonKey?: string;
     policyOverride?: Partial<ResolutionPolicy>;
     onResolution?: (event: ResolutionEvent) => void;
     manifest?: BlueprintManifest;
   } = {}
 ) {
-  const [blueprint, setBlueprint] = useState<Blueprint | null>(options.externalBlueprint || null);
+  const [blueprint, setBlueprint] = useState<Blueprint | null>(() => {
+    if (options.externalBlueprint) return options.externalBlueprint;
+    if (options.blueprintSource === "client" && options.hydrateBlueprint) {
+      return options.hydrateBlueprint;
+    }
+
+    return null;
+  });
   const [phase, setPhase] = useState<SkeletonPhase>(loading ? "measuring" : "idle");
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const intersectionObserverRef = useRef<IntersectionObserver | null>(null);
+  const idleCallbackRef = useRef<number | null>(null);
+  const timeoutRef = useRef<number | null>(null);
   const lastStructuralHashRef = useRef<string | null>(null);
   const loadingRef = useRef(loading);
   const measureRunIdRef = useRef(0);
-  const blueprintRef = useRef<Blueprint | null>(options.externalBlueprint || null);
+  const blueprintRef = useRef<Blueprint | null>(blueprint);
   const onMeasuredRef = useRef(options.onMeasured);
   const onResolutionRef = useRef(options.onResolution);
   const manifestRef = useRef(options.manifest);
@@ -59,6 +78,29 @@ export function useAutoSkeleton(
   useEffect(() => {
     blueprintRef.current = blueprint;
   }, [blueprint]);
+
+  const clearScheduledMeasurement = useCallback(() => {
+    if (intersectionObserverRef.current) {
+      intersectionObserverRef.current.disconnect();
+      intersectionObserverRef.current = null;
+    }
+
+    if (
+      idleCallbackRef.current !== null &&
+      typeof window !== "undefined" &&
+      "cancelIdleCallback" in window
+    ) {
+      (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(
+        idleCallbackRef.current
+      );
+      idleCallbackRef.current = null;
+    }
+
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }, []);
 
   const measure = useCallback(
     async (baseEvent?: ResolutionEvent) => {
@@ -148,6 +190,7 @@ export function useAutoSkeleton(
         measure(resolution.event);
       }
     } else {
+      clearScheduledMeasurement();
       measureRunIdRef.current += 1;
       if (phase === "showing") {
         setPhase("exiting");
@@ -174,7 +217,7 @@ export function useAutoSkeleton(
   useEffect(() => {
     if (options.remeasureOnResize && loading && contentRef.current && phase === "showing") {
       resizeObserverRef.current = new ResizeObserver(() => {
-        measure();
+        void measure();
       });
       resizeObserverRef.current.observe(contentRef.current);
       return () => resizeObserverRef.current?.disconnect();
@@ -186,5 +229,9 @@ export function useAutoSkeleton(
     animationSystem.injectStyles(config);
   }, [config]);
 
-  return { blueprint, phase };
+  const measureNow = useCallback(() => {
+    void measure();
+  }, [measure]);
+
+  return { blueprint, phase, measureNow };
 }

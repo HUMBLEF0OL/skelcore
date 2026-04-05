@@ -425,4 +425,90 @@ describe("generateDynamicBlueprint", () => {
     expect(bp.nodes).toHaveLength(1);
     expect(bp.nodes[0].role).toBe("text");
   });
+
+  it("supports include and exclude matchers with exclude precedence", async () => {
+    const root = document.createElement("div");
+    mockLayout(root, { width: 500, height: 500, top: 0, left: 0 });
+
+    const includedBySelector = document.createElement("p");
+    includedBySelector.className = "keep";
+    includedBySelector.textContent = "Keep me";
+    mockLayout(includedBySelector, { width: 120, height: 24, top: 10, left: 10 });
+
+    const excludedByMatcher = document.createElement("p");
+    excludedByMatcher.className = "drop";
+    excludedByMatcher.textContent = "Drop me";
+    mockLayout(excludedByMatcher, { width: 120, height: 24, top: 40, left: 10 });
+
+    root.appendChild(includedBySelector);
+    root.appendChild(excludedByMatcher);
+    document.body.appendChild(root);
+
+    const bp = await generateDynamicBlueprint(root, undefined, {
+      include: [{ role: "text" }],
+      exclude: [{ selector: ".drop" }],
+    });
+
+    expect(bp.nodes).toHaveLength(1);
+    expect(bp.nodes[0].tagName).toBe("P");
+    expect(bp.nodes[0].left).toBe(10);
+    expect(bp.nodes[0].top).toBe(10);
+  });
+
+  it("honors data-skeleton-include and data-skeleton-exclude in dynamic analysis", async () => {
+    const root = document.createElement("div");
+    mockLayout(root, { width: 500, height: 500, top: 0, left: 0 });
+
+    const includedByAttr = document.createElement("div");
+    includedByAttr.setAttribute("data-skeleton-include", "true");
+    includedByAttr.textContent = "Included";
+    mockLayout(includedByAttr, { width: 100, height: 24, top: 20, left: 20 });
+
+    const excludedByAttr = document.createElement("div");
+    excludedByAttr.setAttribute("data-skeleton-include", "true");
+    excludedByAttr.setAttribute("data-skeleton-exclude", "true");
+    excludedByAttr.textContent = "Excluded";
+    mockLayout(excludedByAttr, { width: 100, height: 24, top: 50, left: 20 });
+
+    root.appendChild(includedByAttr);
+    root.appendChild(excludedByAttr);
+    document.body.appendChild(root);
+
+    const bp = await generateDynamicBlueprint(root, undefined, {
+      include: [{ selector: ".not-present" }],
+      exclude: [],
+    });
+
+    expect(bp.nodes).toHaveLength(1);
+    expect(bp.nodes[0].left).toBe(20);
+    expect(bp.nodes[0].top).toBe(20);
+  });
+
+  it("returns a partial blueprint instead of throwing when measurement budget is exceeded", async () => {
+    const root = document.createElement("div");
+    mockLayout(root, { width: 900, height: 900, top: 0, left: 0 });
+
+    for (let i = 0; i < 40; i++) {
+      const child = document.createElement("p");
+      child.textContent = `Item ${i}`;
+      mockLayout(child, { width: 120, height: 24, top: i * 10, left: 0 });
+      root.appendChild(child);
+    }
+
+    document.body.appendChild(root);
+
+    const baseline = await generateDynamicBlueprint(root);
+
+    let nowCall = 0;
+    vi.spyOn(performance, "now").mockImplementation(() => {
+      nowCall += 1;
+      return nowCall * 2;
+    });
+
+    const budgeted = await generateDynamicBlueprint(root, undefined, { budgetMs: 4 });
+
+    expect(budgeted.source).toBe("dynamic");
+    expect(budgeted.nodes.length).toBeLessThan(baseline.nodes.length);
+    expect(budgeted.nodes.length).toBeGreaterThanOrEqual(0);
+  });
 });

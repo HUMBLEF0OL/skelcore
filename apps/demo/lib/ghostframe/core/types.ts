@@ -88,6 +88,15 @@ export type Blueprint = {
 
 export type AnimationMode = "pulse" | "shimmer" | "none";
 
+export type AnimationPreset = "pulse" | "shimmer" | "none" | string;
+
+export type SkeletonAnimationDefinition = {
+  className?: string;
+  inlineStyle?: Record<string, string | number>;
+  keyframes?: string;
+  durationMs?: number;
+};
+
 export type SkeletonConfig = {
   animation: AnimationMode;
   baseColor: string; // CSS color, default var(--skeleton-base)
@@ -104,6 +113,17 @@ export type SkeletonConfig = {
   tableCellBarHeightRatio: number; // relative to cell height, default 0.45
   tableCellBarMinHeight: number; // px minimum table-cell bar height, default 6
   tableCellDefaultWidthRatio: number; // 0-1 fallback width ratio for table bars, default 0.7
+  overlay?: {
+    className?: string;
+    style?: Record<string, string | number>;
+  };
+  include?: ElementMatcher[];
+  exclude?: ElementMatcher[];
+  animationPreset?: AnimationPreset;
+  animationRegistry?: Record<string, SkeletonAnimationDefinition>;
+  placeholderStrategy?: PlaceholderStrategy;
+  placeholderSchema?: PlaceholderSchema;
+  placeholderSlots?: PlaceholderSlots<unknown>;
 };
 
 export const DEFAULT_CONFIG: SkeletonConfig = {
@@ -123,6 +143,58 @@ export const DEFAULT_CONFIG: SkeletonConfig = {
   tableCellBarMinHeight: 6,
   tableCellDefaultWidthRatio: 0.7,
 };
+
+// ─── Include/Exclude Matcher Types ───────────────────────────────────────────
+
+export type ElementMatcherNodeMeta = {
+  tagName: string;
+  ariaRole: string | null;
+  classList: string[];
+  dataAttributes: Record<string, string>;
+  textContent: string;
+  hasChildren: boolean;
+  childCount: number;
+  role?: SkeletonRole | "container" | "table-row" | "table-cell";
+};
+
+export type ElementMatcher = {
+  selector?: string;
+  role?: SkeletonRole | "container" | "table-row" | "table-cell";
+  predicate?: (nodeMeta: ElementMatcherNodeMeta) => boolean;
+};
+
+// ─── Placeholder Strategy Types ──────────────────────────────────────────────
+
+export type PlaceholderStrategy = "none" | "auto" | "schema" | "slots";
+
+export type PlaceholderBlockRole = Exclude<SkeletonRole, "skip"> | "table-cell" | "container";
+
+export type PlaceholderSchemaBlock = {
+  role?: PlaceholderBlockRole;
+  width: number;
+  height: number;
+  repeat?: number;
+  slotKey?: string;
+  borderRadius?: string | number;
+};
+
+export type PlaceholderSchema = {
+  blocks: PlaceholderSchemaBlock[];
+};
+
+export type PlaceholderSlotFactory<TNode = unknown> = () => TNode;
+
+export type PlaceholderSlots<TNode = unknown> = Record<string, PlaceholderSlotFactory<TNode>>;
+
+// ─── SSR + Measurement Control Types ────────────────────────────────────────
+
+export type BlueprintSource = "client" | "server" | "cache";
+
+export type BlueprintInvalidationReason =
+  | "missing-root"
+  | "missing-structural-hash"
+  | "version-mismatch"
+  | "structural-hash-mismatch";
 
 // ─── Public React Component Props ─────────────────────────────────────────────
 // Note: `React.ReactNode` cannot be imported here (framework-agnostic core).

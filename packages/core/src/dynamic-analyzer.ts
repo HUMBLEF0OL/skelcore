@@ -1,5 +1,12 @@
 import { inferRole } from "./role-inferencer.js";
-import type { Blueprint, BlueprintNode, SkeletonConfig, MeasuredNode } from "./types.js";
+import type {
+  Blueprint,
+  BlueprintNode,
+  ElementMatcher,
+  ElementMatcherNodeMeta,
+  SkeletonConfig,
+  MeasuredNode,
+} from "./types.js";
 import { DEFAULT_CONFIG } from "./types.js";
 import { computeStructuralHash } from "./blueprint-cache.js";
 
@@ -16,10 +23,84 @@ type ReadResult = {
   parentIndex: number; // to look up parent rect for clipping
 };
 
+function buildMatcherNodeMeta(el: HTMLElement): ElementMatcherNodeMeta {
+  return {
+    tagName: el.tagName.toUpperCase(),
+    ariaRole: el.getAttribute("role"),
+    classList: Array.from(el.classList),
+    dataAttributes: Object.assign({}, el.dataset) as Record<string, string>,
+    textContent: (el.textContent || "").trim(),
+    hasChildren: el.childElementCount > 0,
+    childCount: el.childElementCount,
+  };
+}
+
+function matchesMatcher(
+  element: HTMLElement,
+  nodeMeta: ElementMatcherNodeMeta,
+  matcher: ElementMatcher
+): boolean {
+  if (matcher.selector) {
+    try {
+      if (!element.matches(matcher.selector)) return false;
+    } catch {
+      return false;
+    }
+  }
+
+  if (matcher.role && nodeMeta.role !== matcher.role) return false;
+
+  if (matcher.predicate && !matcher.predicate(nodeMeta)) return false;
+
+  return true;
+}
+
+function evaluateIncludeExclude(
+  element: HTMLElement,
+  nodeMeta: ElementMatcherNodeMeta,
+  include: ElementMatcher[],
+  exclude: ElementMatcher[]
+): boolean {
+  const hasIncludeAttr = element.getAttribute("data-skeleton-include") !== null;
+  const hasExcludeAttr = element.getAttribute("data-skeleton-exclude") !== null;
+
+  const excludedByMatcher = exclude.some((matcher) => matchesMatcher(element, nodeMeta, matcher));
+  if (hasExcludeAttr || excludedByMatcher) return false;
+
+  if (hasIncludeAttr) return true;
+
+  if (include.length === 0) return true;
+
+  return include.some((matcher) => matchesMatcher(element, nodeMeta, matcher));
+}
+
 export async function generateDynamicBlueprint(
   root: HTMLElement,
-  config: SkeletonConfig = DEFAULT_CONFIG
+  config: SkeletonConfig = DEFAULT_CONFIG,
+  options: {
+    include?: ElementMatcher[];
+    exclude?: ElementMatcher[];
+    budgetMs?: number;
+  } = {}
 ): Promise<Blueprint> {
+  const include = options.include ?? [];
+  const exclude = options.exclude ?? [];
+  const budgetMs =
+    typeof options.budgetMs === "number" && options.budgetMs > 0 ? options.budgetMs : undefined;
+  const budgetStart =
+    typeof performance !== "undefined" && typeof performance.now === "function"
+      ? performance.now()
+      : Date.now();
+
+  const withinBudget = () => {
+    if (budgetMs === undefined) return true;
+    const now =
+      typeof performance !== "undefined" && typeof performance.now === "function"
+        ? performance.now()
+        : Date.now();
+    return now - budgetStart <= budgetMs;
+  };
+
   // ─── Font Loading ────────────────────────────────────────────────────────────
   // Wait for web fonts to load before measuring text layout
   if (typeof document !== "undefined" && document.fonts) {
@@ -31,6 +112,7 @@ export async function generateDynamicBlueprint(
   const collected: CollectNode[] = [];
 
   function walk(el: Element, depth: number) {
+    if (!withinBudget()) return;
     if (depth > config.maxDepth) return;
 
     const htmlEl = el as HTMLElement;
@@ -38,6 +120,7 @@ export async function generateDynamicBlueprint(
     // Fast inline exclusions to skip subtrees entirely
     if (htmlEl.getAttribute("data-skeleton-ignore") !== null) return;
     if (htmlEl.getAttribute("data-no-skeleton") !== null) return;
+    if (htmlEl.getAttribute("data-skeleton-exclude") !== null) return;
 
     // 'display: none' inline style check (avoids getComputedStyle)
     if (htmlEl.style && htmlEl.style.display === "none") return;
@@ -57,6 +140,7 @@ export async function generateDynamicBlueprint(
 
     const children = htmlEl.children;
     for (let i = 0; i < children.length; i++) {
+      if (!withinBudget()) return;
       const child = children[i];
       if (child.nodeType === 1) {
         walk(child, depth + 1);
@@ -81,6 +165,7 @@ export async function generateDynamicBlueprint(
   }
 
   for (let i = 0; i < collected.length; i++) {
+    if (!withinBudget()) break;
     const node = collected[i];
     const parentEl = node.element.parentElement;
     const parentIndex = parentEl ? (elementToIndex.get(parentEl) ?? -1) : -1;
@@ -104,6 +189,7 @@ export async function generateDynamicBlueprint(
   const flatNodes: (BlueprintNode & { parentIndex: number; readIndex: number })[] = [];
 
   for (let i = 0; i < reads.length; i++) {
+    if (!withinBudget()) break;
     const { element: el, rect, styles, parentIndex } = reads[i];
 
     // Edge-case filtering resolved via CSS
@@ -188,6 +274,15 @@ export async function generateDynamicBlueprint(
 
     if (isTableRowTag) role = "table-row";
     if (isTableCellTag) role = "table-cell";
+
+    const matcherNodeMeta: ElementMatcherNodeMeta = {
+      ...buildMatcherNodeMeta(el),
+      role,
+    };
+
+    if (!evaluateIncludeExclude(el, matcherNodeMeta, include, exclude)) {
+      continue;
+    }
 
     // Layout clipping inside overflow containers
     let width = rect.width;

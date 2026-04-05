@@ -104,6 +104,8 @@ import {
   type BlueprintNode,
   type SkeletonRole,
   type AnimationMode,
+  type AnimationPreset,
+  type SkeletonAnimationDefinition,
   type SkeletonConfig,
   type GhostframePropsBase,
   type LayoutProps,
@@ -226,13 +228,40 @@ type VNode = {
 ```ts
 async function generateDynamicBlueprint(
   root: HTMLElement,
-  config?: SkeletonConfig       // defaults to DEFAULT_CONFIG
+  config?: SkeletonConfig,      // defaults to DEFAULT_CONFIG
+  options?: {
+    include?: ElementMatcher[];
+    exclude?: ElementMatcher[];
+    budgetMs?: number;
+  }
 ): Promise<Blueprint>
 ```
 
 Measures a **live DOM subtree** and produces a pixel-precise Blueprint using absolute positions. This is the engine behind `AutoSkeleton` in `@ghostframe/ghostframe`.
 
 > **Browser only.** Requires `window`, `document`, `getComputedStyle`, and `getBoundingClientRect`.
+
+### Include/Exclude controls
+
+Both analyzers accept optional `include` and `exclude` matcher arrays. `exclude` always wins over `include`.
+
+```ts
+import { generateDynamicBlueprint } from "@skelcore/core";
+
+const blueprint = await generateDynamicBlueprint(root, undefined, {
+  include: [{ selector: ".skeleton-target" }],
+  exclude: [{ selector: ".skeleton-ignore" }],
+});
+```
+
+DOM attributes are also supported:
+
+- `data-skeleton-include`
+- `data-skeleton-exclude`
+
+`data-skeleton-exclude` has highest precedence.
+
+`budgetMs` is optional and enables a partial-traversal fallback: when the analyzer exceeds the configured budget, it returns the nodes computed so far instead of throwing.
 
 ### Three-pass architecture
 

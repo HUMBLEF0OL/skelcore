@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { DEFAULT_CONFIG, type SkeletonConfig, type Blueprint, type BlueprintNode } from "../types";
+import {
+  DEFAULT_CONFIG,
+  type SkeletonAnimationDefinition,
+  type SkeletonConfig,
+  type Blueprint,
+  type BlueprintNode,
+  type PlaceholderSchema,
+} from "../types";
 
 // ─── DEFAULT_CONFIG Tests ─────────────────────────────────────────────────────
 
@@ -110,5 +117,28 @@ describe("Blueprint", () => {
 
     expect(parent.children).toHaveLength(1);
     expect(parent.children[0].id).toBe("child-1");
+  });
+
+  it("supports placeholder schema blocks and animation definition shapes", () => {
+    const schema: PlaceholderSchema = {
+      blocks: [
+        { role: "text", width: 240, height: 16, repeat: 2 },
+        { role: "custom", width: 160, height: 40, slotKey: "card-media" },
+      ],
+    };
+
+    const animationDefinition: SkeletonAnimationDefinition = {
+      className: "custom-shimmer",
+      inlineStyle: {
+        opacity: 0.85,
+      },
+      keyframes: "0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; }",
+      durationMs: 1200,
+    };
+
+    expect(schema.blocks[0].repeat).toBe(2);
+    expect(schema.blocks[1].slotKey).toBe("card-media");
+    expect(animationDefinition.durationMs).toBe(1200);
+    expect(animationDefinition.inlineStyle?.opacity).toBe(0.85);
   });
 });

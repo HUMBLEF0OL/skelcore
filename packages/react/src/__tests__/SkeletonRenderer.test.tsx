@@ -240,4 +240,42 @@ describe("SkeletonRenderer", () => {
     expect(textGroup.style.width).toBe("100%");
     expect(textGroup.style.height).toBe("auto");
   });
+
+  it("uses custom animation definitions from registry before built-in presets", () => {
+    const { container } = render(
+      <SkeletonRenderer
+        blueprint={mockBlueprint}
+        config={DEFAULT_CONFIG}
+        animationPreset="brandPulse"
+        animationRegistry={{
+          brandPulse: {
+            className: "brand-pulse",
+            inlineStyle: { opacity: 0.9 },
+            keyframes: "0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; }",
+            durationMs: 900,
+          },
+        }}
+      />
+    );
+
+    const imageNode = container.querySelector(".skel-role-image") as HTMLElement;
+    expect(imageNode.className.includes("brand-pulse")).toBe(true);
+    expect(imageNode.style.animationName).toContain("skel-custom-brandpulse");
+    expect(imageNode.style.animationDuration).toBe("900ms");
+  });
+
+  it("falls back to no animation when animationPreset is unknown", () => {
+    const { container } = render(
+      <SkeletonRenderer
+        blueprint={mockBlueprint}
+        config={DEFAULT_CONFIG}
+        animationPreset="unknown"
+      />
+    );
+
+    const imageNode = container.querySelector(".skel-role-image") as HTMLElement;
+    expect(imageNode.className.includes("skel-shimmer")).toBe(false);
+    expect(imageNode.className.includes("skel-pulse")).toBe(false);
+    expect(imageNode.style.animationName).toBe("");
+  });
 });

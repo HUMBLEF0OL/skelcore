@@ -3,42 +3,58 @@ import { chromium } from "@playwright/test";
 async function runBenchmark() {
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  
-  console.log("🚀 Starting Ghostframe Performance Benchmark...");
-  
-  await page.goto("http://localhost:3005/test");
-  await page.waitForSelector("#test-card");
 
-  // Benchmark for 50-node component (Approximate current test-card)
+  console.log("🚀 Starting Ghostframe Performance Benchmark...");
+
+  await page.goto("http://localhost:3005/test");
+  await page.waitForSelector("#test-card", { timeout: 15000 });
+  await page.waitForSelector(".skel-overlay", { timeout: 15000 });
+  const firstSkeletonPaintMs = Date.now() - navStart;
+
+  // Benchmark a synthetic analyzer-like pass over the measured card subtree.
   const results = await page.evaluate(async () => {
     const root = document.querySelector("#test-card") as HTMLElement;
-    // We'll use the core global if available or just measure a simulated walk
-    // Since we want to measure the analyzer DIRECTLY:
+    if (!root) {
+      throw new Error("Benchmark root #test-card was not found");
+    }
+
     const iterations = 100;
-    const start = performance.now();
-    
-    // Simulating the dynamic analyzer main loop (Read & Process)
+    const sample: number[] = [];
+
     for (let i = 0; i < iterations; i++) {
+      const start = performance.now();
+
       root.getBoundingClientRect();
       window.getComputedStyle(root);
-      // Dummy processing
-      Array.from(root.children).forEach(c => {
+
+      Array.from(root.children).forEach((c) => {
         c.getBoundingClientRect();
         window.getComputedStyle(c);
       });
+
+      sample.push(performance.now() - start);
     }
-    
-    const end = performance.now();
-    return (end - start) / iterations;
+
+    const total = sample.reduce((acc, ms) => acc + ms, 0);
+    const average = total / sample.length;
+    const sorted = [...sample].sort((a, b) => a - b);
+    const p95 = sorted[Math.floor(sorted.length * 0.95)] ?? average;
+
+    return {
+      average,
+      p95,
+    };
   });
 
   console.log(`\n📊 Results:`);
-  console.log(`- Small Component (Card): ${results.toFixed(2)}ms`);
-  
-  if (results < 8) {
-    console.log("✅ PASS: Performance within 8ms target.");
+  console.log(`- First skeleton paint: ${firstSkeletonPaintMs.toFixed(2)}ms`);
+  console.log(`- Analyzer loop avg (card): ${results.average.toFixed(2)}ms`);
+  console.log(`- Analyzer loop p95 (card): ${results.p95.toFixed(2)}ms`);
+
+  if (results.average < 8) {
+    console.log("✅ PASS: Avg analyzer loop within 8ms target.");
   } else {
-    console.warn("⚠️ FAIL: Performance exceeded 8ms target.");
+    console.warn("⚠️ FAIL: Avg analyzer loop exceeded 8ms target.");
   }
 
   await browser.close();

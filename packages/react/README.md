@@ -20,6 +20,8 @@
 -  **SSR-compatible** — generate blueprints server-side with `generateStaticBlueprint` (no DOM required)
 -  **Structural hash caching** — avoids re-measuring when DOM structure hasn't changed
 -  **3 animation modes** — `shimmer` (default), `pulse`, or `none`
+-  **Extensible animation presets** — register custom presets without forking internals
+-  **Placeholder strategies** — choose between `auto`, `schema`, or `slots` for loading UIs
 -  **Accessible** — sets `aria-busy` and `aria-hidden` correctly; respects `prefers-reduced-motion`
 -  **Tiny** — under 10 KB minzipped; no runtime dependencies beyond React
 
@@ -128,10 +130,24 @@ The **primary component**. It wraps your content, measures it while loading, and
 | `children` | `React.ReactNode` | ✅ | — | The real UI to measure and eventually show. |
 | `config` | `Partial<SkeletonConfig>` | ❌ | `DEFAULT_CONFIG` | Override any subset of the configuration. Merged with defaults. |
 | `blueprint` | `Blueprint` | ❌ | `undefined` | A pre-computed blueprint (e.g. from SSR). Skips DOM measurement entirely. |
+| `hydrateBlueprint` | `Blueprint` | ❌ | `undefined` | SSR/edge blueprint candidate validated on the client before reuse. |
+| `blueprintSource` | `"client" \| "server" \| "cache"` | ❌ | `"client"` | Declares where `hydrateBlueprint` originated so validation and fallback rules can be applied. |
+| `onBlueprintInvalidated` | `(reason) => void` | ❌ | `undefined` | Called when hydrated blueprint validation fails and SkelCore falls back to measurement. |
+| `measurementPolicy` | `{ mode: "eager" \| "idle" \| "viewport" \| "manual"; budgetMs?: number }` | ❌ | `{ mode: "eager" }` | Controls when measurement starts and optionally caps analyzer work budget per run. |
+| `blueprintCachePolicy` | `{ ttlMs?: number; version?: number }` | ❌ | `undefined` | Optional TTL/version gates for cache and hydration blueprint reuse. |
 | `fallback` | `React.ReactNode` | ❌ | `undefined` | Shown only during the first measurement pass, before a blueprint is ready. |
 | `slots` | `Record<string, () => React.ReactNode>` | ❌ | `{}` | Custom slot renderers keyed by `data-skeleton-slot` value. |
 | `onMeasured` | `(blueprint: Blueprint) => void` | ❌ | `undefined` | Callback fired each time a new blueprint is computed. Useful for caching or debugging. |
 | `remeasureOnResize` | `boolean` | ❌ | `false` | Re-measures and updates the skeleton whenever the container is resized. |
+| `overlayClassName` | `string` | ❌ | `undefined` | Extra class name applied to the skeleton overlay container. |
+| `overlayStyle` | `React.CSSProperties` | ❌ | `undefined` | Inline styles merged onto the skeleton overlay container. |
+| `include` | `ElementMatcher[]` | ❌ | `undefined` | Optional include matcher list for analyzer traversal. |
+| `exclude` | `ElementMatcher[]` | ❌ | `undefined` | Optional exclude matcher list; takes precedence over include. |
+| `placeholderStrategy` | `"none" \| "auto" \| "schema" \| "slots"` | ❌ | `"none"` | Placeholder mode selector. `none`/`auto` use analyzer-driven skeletons. |
+| `placeholderSchema` | `PlaceholderSchema` | ❌ | `undefined` | Schema blocks used when strategy is `schema` (or as first choice in `slots`). |
+| `placeholderSlots` | `Record<string, () => React.ReactNode>` | ❌ | `undefined` | Slot placeholders used in `slots` strategy; merged with `slots`. |
+| `animationPreset` | `"pulse" \| "shimmer" \| "none" \| string` | ❌ | `config.animation` | Animation preset override for renderer nodes. |
+| `animationRegistry` | `Record<string, SkeletonAnimationDefinition>` | ❌ | `undefined` | Registry of custom animation presets. |
 
 ### Skeleton Phases
 
@@ -154,6 +170,122 @@ The **primary component**. It wraps your content, measures it while loading, and
 | `.skel-content` | Children wrapper | Hidden during skeleton display |
 | `.skel-overlay` | Skeleton wrapper | Absolute overlay containing `SkeletonRenderer` |
 | `.skel-fallback` | Fallback wrapper | Visible only before the first blueprint is ready |
+
+### Overlay styling hooks
+
+```tsx
+<AutoSkeleton
+  loading={loading}
+  overlayClassName="card-skeleton-overlay"
+  overlayStyle={{ backdropFilter: "blur(2px)" }}
+>
+  <Card />
+</AutoSkeleton>
+```
+
+### Per-element include/exclude controls
+
+```tsx
+<AutoSkeleton
+  loading={loading}
+  include={[{ selector: ".skeleton-target" }]}
+  exclude={[{ selector: ".skeleton-ignore" }]}
+>
+  <Card />
+</AutoSkeleton>
+```
+
+You can also use DOM attributes directly:
+
+- `data-skeleton-include`
+- `data-skeleton-exclude`
+
+`exclude` and `data-skeleton-exclude` always win over include rules.
+
+### Placeholder strategies
+
+```tsx
+<AutoSkeleton
+  loading={loading}
+  placeholderStrategy="schema"
+  placeholderSchema={{
+    blocks: [
+      { role: "text", width: 220, height: 16, repeat: 2 },
+      { role: "custom", width: 220, height: 48, slotKey: "cta" },
+    ],
+  }}
+  placeholderSlots={{
+    cta: () => <div className="cta-skeleton" />,
+  }}
+>
+  <Card />
+</AutoSkeleton>
+```
+
+Precedence:
+- `placeholderStrategy="schema"`: valid `placeholderSchema` is required, otherwise falls back to analyzer behavior.
+- `placeholderStrategy="slots"`: uses `placeholderSchema` first when valid; otherwise builds placeholders from `placeholderSlots` keys.
+- `placeholderStrategy="none"` and `"auto"`: use existing analyzer-driven behavior.
+
+### Animation registry
+
+```tsx
+<AutoSkeleton
+  loading={loading}
+  animationPreset="brandPulse"
+  animationRegistry={{
+    brandPulse: {
+      className: "brand-pulse",
+      keyframes: "0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; }",
+      durationMs: 900,
+      inlineStyle: { opacity: 0.9 },
+    },
+  }}
+>
+  <Card />
+</AutoSkeleton>
+```
+
+Resolution order:
+- custom `animationRegistry` hit
+- built-in preset (`pulse`, `shimmer`, `none`)
+- fallback to no animation for unknown presets
+
+### Recommended SSR pipeline (Next.js)
+
+```tsx
+// Server-side (RSC or route handler)
+import { generateStaticBlueprint } from "@skelcore/core";
+
+const serverBlueprint = generateStaticBlueprint(
+  <article>
+    <h3>Build once, reuse everywhere</h3>
+    <p>Serialize loading structure on the server.</p>
+  </article>
+);
+
+// Client component
+import { AutoSkeleton } from "@skelcore/react";
+
+<AutoSkeleton
+  loading={loading}
+  hydrateBlueprint={serverBlueprint}
+  blueprintSource="server"
+  blueprintCachePolicy={{ version: 1, ttlMs: 5 * 60_000 }}
+  measurementPolicy={{ mode: "idle", budgetMs: 12 }}
+  onBlueprintInvalidated={(reason) => {
+    console.warn("Hydrated blueprint invalidated:", reason);
+  }}
+>
+  <ProductCard />
+</AutoSkeleton>;
+```
+
+Policy guidance:
+- Use `mode: "eager"` for above-the-fold critical content.
+- Use `mode: "idle"` for non-critical sections where responsiveness matters more than immediate skeleton paint.
+- Use `mode: "viewport"` for below-the-fold blocks.
+- Use `mode: "manual"` with the `useAutoSkeleton` hook when your app controls the exact measurement trigger.
 
 ---
 
@@ -192,6 +324,8 @@ function MySkeleton() {
 | `config` | `SkeletonConfig` | ✅ | — | Full config object (not partial). |
 | `mode` | `"flow" \| "absolute"` | ❌ | `"absolute"` | How skeleton nodes are positioned. See [Rendering Modes](#rendering-modes). |
 | `slots` | `Record<string, () => React.ReactNode>` | ❌ | `{}` | Custom slot renderers for nodes with `role: "custom"`. |
+| `animationPreset` | `"pulse" \| "shimmer" \| "none" \| string` | ❌ | `config.animation` | Animation preset override for this renderer instance. |
+| `animationRegistry` | `Record<string, SkeletonAnimationDefinition>` | ❌ | `{}` | Registry for custom animation definitions. |
 
 ### Rendering Modes
 

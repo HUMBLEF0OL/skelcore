@@ -4,6 +4,11 @@ import React, { useRef, useMemo } from "react";
 import {
   DEFAULT_CONFIG,
   type Blueprint,
+  type BlueprintSource,
+  type BlueprintInvalidationReason,
+  type MeasurementPolicy,
+  type BlueprintCachePolicy,
+  type SkeletonAnimationDefinition,
   type SkeletonConfig,
   type BlueprintManifest,
 } from "@ghostframe/core";
@@ -18,9 +23,18 @@ export interface AutoSkeletonProps {
   fallback?: React.ReactNode;
   config?: Partial<SkeletonConfig>;
   blueprint?: Blueprint;
+  hydrateBlueprint?: Blueprint;
+  blueprintSource?: BlueprintSource;
+  onBlueprintInvalidated?: (reason: BlueprintInvalidationReason) => void;
+  measurementPolicy?: MeasurementPolicy;
+  blueprintCachePolicy?: BlueprintCachePolicy;
   slots?: Record<string, () => React.ReactNode>;
   onMeasured?: (b: Blueprint) => void;
   remeasureOnResize?: boolean;
+  overlayClassName?: string;
+  overlayStyle?: React.CSSProperties;
+  animationPreset?: SkeletonConfig["animation"] | string;
+  animationRegistry?: Record<string, SkeletonAnimationDefinition>;
   skeletonKey?: string;
   policyOverride?: Partial<ResolutionPolicy>;
   onResolution?: (event: ResolutionEvent) => void;
@@ -38,9 +52,18 @@ export function AutoSkeleton({
   fallback,
   config: configOverride,
   blueprint: externalBlueprint,
+  hydrateBlueprint,
+  blueprintSource = "client",
+  onBlueprintInvalidated,
+  measurementPolicy,
+  blueprintCachePolicy,
   slots,
   onMeasured,
   remeasureOnResize = false,
+  overlayClassName,
+  overlayStyle,
+  animationPreset,
+  animationRegistry,
   skeletonKey,
   policyOverride,
   onResolution,
@@ -52,12 +75,18 @@ export function AutoSkeleton({
   const context = useGhostframeContext();
   const effectiveManifest = manifest ?? context?.manifest;
   const effectivePolicy = policyOverride ?? context?.policy;
+  const resolvedSlots = slots ?? {};
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { blueprint, phase } = useAutoSkeleton(loading, containerRef, config, {
     onMeasured,
     remeasureOnResize,
     externalBlueprint,
+    hydrateBlueprint,
+    blueprintSource,
+    onBlueprintInvalidated,
+    measurementPolicy,
+    blueprintCachePolicy,
     skeletonKey,
     policyOverride: effectivePolicy,
     onResolution,
@@ -82,7 +111,7 @@ export function AutoSkeleton({
     userSelect: "auto",
   };
 
-  const overlayStyle: React.CSSProperties = {
+  const internalOverlayStyle: React.CSSProperties = {
     position: "absolute",
     top: 0,
     left: 0,
@@ -92,6 +121,14 @@ export function AutoSkeleton({
     zIndex: 10,
     opacity: phase === "exiting" ? 0 : 1,
     transition: `opacity ${config.transitionDuration}ms ease-in`,
+  };
+
+  const mergedOverlayStyle: React.CSSProperties = {
+    ...internalOverlayStyle,
+    ...overlayStyle,
+    // Keep overlay semantics safe even when user overrides styling.
+    position: "absolute",
+    pointerEvents: "none",
   };
 
   return (
@@ -109,11 +146,18 @@ export function AutoSkeleton({
 
       {/* 2. Skeleton Overlay Layer */}
       {showSkeleton && blueprint && (
-        <div className="skel-overlay" data-no-skeleton style={overlayStyle} aria-hidden="true">
+        <div
+          className={overlayClassName ? `skel-overlay ${overlayClassName}` : "skel-overlay"}
+          data-no-skeleton
+          style={mergedOverlayStyle}
+          aria-hidden="true"
+        >
           <SkeletonRenderer
             blueprint={blueprint}
             config={config}
-            slots={slots}
+            slots={resolvedSlots}
+            animationPreset={animationPreset}
+            animationRegistry={animationRegistry}
             mode={blueprint.source === "static" ? "flow" : "absolute"}
           />
         </div>
@@ -121,7 +165,7 @@ export function AutoSkeleton({
 
       {/* 3. Fallback Layer (shown only while measuring) */}
       {phase === "measuring" && !blueprint && fallback && (
-        <div className="skel-fallback" data-no-skeleton style={overlayStyle}>
+        <div className="skel-fallback" data-no-skeleton style={internalOverlayStyle}>
           {fallback}
         </div>
       )}

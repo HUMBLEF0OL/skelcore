@@ -51,6 +51,30 @@ export function ProductPreview({ loading }: { loading: boolean }) {
   );
 }`;
 
+const recommendedPipelineCode = `// server.tsx (RSC)
+import { generateStaticBlueprint } from "@skelcore/core";
+
+const blueprint = generateStaticBlueprint(
+  <article>
+    <h3>Build once, reuse everywhere</h3>
+    <p>Serialize loading structure on the server.</p>
+  </article>
+);
+
+// client.tsx
+import { AutoSkeleton } from "@skelcore/react";
+
+<AutoSkeleton
+  loading={loading}
+  hydrateBlueprint={blueprint}
+  blueprintSource="server"
+  blueprintCachePolicy={{ version: 1, ttlMs: 5 * 60_000 }}
+  measurementPolicy={{ mode: "idle", budgetMs: 12 }}
+  onBlueprintInvalidated={(reason) => console.warn(reason)}
+>
+  <ProductCard />
+</AutoSkeleton>;`;
+
 export default function SsrReferencePage() {
   return (
     <div className="space-y-6">
@@ -109,6 +133,22 @@ export default function SsrReferencePage() {
 
       <FeatureCard title="Integration example" description="Minimal server-side usage pattern for real apps">
         <CodeBlock code={staticUsageCode} />
+      </FeatureCard>
+
+      <FeatureCard
+        title="Recommended Next.js pipeline"
+        description="Validate server blueprints, apply cache guards, and defer costly remeasurements"
+      >
+        <div className="space-y-3">
+          <ul className="space-y-2 text-sm text-zinc-500 light:text-zinc-600">
+            <li>Send `hydrateBlueprint` from server output and set `blueprintSource=&quot;server&quot;`.</li>
+            <li>Use `blueprintCachePolicy` to enforce schema versions and expiry.</li>
+            <li>Choose `measurementPolicy` per section priority (`eager`, `idle`, `viewport`, `manual`).</li>
+            <li>Handle `onBlueprintInvalidated` to track drift and fallback behavior.</li>
+          </ul>
+
+          <CodeBlock code={recommendedPipelineCode} />
+        </div>
       </FeatureCard>
     </div>
   );

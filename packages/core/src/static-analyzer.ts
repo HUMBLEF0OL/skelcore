@@ -1,4 +1,10 @@
-import type { Blueprint, BlueprintNode, SkeletonRole } from "./types.js";
+import type {
+  Blueprint,
+  BlueprintNode,
+  ElementMatcher,
+  ElementMatcherNodeMeta,
+  SkeletonRole,
+} from "./types.js";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -68,9 +74,83 @@ function parseDimension(val: unknown, fallback: number): number {
 
 let nodeCounter = 0;
 
-export function generateStaticBlueprint(rootVNode: VNode): Blueprint {
+function hasDataAttribute(nodeMeta: ElementMatcherNodeMeta, attrName: string): boolean {
+  const normalized = attrName.startsWith("data-") ? attrName.slice(5) : attrName;
+  const camelKey = normalized.replace(/-([a-z])/g, (_m, c: string) => c.toUpperCase());
+  return nodeMeta.dataAttributes[camelKey] !== undefined;
+}
+
+function matchesStaticSelector(selector: string, nodeMeta: ElementMatcherNodeMeta): boolean {
+  const token = selector.trim();
+  if (!token || /\s|>|\+|~|,/.test(token)) return false;
+
+  if (token.startsWith(".")) {
+    const className = token.slice(1);
+    return className.length > 0 && nodeMeta.classList.includes(className);
+  }
+
+  if (token.startsWith("#")) {
+    const id = token.slice(1);
+    return id.length > 0 && nodeMeta.dataAttributes["id"] === id;
+  }
+
+  if (token.startsWith("[") && token.endsWith("]")) {
+    const body = token.slice(1, -1).trim();
+    if (!body) return false;
+
+    const [rawAttr, rawValue] = body.split("=");
+    const attr = rawAttr.trim();
+    if (!attr) return false;
+
+    if (rawValue === undefined) {
+      return hasDataAttribute(nodeMeta, attr);
+    }
+
+    const expected = rawValue.trim().replace(/^['"]|['"]$/g, "");
+    const normalized = attr.startsWith("data-") ? attr.slice(5) : attr;
+    const camelKey = normalized.replace(/-([a-z])/g, (_m, c: string) => c.toUpperCase());
+    return nodeMeta.dataAttributes[camelKey] === expected;
+  }
+
+  return nodeMeta.tagName.toLowerCase() === token.toLowerCase();
+}
+
+function matchesMatcher(nodeMeta: ElementMatcherNodeMeta, matcher: ElementMatcher): boolean {
+  if (matcher.selector && !matchesStaticSelector(matcher.selector, nodeMeta)) return false;
+  if (matcher.role && nodeMeta.role !== matcher.role) return false;
+  if (matcher.predicate && !matcher.predicate(nodeMeta)) return false;
+  return true;
+}
+
+function evaluateIncludeExclude(
+  nodeMeta: ElementMatcherNodeMeta,
+  include: ElementMatcher[],
+  exclude: ElementMatcher[]
+): boolean {
+  const hasIncludeAttr = hasDataAttribute(nodeMeta, "data-skeleton-include");
+  const hasExcludeAttr = hasDataAttribute(nodeMeta, "data-skeleton-exclude");
+
+  if (hasExcludeAttr || exclude.some((matcher) => matchesMatcher(nodeMeta, matcher))) {
+    return false;
+  }
+
+  if (hasIncludeAttr) return true;
+  if (include.length === 0) return true;
+
+  return include.some((matcher) => matchesMatcher(nodeMeta, matcher));
+}
+
+export function generateStaticBlueprint(
+  rootVNode: VNode,
+  options: {
+    include?: ElementMatcher[];
+    exclude?: ElementMatcher[];
+  } = {}
+): Blueprint {
   nodeCounter = 0;
-  const nodes = traverseVNode(rootVNode);
+  const include = options.include ?? [];
+  const exclude = options.exclude ?? [];
+  const nodes = traverseVNode(rootVNode, include, exclude);
 
   return {
     version: 1,
@@ -82,13 +162,21 @@ export function generateStaticBlueprint(rootVNode: VNode): Blueprint {
   };
 }
 
-function traverseVNode(vnode: VNode | unknown): BlueprintNode[] {
+function traverseVNode(
+  vnode: VNode | unknown,
+  include: ElementMatcher[],
+  exclude: ElementMatcher[]
+): BlueprintNode[] {
   if (!isVNode(vnode)) return [];
 
   const props = (vnode.props as Record<string, unknown>) || {};
 
   // 1. High-priority exclusions
-  if (props["data-no-skeleton"] !== undefined || props["data-skeleton-ignore"] !== undefined) {
+  if (
+    props["data-no-skeleton"] !== undefined ||
+    props["data-skeleton-ignore"] !== undefined ||
+    props["data-skeleton-exclude"] !== undefined
+  ) {
     return [];
   }
 
@@ -97,7 +185,7 @@ function traverseVNode(vnode: VNode | unknown): BlueprintNode[] {
   // We only care about intrinsic HTML elements (typeof type === 'string').
   // For custom components/fragments, we just pass through to their children.
   if (typeof vnode.type !== "string") {
-    return parseChildren(props.children);
+    return parseChildren(props.children, include, exclude);
   }
 
   const tagName = vnode.type.toLowerCase();
@@ -118,7 +206,7 @@ function traverseVNode(vnode: VNode | unknown): BlueprintNode[] {
   const knownRole =
     inferRole && inferRole !== "skip" && inferRole !== "custom" ? inferRole : "text";
 
-  const children = parseChildren(props.children);
+  const children = parseChildren(props.children, include, exclude);
 
   // 5. Container vs Leaf
   // If it's a div/section without a specific role but it has recognized children,
@@ -194,13 +282,43 @@ function traverseVNode(vnode: VNode | unknown): BlueprintNode[] {
   if (textMeta) node.text = textMeta;
   if (typeof style.aspectRatio === "string") node.aspectRatio = style.aspectRatio;
 
+  const matcherNodeMeta: ElementMatcherNodeMeta = {
+    tagName: tagName.toUpperCase(),
+    ariaRole: typeof props.role === "string" ? props.role : null,
+    classList:
+      typeof props.className === "string" ? props.className.split(/\s+/).filter(Boolean) : [],
+    dataAttributes: Object.entries(props).reduce<Record<string, string>>((acc, [key, value]) => {
+      if (value === undefined || value === null) return acc;
+      if (key === "id") {
+        acc.id = String(value);
+        return acc;
+      }
+      if (!key.startsWith("data-")) return acc;
+      const normalized = key.slice(5).replace(/-([a-z])/g, (_m, c: string) => c.toUpperCase());
+      acc[normalized] = String(value);
+      return acc;
+    }, {}),
+    textContent: typeof props.children === "string" ? props.children.trim() : "",
+    hasChildren: children.length > 0,
+    childCount: children.length,
+    role,
+  };
+
+  if (!evaluateIncludeExclude(matcherNodeMeta, include, exclude)) {
+    return children;
+  }
+
   return [node];
 }
 
-function parseChildren(children: unknown): BlueprintNode[] {
+function parseChildren(
+  children: unknown,
+  include: ElementMatcher[],
+  exclude: ElementMatcher[]
+): BlueprintNode[] {
   if (!children) return [];
   if (Array.isArray(children)) {
-    return children.flatMap((c) => traverseVNode(c));
+    return children.flatMap((c) => traverseVNode(c, include, exclude));
   }
-  return traverseVNode(children);
+  return traverseVNode(children, include, exclude);
 }
