@@ -5,5 +5,5 @@ export default defineConfig({
     format: ["cjs", "esm"],
     dts: { resolve: true },
     clean: true,
-    noExternal: [/^@ghostframe\//],
+    noExternal: [/^@ghostframes\//],
 });

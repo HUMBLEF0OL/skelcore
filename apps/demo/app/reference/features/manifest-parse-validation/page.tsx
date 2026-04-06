@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useMemo } from "react";
-import { parseManifest } from "@ghostframe/runtime";
+import { parseManifest } from "@ghostframes/runtime";
 import { CodeBlock, FeatureCard } from "../../../../lib/demo-components";
-import generatedManifest from "../../../../lib/ghostframe/generated/manifest-loader";
+import generatedManifest from "../../../../lib/ghostframes/generated/manifest-loader";
 
 function prettyJson(value: unknown): string {
     if (!value) {

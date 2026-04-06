@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ghostframe Official Guide",
+  title: "Ghostframes Official Guide",
   description: "Zero-config skeleton loaders for React",
 };
 

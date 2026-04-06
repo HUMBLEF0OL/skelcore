@@ -143,7 +143,7 @@ function createDiffResult(overall: boolean): ManifestDiffResult {
 }
 
 async function mkTmpDir(): Promise<string> {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "ghostframe-report-test-"));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "ghostframes-report-test-"));
   createdDirs.push(dir);
   return dir;
 }

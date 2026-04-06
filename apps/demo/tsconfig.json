@@ -26,11 +26,11 @@
       "@/*": [
         "./*"
       ],
-      "GHOSTFRAME_CORE": [
-        "./lib/ghostframe/core"
+      "GHOSTFRAMES_CORE": [
+        "./lib/ghostframes/core"
       ],
-      "GHOSTFRAME_REACT": [
-        "./lib/ghostframe/react"
+      "GHOSTFRAMES_REACT": [
+        "./lib/ghostframes/react"
       ]
     }
   },
@@ -44,8 +44,8 @@
   ],
   "exclude": [
     "node_modules",
-    "lib/ghostframe/**/__tests__/**",
-    "lib/ghostframe/**/*.test.ts",
-    "lib/ghostframe/**/*.test.tsx"
+    "lib/ghostframes/**/__tests__/**",
+    "lib/ghostframes/**/*.test.ts",
+    "lib/ghostframes/**/*.test.tsx"
   ]
 }

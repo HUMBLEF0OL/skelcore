@@ -1,15 +1,15 @@
-# ghostframe
+# ghostframes
 Zero config skeleton loaders for React.
 
 ## Installation
 
 ```bash
-pnpm add @ghostframe/runtime
+pnpm add @ghostframes/runtime
 ```
 
 ```ts
-import { AutoSkeleton } from "@ghostframe/runtime";
-import { generateStaticBlueprint } from "@ghostframe/runtime";
+import { AutoSkeleton } from "@ghostframes/runtime";
+import { generateStaticBlueprint } from "@ghostframes/runtime";
 ```
 
 ## Build-Time Capture (Phase 3 MVP)
@@ -20,11 +20,11 @@ Generate demo manifest artifacts with:
 pnpm capture:demo
 ```
 
-This command runs `ghostframe capture` with `apps/demo/ghostframe.capture.config.mjs` and emits:
+This command runs `ghostframes capture` with `apps/demo/ghostframes.capture.config.mjs` and emits:
 
-- `apps/demo/lib/ghostframe/generated/manifest.json`
-- `apps/demo/lib/ghostframe/generated/manifest-loader.ts`
-- `apps/demo/lib/ghostframe/generated/capture-report.txt`
+- `apps/demo/lib/ghostframes/generated/manifest.json`
+- `apps/demo/lib/ghostframes/generated/manifest-loader.ts`
+- `apps/demo/lib/ghostframes/generated/capture-report.txt`
 
 ## CI Quality Gates
 
@@ -36,8 +36,8 @@ pnpm quality:gate
 
 This executes:
 
-- `ghostframe validate` to enforce schema, required key coverage derived from the captured manifest entries, invalid-entry budget, and artifact size.
-- `ghostframe diff` to produce deterministic drift output. In CI, pull requests diff the candidate manifest against the base branch snapshot.
-- `ghostframe report` to aggregate human/json outputs for CI.
+- `ghostframes validate` to enforce schema, required key coverage derived from the captured manifest entries, invalid-entry budget, and artifact size.
+- `ghostframes diff` to produce deterministic drift output. In CI, pull requests diff the candidate manifest against the base branch snapshot.
+- `ghostframes report` to aggregate human/json outputs for CI.
 
-Artifacts are written to `.tmp/ghostframe/`.
+Artifacts are written to `.tmp/ghostframes/`.

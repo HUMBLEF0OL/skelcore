@@ -3,12 +3,12 @@
 import React, { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import {
-    GhostframeProvider,
+    GhostframesProvider,
     derivePolicyForPath,
     getResolverTelemetryCounters,
-} from "@ghostframe/runtime";
+} from "@ghostframes/runtime";
 import { ThemeProvider } from "../lib/theme-context";
-import generatedManifest from "../lib/ghostframe/generated/manifest-loader";
+import generatedManifest from "../lib/ghostframes/generated/manifest-loader";
 
 type TelemetrySnapshot = {
     route: string;
@@ -118,14 +118,14 @@ export function ClientProviders({
         sink.snapshots.push(snapshot);
         window.__SKEL_TELEMETRY__ = sink;
 
-        console.info("[ghostframe][telemetry] resolver snapshot", snapshot);
+        console.info("[ghostframes][telemetry] resolver snapshot", snapshot);
     }, [pathname, telemetrySinkEnabled]);
 
     return (
         <ThemeProvider>
-            <GhostframeProvider manifest={generatedManifest} policy={policy}>
+            <GhostframesProvider manifest={generatedManifest} policy={policy}>
                 {children}
-            </GhostframeProvider>
+            </GhostframesProvider>
         </ThemeProvider>
     );
 }

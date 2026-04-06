@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { parseManifest } from "@ghostframe/core";
+import { parseManifest } from "@ghostframes/core";
 import { runBrowserCapture } from "../capture/browser-engine";
 import { resolveCaptureConfig } from "../config/capture-config";
 import { buildManifestDocument, renderManifestJson } from "../emit/manifest-writer";

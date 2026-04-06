@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { globalRolloutCollector } from "@ghostframe/core";
+import { globalRolloutCollector } from "@ghostframes/core";
 import { runCli } from "../index";
 
 describe("rollout command", () => {

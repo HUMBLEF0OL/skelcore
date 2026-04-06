@@ -1,4 +1,4 @@
-import type { BlueprintManifest } from '@ghostframe/runtime';
+import type { BlueprintManifest } from '@ghostframes/runtime';
 export const generatedManifest: BlueprintManifest = {
   "manifestVersion": 1,
   "packageVersion": "0.1.0",

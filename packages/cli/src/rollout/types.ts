@@ -1,4 +1,4 @@
-import type { RolloutDecision, DecisionProof } from "@ghostframe/core";
+import type { RolloutDecision, DecisionProof } from "@ghostframes/core";
 
 export interface CanaryPolicy {
   sampledRequests: number;

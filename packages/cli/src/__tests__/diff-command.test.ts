@@ -71,7 +71,7 @@ describe("runDiffCommand", () => {
 });
 
 async function mkTmpDir(): Promise<string> {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "ghostframe-diff-test-"));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "ghostframes-diff-test-"));
   createdDirs.push(dir);
   return dir;
 }

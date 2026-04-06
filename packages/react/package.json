@@ -1,5 +1,5 @@
 {
-  "name": "@ghostframe/react",
+  "name": "@ghostframes/react",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -32,7 +32,7 @@
     "react-dom": ">=18"
   },
   "dependencies": {
-    "@ghostframe/core": "workspace:*"
+    "@ghostframes/core": "workspace:*"
   },
   "size-limit": [
     {

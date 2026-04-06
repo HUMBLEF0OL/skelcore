@@ -17,7 +17,7 @@ export function buildQualityReport(input: {
 
 export function renderQualityTextReport(result: ManifestQualityResult): string {
   return [
-    "Ghostframe Manifest Validation",
+    "Ghostframes Manifest Validation",
     `Overall: ${result.gates.overall ? "PASS" : "FAIL"}`,
     `Schema valid: ${result.gates.schemaValid}`,
     `Coverage ratio: ${result.summary.coverageRatio.toFixed(3)}`,
@@ -31,7 +31,7 @@ export function renderQualityTextReport(result: ManifestQualityResult): string {
 
 export function renderDiffTextReport(result: ManifestDiffResult): string {
   return [
-    "Ghostframe Manifest Diff",
+    "Ghostframes Manifest Diff",
     `Overall: ${result.gates.overall ? "PASS" : "FAIL"}`,
     `Added keys: ${result.summary.added}`,
     `Removed keys: ${result.summary.removed}`,
@@ -44,7 +44,7 @@ export function renderDiffTextReport(result: ManifestDiffResult): string {
 
 export function renderQualityReportText(report: QualityReport): string {
   const lines = [
-    "Ghostframe Quality Report",
+    "Ghostframes Quality Report",
     `Generated at: ${report.generatedAt}`,
     `Overall: ${report.overallPass ? "PASS" : "FAIL"}`,
     "",

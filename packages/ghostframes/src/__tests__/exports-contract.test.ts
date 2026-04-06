@@ -3,11 +3,11 @@ import * as react from "../react";
 import * as runtime from "../runtime";
 import * as build from "../build";
 
-describe("@ghostframe/runtime export contract", () => {
+describe("@ghostframes/runtime export contract", () => {
   test("root exports React facade symbols", () => {
     expect(typeof root.AutoSkeleton).toBe("function");
     expect(typeof root.useAutoSkeleton).toBe("function");
-    expect(typeof root.GhostframeProvider).toBe("function");
+    expect(typeof root.GhostframesProvider).toBe("function");
   });
 
   test("react subpath exports expected symbols", () => {

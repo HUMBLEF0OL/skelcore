@@ -1,12 +1,12 @@
 {
-    "name": "@ghostframe/runtime",
+    "name": "@ghostframes/runtime",
     "version": "0.1.0",
     "type": "module",
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "bin": {
-        "ghostframe": "./dist/build.js"
+        "ghostframes": "./dist/build.js"
     },
     "exports": {
         ".": {
@@ -49,9 +49,9 @@
         "playwright": "^1.58.2"
     },
     "devDependencies": {
-        "@ghostframe/cli": "workspace:*",
-        "@ghostframe/core": "workspace:*",
-        "@ghostframe/react": "workspace:*",
+        "@ghostframes/cli": "workspace:*",
+        "@ghostframes/core": "workspace:*",
+        "@ghostframes/react": "workspace:*",
         "@types/react": "^19.0.0",
         "@types/react-dom": "^19.0.0",
         "tsup": "^8.5.1",

@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { AutoSkeleton } from "../../../../lib/ghostframe/react";
+import { AutoSkeleton } from "../../../../lib/ghostframes/react";
 import { CodeBlock, FeatureCard } from "../../../../lib/demo-components";
-import type { Blueprint } from "../../../../lib/ghostframe/core";
+import type { Blueprint } from "../../../../lib/ghostframes/core";
 
 function CallbackSample() {
   return (

@@ -1,6 +1,6 @@
-# Ghostframe Demo
+# Ghostframes Demo
 
-A comprehensive Next.js demonstration of `@ghostframe/react` features and customization options.
+A comprehensive Next.js demonstration of `@ghostframes/react` features and customization options.
 
 ## Running the Demo
 
@@ -13,7 +13,7 @@ pnpm dev
 
 ## Demo Sections
 
-The demo showcases 13 use-cases covering basic to advanced Ghostframe features:
+The demo showcases 13 use-cases covering basic to advanced Ghostframes features:
 
 ### Core Features (Sections 1-8)
 

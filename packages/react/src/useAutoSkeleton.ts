@@ -15,7 +15,7 @@ import {
   type BlueprintInvalidationReason,
   type MeasurementPolicy,
   type BlueprintCachePolicy,
-} from "@ghostframe/core";
+} from "@ghostframes/core";
 import { recordRuntimeBlueprint, resolveBlueprint } from "./resolver";
 import type { ResolutionEvent, ResolutionPolicy } from "./resolution-types";
 

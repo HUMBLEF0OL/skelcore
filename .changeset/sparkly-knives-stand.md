@@ -1,8 +1,8 @@
 ---
-"@ghostframe/runtime": major
-"@ghostframe/react": major
-"@ghostframe/core": major
-"@ghostframe/cli": major
+"@ghostframes/runtime": major
+"@ghostframes/react": major
+"@ghostframes/core": major
+"@ghostframes/cli": major
 ---
 
 initial release of ghostframes

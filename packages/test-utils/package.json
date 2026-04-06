@@ -1,5 +1,5 @@
 {
-  "name": "@ghostframe/test-utils",
+  "name": "@ghostframes/test-utils",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -33,6 +33,6 @@
   "devDependencies": {
     "typescript": "^6.0.2",
     "tsup": "^8.0.0",
-    "@ghostframe/runtime": "workspace:*"
+    "@ghostframes/runtime": "workspace:*"
   }
 }

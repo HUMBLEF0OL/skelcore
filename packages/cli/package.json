@@ -1,12 +1,12 @@
 {
-  "name": "@ghostframe/cli",
+  "name": "@ghostframes/cli",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "ghostframe": "./dist/index.js"
+    "ghostframes": "./dist/index.js"
   },
   "exports": {
     ".": {
@@ -29,7 +29,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ghostframe/core": "workspace:*",
+    "@ghostframes/core": "workspace:*",
     "playwright": "^1.58.2"
   },
   "devDependencies": {

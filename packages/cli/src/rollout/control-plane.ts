@@ -1,5 +1,5 @@
-import { globalRolloutCollector } from "@ghostframe/core";
-import type { RolloutDecision, RolloutEnvironment } from "@ghostframe/core";
+import { globalRolloutCollector } from "@ghostframes/core";
+import type { RolloutDecision, RolloutEnvironment } from "@ghostframes/core";
 import { evaluateCanary, type CanaryObservations } from "./canary-strategy.js";
 import { RolloutDecisionGate, type SafetyGateConfig } from "./decision-gate.js";
 import { evaluateFeatureFlag } from "./feature-flag-strategy.js";

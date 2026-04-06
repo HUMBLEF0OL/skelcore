@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseManifest } from "@ghostframe/core";
+import { parseManifest } from "@ghostframes/core";
 import { buildManifestDocument, renderManifestJson } from "../emit/manifest-writer";
 
 describe("buildManifestDocument", () => {

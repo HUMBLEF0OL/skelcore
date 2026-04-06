@@ -1,4 +1,4 @@
-import type { Blueprint, ManifestEntryValidationResult } from "@ghostframe/core";
+import type { Blueprint, ManifestEntryValidationResult } from "@ghostframes/core";
 import {
   DEFAULT_RESOLUTION_POLICY,
   type ResolutionPolicy,

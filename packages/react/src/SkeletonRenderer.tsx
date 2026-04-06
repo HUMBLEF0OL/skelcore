@@ -7,7 +7,7 @@ import type {
   BlueprintNode,
   SkeletonAnimationDefinition,
   SkeletonConfig,
-} from "@ghostframe/core";
+} from "@ghostframes/core";
 
 type ResolvedAnimation = {
   className: string;
@@ -76,7 +76,7 @@ export interface SkeletonRendererProps {
 }
 
 /**
- * Pure React component to render a Ghostframe Blueprint.
+ * Pure React component to render a Ghostframes Blueprint.
  * Decoupled from measurement logic; focuses entirely on visual mapping.
  */
 export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
@@ -102,7 +102,7 @@ export const SkeletonRenderer: React.FC<SkeletonRendererProps> = ({
       return;
     }
 
-    const styleId = `skelcore-custom-animation-${resolvedAnimation.keyframeName}`;
+    const styleId = `ghostframes-custom-animation-${resolvedAnimation.keyframeName}`;
     const existingRef = customAnimationStyleRefs.get(styleId);
     if (existingRef) {
       existingRef.refCount += 1;

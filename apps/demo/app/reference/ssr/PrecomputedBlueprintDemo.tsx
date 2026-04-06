@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { AutoSkeleton } from "../../../lib/ghostframe/react";
+import { AutoSkeleton } from "../../../lib/ghostframes/react";
 import { InteractiveToggle } from "../../../lib/demo-components";
-import type { Blueprint } from "../../../lib/ghostframe/core";
+import type { Blueprint } from "../../../lib/ghostframes/core";
 
 function FastPathCard() {
   return (

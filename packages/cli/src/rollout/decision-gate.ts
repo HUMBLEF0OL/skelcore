@@ -1,5 +1,5 @@
-import { globalRolloutCollector } from "@ghostframe/core";
-import type { RolloutEnvironment } from "@ghostframe/core";
+import { globalRolloutCollector } from "@ghostframes/core";
+import type { RolloutEnvironment } from "@ghostframes/core";
 
 export interface SafetyGateConfig {
   maxRollbacksInWindow: number;

@@ -1,4 +1,4 @@
-import type { Blueprint, BlueprintManifest, ManifestEntryValidationResult } from "@ghostframe/core";
+import type { Blueprint, BlueprintManifest, ManifestEntryValidationResult } from "@ghostframes/core";
 
 export type ResolutionPolicyMode =
   | "runtime-only"

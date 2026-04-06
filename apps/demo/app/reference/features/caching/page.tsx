@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useCallback, useMemo, useRef, useState } from "react";
-import { AutoSkeleton } from "../../../../lib/ghostframe/react";
+import { AutoSkeleton } from "../../../../lib/ghostframes/react";
 import { CodeBlock, FeatureCard } from "../../../../lib/demo-components";
-import type { Blueprint, BlueprintNode } from "../../../../lib/ghostframe/core";
+import type { Blueprint, BlueprintNode } from "../../../../lib/ghostframes/core";
 
 function signatureForNode(node: BlueprintNode): string {
   const childSignatures = node.children.map(signatureForNode).join(",");

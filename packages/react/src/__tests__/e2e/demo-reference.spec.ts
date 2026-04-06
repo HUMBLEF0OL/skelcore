@@ -21,7 +21,7 @@ test.describe("demo reference routes", () => {
     await page.goto("/reference");
 
     await expect(
-      page.getByRole("heading", { level: 1, name: "Ghostframe Reference" })
+      page.getByRole("heading", { level: 1, name: "Ghostframes Reference" })
     ).toBeVisible();
     await expect(page.getByRole("link", { name: "All Features" })).toBeVisible();
 

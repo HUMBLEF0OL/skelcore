@@ -1,4 +1,4 @@
-import type { RolloutMetrics } from "@ghostframe/core";
+import type { RolloutMetrics } from "@ghostframes/core";
 
 export function renderRolloutDashboard(metrics: RolloutMetrics): string {
   const environmentLines = Object.entries(metrics.environmentMetrics)

@@ -11,11 +11,11 @@ async function main() {
 
     // Add Phase 10 scripts
     packageJson.scripts["rollout:test"] =
-        "pnpm --filter @ghostframe/cli test -- src/rollout/__tests__/";
+        "pnpm --filter @ghostframes/cli test -- src/rollout/__tests__/";
     packageJson.scripts["rollout:status"] =
-        "pnpm --filter @ghostframe/cli build && node scripts/rollout/status.mjs";
+        "pnpm --filter @ghostframes/cli build && node scripts/rollout/status.mjs";
     packageJson.scripts["rollout:ready"] =
-        "pnpm --filter @ghostframe/cli test -- src/rollout/__tests__/ && pnpm --filter @ghostframe/cli typecheck && pnpm --filter @ghostframe/cli build && pnpm --filter demo typecheck";
+        "pnpm --filter @ghostframes/cli test -- src/rollout/__tests__/ && pnpm --filter @ghostframes/cli typecheck && pnpm --filter @ghostframes/cli build && pnpm --filter demo typecheck";
 
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2) + "\n", "utf8");
 

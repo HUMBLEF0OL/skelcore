@@ -18,9 +18,9 @@ export {
   type ResolutionPolicyMode,
 } from "./resolution-types";
 export {
-  GhostframeProvider,
-  useGhostframeContext,
-  type GhostframeContextValue,
-  type GhostframeProviderProps,
-} from "./GhostframeProvider";
-export * from "@ghostframe/core";
+  GhostframesProvider,
+  useGhostframesContext,
+  type GhostframesContextValue,
+  type GhostframesProviderProps,
+} from "./GhostframesProvider";
+export * from "@ghostframes/core";

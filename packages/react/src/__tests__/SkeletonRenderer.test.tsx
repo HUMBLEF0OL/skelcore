@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
 import { SkeletonRenderer } from "../SkeletonRenderer";
-import { DEFAULT_CONFIG, type Blueprint } from "@ghostframe/core";
+import { DEFAULT_CONFIG, type Blueprint } from "@ghostframes/core";
 
 const mockBlueprint: Blueprint = {
   version: 1,
@@ -298,7 +298,7 @@ describe("SkeletonRenderer", () => {
 
     const first = renderWithCustomAnimation();
     const second = renderWithCustomAnimation();
-    const styleId = "skelcore-custom-animation-skel-custom-brandpulse";
+    const styleId = "ghostframes-custom-animation-skel-custom-brandpulse";
 
     expect(document.getElementById(styleId)).toBeTruthy();
 

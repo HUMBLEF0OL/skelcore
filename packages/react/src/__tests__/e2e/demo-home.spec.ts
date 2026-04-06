@@ -5,7 +5,7 @@ test.describe("home guide route", () => {
     await page.goto("/");
 
     await expect(
-      page.getByRole("heading", { level: 1, name: "Ghostframe Official Guide" })
+      page.getByRole("heading", { level: 1, name: "Ghostframes Official Guide" })
     ).toBeVisible();
     await expect(page.getByRole("link", { name: "Open Feature Index" })).toBeVisible();
     await expect(page.locator("#toggle-loading")).toHaveCount(0);

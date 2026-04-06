@@ -37,7 +37,7 @@ export default function ReferenceOverview() {
   return (
     <div className="guide-flow">
       <header className="guide-header">
-        <h1 className="guide-title font-bold text-white light:text-zinc-900">Ghostframe Reference</h1>
+        <h1 className="guide-title font-bold text-white light:text-zinc-900">Ghostframes Reference</h1>
         <p className="text-lg text-zinc-500 light:text-zinc-600">
           Developer-focused guides covering runtime behavior, server rendering, configuration, and operational workflows.
         </p>

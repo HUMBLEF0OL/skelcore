@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { GhostframeProvider, useGhostframeContext } from "../GhostframeProvider";
-import type { BlueprintManifest } from "@ghostframe/core";
+import { GhostframesProvider, useGhostframesContext } from "../GhostframesProvider";
+import type { BlueprintManifest } from "@ghostframes/core";
 
 const mockManifest: BlueprintManifest = {
   manifestVersion: 1,
@@ -15,7 +15,7 @@ const mockManifest: BlueprintManifest = {
 };
 
 function TestComponent() {
-  const context = useGhostframeContext();
+  const context = useGhostframesContext();
   const hasManifest = context?.manifest ? "true" : "false";
   const policyMode = context?.policy?.mode || "none";
   return (
@@ -26,30 +26,30 @@ function TestComponent() {
   );
 }
 
-describe("GhostframeProvider", () => {
+describe("GhostframesProvider", () => {
   it("provides manifest to children", () => {
     render(
-      <GhostframeProvider manifest={mockManifest}>
+      <GhostframesProvider manifest={mockManifest}>
         <TestComponent />
-      </GhostframeProvider>
+      </GhostframesProvider>
     );
     expect(screen.getByTestId("has-manifest")).toHaveTextContent("true");
   });
 
   it("provides policy to children", () => {
     render(
-      <GhostframeProvider policy={{ mode: "hybrid" }}>
+      <GhostframesProvider policy={{ mode: "hybrid" }}>
         <TestComponent />
-      </GhostframeProvider>
+      </GhostframesProvider>
     );
     expect(screen.getByTestId("policy-mode")).toHaveTextContent("hybrid");
   });
 
   it("allows consumers to access both manifest and policy", () => {
     render(
-      <GhostframeProvider manifest={mockManifest} policy={{ mode: "precomputed-only" }}>
+      <GhostframesProvider manifest={mockManifest} policy={{ mode: "precomputed-only" }}>
         <TestComponent />
-      </GhostframeProvider>
+      </GhostframesProvider>
     );
     expect(screen.getByTestId("has-manifest")).toHaveTextContent("true");
     expect(screen.getByTestId("policy-mode")).toHaveTextContent("precomputed-only");
@@ -57,7 +57,7 @@ describe("GhostframeProvider", () => {
 
   it("returns undefined when not inside provider", () => {
     function ComponentOutsideProvider() {
-      const context = useGhostframeContext();
+      const context = useGhostframesContext();
       const hasContext = context ? "true" : "false";
       return <div data-testid="has-context">{hasContext}</div>;
     }
@@ -73,17 +73,17 @@ describe("GhostframeProvider", () => {
     };
 
     function InnerComponent() {
-      const context = useGhostframeContext();
+      const context = useGhostframesContext();
       const version = context?.manifest?.packageVersion || "none";
       return <div data-testid="version">{version}</div>;
     }
 
     render(
-      <GhostframeProvider manifest={mockManifest}>
-        <GhostframeProvider manifest={innerManifest}>
+      <GhostframesProvider manifest={mockManifest}>
+        <GhostframesProvider manifest={innerManifest}>
           <InnerComponent />
-        </GhostframeProvider>
-      </GhostframeProvider>
+        </GhostframesProvider>
+      </GhostframesProvider>
     );
     expect(screen.getByTestId("version")).toHaveTextContent("0.2.0");
   });

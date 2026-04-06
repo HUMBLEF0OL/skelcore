@@ -1,5 +1,5 @@
 import React from "react";
-import { generateStaticBlueprint } from "@ghostframe/runtime";
+import { generateStaticBlueprint } from "@ghostframes/runtime";
 import { CodeBlock, FeatureCard } from "../../../lib/demo-components";
 import { PrecomputedBlueprintDemo } from "./PrecomputedBlueprintDemo";
 
@@ -33,8 +33,8 @@ function createStaticBlueprintTree() {
 
 const staticBlueprint = generateStaticBlueprint(createStaticBlueprintTree());
 
-const staticUsageCode = `import { generateStaticBlueprint } from "@ghostframe/runtime";
-import { AutoSkeleton } from "@ghostframe/runtime";
+const staticUsageCode = `import { generateStaticBlueprint } from "@ghostframes/runtime";
+import { AutoSkeleton } from "@ghostframes/runtime";
 
 const blueprint = generateStaticBlueprint(
   <article>
@@ -52,7 +52,7 @@ export function ProductPreview({ loading }: { loading: boolean }) {
 }`;
 
 const recommendedPipelineCode = `// server.tsx (RSC)
-import { generateStaticBlueprint } from "@skelcore/core";
+import { generateStaticBlueprint } from "@ghostframes/core";
 
 const blueprint = generateStaticBlueprint(
   <article>
@@ -62,7 +62,7 @@ const blueprint = generateStaticBlueprint(
 );
 
 // client.tsx
-import { AutoSkeleton } from "@skelcore/react";
+import { AutoSkeleton } from "@ghostframes/react";
 
 <AutoSkeleton
   loading={loading}

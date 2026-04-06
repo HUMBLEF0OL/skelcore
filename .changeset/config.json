@@ -8,6 +8,6 @@
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
   "ignore": [
-    "@ghostframe/test-utils"
+    "@ghostframes/test-utils"
   ]
 }

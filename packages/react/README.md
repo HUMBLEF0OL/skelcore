@@ -1,14 +1,14 @@
-# @ghostframe/react
+# @ghostframes/react
 
 > Automatic, zero-configuration skeleton loading states for React — powered by live DOM measurement.
 
-[![npm version](https://img.shields.io/npm/v/@ghostframe/runtime)](https://www.npmjs.com/package/@ghostframe/runtime)
-[![bundle size](https://img.shields.io/bundlephobia/minzip/@ghostframe/runtime)](https://bundlephobia.com/package/@ghostframe/runtime)
-[![license](https://img.shields.io/npm/l/@ghostframe/runtime)](../../LICENSE)
+[![npm version](https://img.shields.io/npm/v/@ghostframes/runtime)](https://www.npmjs.com/package/@ghostframes/runtime)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/@ghostframes/runtime)](https://bundlephobia.com/package/@ghostframes/runtime)
+[![license](https://img.shields.io/npm/l/@ghostframes/runtime)](../../LICENSE)
 
-`@ghostframe/react` wraps Ghostframe's engine with idiomatic React components and a hook. It measures your real UI — fonts, layout, borders, media — and replaces it with a pixel-perfect skeleton overlay while data loads. No manual schema. No configuration required to get started.
+`@ghostframes/react` wraps Ghostframes's engine with idiomatic React components and a hook. It measures your real UI — fonts, layout, borders, media — and replaces it with a pixel-perfect skeleton overlay while data loads. No manual schema. No configuration required to get started.
 
-**[→ Live Demo](https://getghostframe.vercel.app/)**
+**[→ Live Demo](https://getghostframes.vercel.app/)**
 
 ---
 
@@ -40,13 +40,13 @@
 
 ```bash
 # npm
-npm install @ghostframe/runtime
+npm install @ghostframes/runtime
 
 # pnpm
-pnpm add @ghostframe/runtime
+pnpm add @ghostframes/runtime
 
 # yarn
-yarn add @ghostframe/runtime
+yarn add @ghostframes/runtime
 ```
 
 
@@ -55,7 +55,7 @@ yarn add @ghostframe/runtime
 ## Quick Start
 
 ```tsx
-import { AutoSkeleton } from "@ghostframe/runtime";
+import { AutoSkeleton } from "@ghostframes/runtime";
 
 function UserCard({ userId }: { userId: string }) {
   const { user, loading } = useUser(userId);
@@ -90,7 +90,7 @@ import {
   // Hook
   useAutoSkeleton,
 
-  // Core types (re-exported from @ghostframe/runtime)
+  // Core types (re-exported from @ghostframes/runtime)
   type AutoSkeletonProps,
   type SkeletonRendererProps,
   type SkeletonPhase,
@@ -100,14 +100,14 @@ import {
   type SkeletonRole,
   type AnimationMode,
 
-  // Core utilities (re-exported from @ghostframe/runtime)
+  // Core utilities (re-exported from @ghostframes/runtime)
   DEFAULT_CONFIG,
   generateStaticBlueprint,
   generateDynamicBlueprint,
   blueprintCache,
   computeStructuralHash,
   animationSystem,
-} from "@ghostframe/runtime";
+} from "@ghostframes/runtime";
 ```
 
 ---
@@ -132,7 +132,7 @@ The **primary component**. It wraps your content, measures it while loading, and
 | `blueprint` | `Blueprint` | ❌ | `undefined` | A pre-computed blueprint (e.g. from SSR). Skips DOM measurement entirely. |
 | `hydrateBlueprint` | `Blueprint` | ❌ | `undefined` | SSR/edge blueprint candidate validated on the client before reuse. |
 | `blueprintSource` | `"client" \| "server" \| "cache"` | ❌ | `"client"` | Declares where `hydrateBlueprint` originated so validation and fallback rules can be applied. |
-| `onBlueprintInvalidated` | `(reason) => void` | ❌ | `undefined` | Called when hydrated blueprint validation fails and Ghostframe falls back to measurement. |
+| `onBlueprintInvalidated` | `(reason) => void` | ❌ | `undefined` | Called when hydrated blueprint validation fails and Ghostframes falls back to measurement. |
 | `measurementPolicy` | `{ mode: "eager" \| "idle" \| "viewport" \| "manual"; budgetMs?: number }` | ❌ | `{ mode: "eager" }` | Controls when measurement starts and optionally caps analyzer work budget per run. |
 | `blueprintCachePolicy` | `{ ttlMs?: number; version?: number }` | ❌ | `undefined` | Optional TTL/version gates for cache and hydration blueprint reuse. |
 | `fallback` | `React.ReactNode` | ❌ | `undefined` | Shown only during the first measurement pass, before a blueprint is ready. |
@@ -255,7 +255,7 @@ Resolution order:
 
 ```tsx
 // Server-side (RSC or route handler)
-import { generateStaticBlueprint } from "@ghostframe/runtime";
+import { generateStaticBlueprint } from "@ghostframes/runtime";
 
 const serverBlueprint = generateStaticBlueprint(
   <article>
@@ -265,7 +265,7 @@ const serverBlueprint = generateStaticBlueprint(
 );
 
 // Client component
-import { AutoSkeleton } from "@ghostframe/react";
+import { AutoSkeleton } from "@ghostframes/react";
 
 <AutoSkeleton
   loading={loading}
@@ -294,8 +294,8 @@ Policy guidance:
 A **pure rendering component** that converts a `Blueprint` into DOM elements. Use it when you want to render a blueprint yourself without the measurement logic of `AutoSkeleton`.
 
 ```tsx
-import { SkeletonRenderer } from "@ghostframe/runtime";
-import { generateStaticBlueprint } from "@ghostframe/runtime";
+import { SkeletonRenderer } from "@ghostframes/runtime";
+import { generateStaticBlueprint } from "@ghostframes/runtime";
 
 const blueprint = generateStaticBlueprint(
   <div>
@@ -342,7 +342,7 @@ The **low-level hook** that powers `AutoSkeleton`. Use it to build completely cu
 
 ```tsx
 import { useRef } from "react";
-import { useAutoSkeleton, SkeletonRenderer, DEFAULT_CONFIG } from "@ghostframe/runtime";
+import { useAutoSkeleton, SkeletonRenderer, DEFAULT_CONFIG } from "@ghostframes/runtime";
 
 function CustomSkeleton({ loading }: { loading: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -409,7 +409,7 @@ All visual and behavioral options are controlled through the `SkeletonConfig` ob
 ### Default Values
 
 ```ts
-import { DEFAULT_CONFIG } from "@ghostframe/runtime";
+import { DEFAULT_CONFIG } from "@ghostframes/runtime";
 
 // DEFAULT_CONFIG equals:
 {
@@ -433,7 +433,7 @@ import { DEFAULT_CONFIG } from "@ghostframe/runtime";
 
 ### CSS Custom Properties
 
-The animation system injects a `<style id="ghostframe-animations">` tag into `<head>` that exposes these CSS variables:
+The animation system injects a `<style id="ghostframes-animations">` tag into `<head>` that exposes these CSS variables:
 
 | Variable | Maps to config |
 |----------|----------------|
@@ -513,7 +513,7 @@ type Blueprint = {
 For server-rendered pages or when you want zero measurement delay, generate a blueprint from your JSX tree statically:
 
 ```tsx
-import { generateStaticBlueprint } from "@ghostframe/runtime";
+import { generateStaticBlueprint } from "@ghostframes/runtime";
 
 // No DOM required — works in Node.js / SSR
 const blueprint = generateStaticBlueprint(
@@ -619,7 +619,7 @@ Mark the component as a Client Component (required because `AutoSkeleton` uses b
 "use client";
 // AutoSkeleton internally marks itself as "use client" as well
 
-import { AutoSkeleton } from "@ghostframe/runtime";
+import { AutoSkeleton } from "@ghostframes/runtime";
 
 export function ArticleCard({ article, loading }: Props) {
   return (
@@ -638,7 +638,7 @@ For RSC-compatible patterns, generate a static blueprint in a Server Component a
 
 ```tsx
 // server-component.tsx (no "use client")
-import { generateStaticBlueprint } from "@ghostframe/runtime";
+import { generateStaticBlueprint } from "@ghostframes/runtime";
 import { ClientCard } from "./client-card";
 
 const cardBlueprint = generateStaticBlueprint(
@@ -792,7 +792,7 @@ Or pass colors directly via config:
 
 ## Accessibility
 
-`@ghostframe/runtime` is built with accessibility in mind:
+`@ghostframes/runtime` is built with accessibility in mind:
 
 - The container root receives `aria-busy={loading}` — screen readers announce loading state changes
 - The skeleton overlay sets `aria-hidden="true"` — it is invisible to assistive technology
@@ -817,7 +817,7 @@ import type {
   AnimationMode,        // "shimmer" | "pulse" | "none"
   TextMeta,
   LayoutProps,
-} from "@ghostframe/runtime";
+} from "@ghostframes/runtime";
 ```
 
 ---
@@ -843,5 +843,5 @@ See [CHANGELOG.md](./CHANGELOG.md) for the full release history.
 
 ## License
 
-[MIT](../../LICENSE) © Ghostframe Contributors
+[MIT](../../LICENSE) © Ghostframes Contributors
 

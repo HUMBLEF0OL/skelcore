@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import type { SkeletonConfig } from "../ghostframe/core";
-import { AutoSkeleton } from "../ghostframe/react";
+import type { SkeletonConfig } from "../ghostframes/core";
+import { AutoSkeleton } from "../ghostframes/react";
 
 interface ConfigExampleProps {
   configName: string;

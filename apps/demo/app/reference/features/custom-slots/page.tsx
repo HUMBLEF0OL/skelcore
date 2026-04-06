@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { AutoSkeleton } from "../../../../lib/ghostframe/react";
+import { AutoSkeleton } from "../../../../lib/ghostframes/react";
 import { CodeBlock, FeatureCard, InteractiveToggle } from "../../../../lib/demo-components";
 
 function ProductCardWithSlot() {

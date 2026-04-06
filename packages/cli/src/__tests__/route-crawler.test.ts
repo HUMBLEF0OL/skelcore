@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { asStructuralHash, type ManifestEntry } from "@ghostframe/core";
+import { asStructuralHash, type ManifestEntry } from "@ghostframes/core";
 import { crawlRoutes } from "../capture/route-crawler";
 import { discoverTargets } from "../capture/target-discovery";
 import { extractArtifact } from "../capture/blueprint-extractor";
@@ -41,7 +41,7 @@ describe("crawlRoutes", () => {
         routes: ["/test"],
         breakpoints: [375],
         viewportHeight: 900,
-        outputDir: "apps/demo/lib/ghostframe/generated",
+        outputDir: "apps/demo/lib/ghostframes/generated",
         manifestFileName: "manifest.json",
         loaderFileName: "manifest-loader.ts",
         selector: "[data-skeleton-key]",
@@ -89,7 +89,7 @@ describe("crawlRoutes", () => {
       routes: ["/test"],
       breakpoints: [375],
       viewportHeight: 900,
-      outputDir: "apps/demo/lib/ghostframe/generated",
+      outputDir: "apps/demo/lib/ghostframes/generated",
       manifestFileName: "manifest.json",
       loaderFileName: "manifest-loader.ts",
       selector: "[data-skeleton-key]",
@@ -117,7 +117,7 @@ describe("crawlRoutes", () => {
         routes: ["/test", "/reference"],
         breakpoints: [375, 768, 1280],
         viewportHeight: 900,
-        outputDir: "apps/demo/lib/ghostframe/generated",
+        outputDir: "apps/demo/lib/ghostframes/generated",
         manifestFileName: "manifest.json",
         loaderFileName: "manifest-loader.ts",
         selector: "[data-skeleton-key]",

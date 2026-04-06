@@ -83,7 +83,7 @@ describe("runValidateCommand", () => {
 });
 
 async function mkTmpDir(): Promise<string> {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "ghostframe-validate-test-"));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), "ghostframes-validate-test-"));
   createdDirs.push(dir);
   return dir;
 }

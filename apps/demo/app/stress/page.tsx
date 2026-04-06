@@ -2,8 +2,8 @@
 
 import React, { useMemo, useRef, useState } from "react";
 import { FeatureCard } from "../../lib/demo-components";
-import { AutoSkeleton } from "../../lib/ghostframe/react";
-import type { BlueprintNode } from "../../lib/ghostframe/core";
+import { AutoSkeleton } from "../../lib/ghostframes/react";
+import type { BlueprintNode } from "../../lib/ghostframes/core";
 
 function StressGrid() {
     const items = useMemo(() => Array.from({ length: 300 }, (_, index) => index + 1), []);

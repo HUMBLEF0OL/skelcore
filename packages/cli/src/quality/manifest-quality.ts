@@ -1,4 +1,4 @@
-import { parseEntry, parseManifest } from "@ghostframe/core";
+import { parseEntry, parseManifest } from "@ghostframes/core";
 import type { ManifestQualityResult, ManifestQualityThresholds } from "../types";
 
 export function evaluateManifestQuality(input: {

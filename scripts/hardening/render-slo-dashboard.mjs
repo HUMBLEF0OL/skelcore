@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename);
  */
 
 async function main() {
-  const reportPath = path.resolve(__dirname, "../../.tmp/ghostframe/report.json");
+  const reportPath = path.resolve(__dirname, "../../.tmp/ghostframes/report.json");
   const reportRaw = await fs.readFile(reportPath, "utf8");
   const report = JSON.parse(reportRaw);
 
@@ -36,7 +36,7 @@ async function main() {
     `- Artifact size (bytes): ${artifactSizeBytes}`,
     "",
     "Source:",
-    "- .tmp/ghostframe/report.json",
+    "- .tmp/ghostframes/report.json",
     "",
   ].join("\n");
 

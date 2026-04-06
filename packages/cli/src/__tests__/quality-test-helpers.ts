@@ -1,4 +1,4 @@
-import type { BlueprintManifest } from "@ghostframe/core";
+import type { BlueprintManifest } from "@ghostframes/core";
 
 export function createManifest(keys: string[]): BlueprintManifest {
   const entries = Object.fromEntries(keys.map((key) => [key, createEntry(key)]));

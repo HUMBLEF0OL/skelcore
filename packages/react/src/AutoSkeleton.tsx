@@ -15,10 +15,10 @@ import {
   type SkeletonAnimationDefinition,
   type SkeletonConfig,
   type BlueprintManifest,
-} from "@ghostframe/core";
+} from "@ghostframes/core";
 import { useAutoSkeleton } from "./useAutoSkeleton";
 import { SkeletonRenderer } from "./SkeletonRenderer";
-import { useGhostframeContext } from "./GhostframeProvider";
+import { useGhostframesContext } from "./GhostframesProvider";
 import {
   buildSchemaPlaceholderBlueprint,
   buildSlotsPlaceholderBlueprint,
@@ -91,7 +91,7 @@ export function AutoSkeleton({
   const config = useMemo(() => ({ ...DEFAULT_CONFIG, ...configOverride }), [configOverride]);
 
   // Use context as fallback for manifest and policy if not explicitly passed
-  const context = useGhostframeContext();
+  const context = useGhostframesContext();
   const effectiveManifest = manifest ?? context?.manifest;
   const effectivePolicy = policyOverride ?? context?.policy;
 

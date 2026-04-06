@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
 import { SkeletonRenderer } from "../SkeletonRenderer";
-import { DEFAULT_CONFIG, type Blueprint } from "@ghostframe/runtime";
+import { DEFAULT_CONFIG, type Blueprint } from "@ghostframes/runtime";
 
 const mockBlueprint: Blueprint = {
   version: 1,

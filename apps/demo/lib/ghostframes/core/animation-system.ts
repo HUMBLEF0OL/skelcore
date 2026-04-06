@@ -20,7 +20,7 @@ export class AnimationSystem {
 
     if (!this.styleTag) {
       this.styleTag = document.createElement("style");
-      this.styleTag.id = "ghostframe-animations";
+      this.styleTag.id = "ghostframes-animations";
       document.head.appendChild(this.styleTag);
     }
 

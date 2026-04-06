@@ -1,4 +1,4 @@
-import type { ManifestEntry } from "@ghostframe/core";
+import type { ManifestEntry } from "@ghostframes/core";
 
 export interface CliIo {
   log: (message: string) => void;

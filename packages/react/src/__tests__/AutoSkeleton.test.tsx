@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render } from "@testing-library/react";
 import { act } from "react";
-import * as core from "@ghostframe/core";
-import { asStructuralHash, type Blueprint, type BlueprintManifest } from "@ghostframe/core";
+import * as core from "@ghostframes/core";
+import { asStructuralHash, type Blueprint, type BlueprintManifest } from "@ghostframes/core";
 import { AutoSkeleton } from "../AutoSkeleton.js";
 
 // Mock implementation of Blueprint/Measurement

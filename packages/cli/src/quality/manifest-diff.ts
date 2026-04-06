@@ -1,4 +1,4 @@
-import { parseManifest } from "@ghostframe/core";
+import { parseManifest } from "@ghostframes/core";
 import type { ManifestDiffResult, ManifestDiffThresholds } from "../types";
 
 export function evaluateManifestDiff(input: {

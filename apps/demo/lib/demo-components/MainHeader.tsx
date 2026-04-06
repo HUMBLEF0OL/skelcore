@@ -25,7 +25,7 @@ export function MainHeader() {
       <div className="app-shell flex w-full items-center justify-between gap-3 px-4 py-3 sm:px-6">
         <Link href="/" className="flex items-center gap-2 rounded-md px-1 py-1 transition-opacity hover:opacity-85">
           <BrandMark size={24} />
-          <span className="text-md font-bold text-white tracking-widest light:text-zinc-900">GHOSTFRAME</span>
+          <span className="text-md font-bold text-white tracking-widest light:text-zinc-900">GHOSTFRAMES</span>
         </Link>
 
         <nav aria-label="Primary" className="flex flex-1 items-center justify-center gap-1 overflow-x-auto px-1">

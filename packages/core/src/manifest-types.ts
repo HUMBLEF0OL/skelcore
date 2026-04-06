@@ -48,7 +48,7 @@ export interface ManifestQuality {
 
 /**
  * Single skeleton blueprint entry in the manifest.
- * Keyed by component identifier (usually DISPLAYNAME or ghostframe key prop).
+ * Keyed by component identifier (usually DISPLAYNAME or ghostframes key prop).
  */
 export interface ManifestEntry {
   /** Canonical identifier for this entry (matches skeletonKey prop at runtime) */
@@ -103,7 +103,7 @@ export interface ManifestIndex {
 export interface BlueprintManifest {
   /** Manifest schema version (current: 1) */
   manifestVersion: number;
-  /** Ghostframe package version that generated this manifest */
+  /** Ghostframes package version that generated this manifest */
   packageVersion: string;
   /** Build metadata */
   build: ManifestBuildMetadata;
