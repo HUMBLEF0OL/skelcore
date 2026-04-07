@@ -5,19 +5,19 @@ import { asStructuralHash } from "@ghostframes/core";
 
 // Helper to create minimal valid BlueprintNode for testing
 function createTestNode(id: string, overrides?: Partial<BlueprintNode>): BlueprintNode {
-  return {
-    id,
-    role: "text",
-    width: 100,
-    height: 20,
-    top: 0,
-    left: 0,
-    layout: {},
-    borderRadius: "0",
-    tagName: "div",
-    children: [],
-    ...overrides,
-  };
+    return {
+        id,
+        role: "text",
+        width: 100,
+        height: 20,
+        top: 0,
+        left: 0,
+        layout: {},
+        borderRadius: "0",
+        tagName: "div",
+        children: [],
+        ...overrides,
+    };
 }
 
 describe("determinism", () => {

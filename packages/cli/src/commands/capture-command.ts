@@ -75,12 +75,12 @@ export async function runCaptureCommand(
         io.error(
           `Mismatches (${parityReport.mismatches.length}): ${parityReport.mismatches.map((m) => `${m.key}(${m.reason})`).join(", ")}`
         );
-        
+
         const outputDir = path.resolve(rootDir, config.outputDir);
         await fs.mkdir(outputDir, { recursive: true });
         const parityReportPath = path.resolve(outputDir, "parity-report.json");
         await fs.writeFile(parityReportPath, JSON.stringify(parityReport, null, 2), "utf8");
-        
+
         return 1;
       }
 

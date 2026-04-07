@@ -1,58 +1,58 @@
 {
-  "executedAt": "2026-04-07T09:32:54Z",
-  "targetBranch": "feat/rewamp",
-  "gates": [
-    {
-      "name": "B1_PARITY_GATE",
-      "status": "PARITY_PASS",
-      "description": "Capture Parity Baseline: >= 95% parity with deterministic reason codes",
-      "testFile": "packages/cli/src/__tests__/parity.test.ts",
-      "testCount": 7,
-      "allPassed": true,
-      "threshold": 0.95,
-      "evidence": {
-        "parityTestCount": 7,
-        "testResults": [
-          "✓ should compute parity rate from artifacts",
-          "✓ should enforce 95% parity threshold",
-          "✓ should generate reason codes for mismatches",
-          "✓ should classify parity reasons correctly",
-          "✓ should mark report as passed when parity meets threshold",
-          "✓ should emit parity report with deterministic structure",
-          "✓ GATE: B1_PARITY_GATE - parity >= 95% enforcement"
-        ]
-      }
-    },
-    {
-      "name": "B2_DETERMINISM_GATE",
-      "status": "DETERMINISM_PASS",
-      "description": "Deterministic Normalization: <= 1% unexpected diff over 20 repeated runs",
-      "testFile": "packages/cli/src/__tests__/determinism.test.ts",
-      "testCount": 8,
-      "allPassed": true,
-      "maxUnexpectedDiffRate": 0.01,
-      "evidence": {
-        "determinismTestCount": 8,
-        "testResults": [
-          "✓ should normalize entry by zeroing generatedAt",
-          "✓ should canonicalize numeric values to 3 decimals",
-          "✓ should normalize manifest by sorting entries and zeroing timestamps",
-          "✓ should strip entropy from manifests for determinism",
-          "✓ should classify diffs as expected vs unexpected",
-          "✓ should produce identical JSON after normalization",
-          "✓ should handle node array normalization",
-          "✓ GATE: B2_DETERMINISM_GATE - unexpected diffs <= 1%"
-        ]
-      }
-    }
-  ],
-  "totalTestsPassed": 71,
-  "totalTestsFailed": 0,
-  "gatesBlocking": [
-    "B1_PARITY_GATE",
-    "B2_DETERMINISM_GATE"
-  ],
-  "gatesStatus": "ALL_PASS",
-  "nextGate": "B3_BLUEPRINT_GATE",
-  "readyForPromotion": true
+    "executedAt": "2026-04-07T09:32:54Z",
+    "targetBranch": "feat/rewamp",
+    "gates": [
+        {
+            "name": "B1_PARITY_GATE",
+            "status": "PARITY_PASS",
+            "description": "Capture Parity Baseline: >= 95% parity with deterministic reason codes",
+            "testFile": "packages/cli/src/__tests__/parity.test.ts",
+            "testCount": 7,
+            "allPassed": true,
+            "threshold": 0.95,
+            "evidence": {
+                "parityTestCount": 7,
+                "testResults": [
+                    "✓ should compute parity rate from artifacts",
+                    "✓ should enforce 95% parity threshold",
+                    "✓ should generate reason codes for mismatches",
+                    "✓ should classify parity reasons correctly",
+                    "✓ should mark report as passed when parity meets threshold",
+                    "✓ should emit parity report with deterministic structure",
+                    "✓ GATE: B1_PARITY_GATE - parity >= 95% enforcement"
+                ]
+            }
+        },
+        {
+            "name": "B2_DETERMINISM_GATE",
+            "status": "DETERMINISM_PASS",
+            "description": "Deterministic Normalization: <= 1% unexpected diff over 20 repeated runs",
+            "testFile": "packages/cli/src/__tests__/determinism.test.ts",
+            "testCount": 8,
+            "allPassed": true,
+            "maxUnexpectedDiffRate": 0.01,
+            "evidence": {
+                "determinismTestCount": 8,
+                "testResults": [
+                    "✓ should normalize entry by zeroing generatedAt",
+                    "✓ should canonicalize numeric values to 3 decimals",
+                    "✓ should normalize manifest by sorting entries and zeroing timestamps",
+                    "✓ should strip entropy from manifests for determinism",
+                    "✓ should classify diffs as expected vs unexpected",
+                    "✓ should produce identical JSON after normalization",
+                    "✓ should handle node array normalization",
+                    "✓ GATE: B2_DETERMINISM_GATE - unexpected diffs <= 1%"
+                ]
+            }
+        }
+    ],
+    "totalTestsPassed": 71,
+    "totalTestsFailed": 0,
+    "gatesBlocking": [
+        "B1_PARITY_GATE",
+        "B2_DETERMINISM_GATE"
+    ],
+    "gatesStatus": "ALL_PASS",
+    "nextGate": "B3_BLUEPRINT_GATE",
+    "readyForPromotion": true
 }
