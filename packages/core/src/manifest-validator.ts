@@ -8,6 +8,9 @@ import type {
   ManifestIndex,
   ManifestQuality,
   StructuralHash,
+  CompatibilityError,
+  CompatibilityValidationResult,
+  CompatibilityProfile,
 } from "./manifest-types.js";
 import type { Blueprint } from "./types.js";
 import { asStructuralHash, asStyleFingerprint } from "./manifest-types.js";
@@ -396,4 +399,194 @@ export function lookupAndAcceptEntry(
     manifestVersion: manifest.manifestVersion,
     ...options,
   });
+}
+
+/**
+ * B4: Validate manifest compatibility with current runtime contract.
+ * Checks version, schema, and (optionally) policy constraints.
+ * Returns machine-parseable validation result with actionable error codes.
+ */
+export function validateManifestCompatibility(
+  manifest: BlueprintManifest,
+  profile?: CompatibilityProfile
+): CompatibilityValidationResult {
+  const errors: CompatibilityError[] = [];
+  const entryErrors: CompatibilityValidationResult["entryErrors"] = [];
+
+  // 1. Manifest version gate
+  if (manifest.manifestVersion !== 1) {
+    errors.push({
+      code: "unsupported-manifest-version",
+      message: `Manifest version ${manifest.manifestVersion} is not supported. Expected version 1.`,
+      field: "manifestVersion",
+      expected: 1,
+      actual: manifest.manifestVersion,
+    });
+  }
+
+  // 2. Required fields check
+  const requiredFields = profile?.requiredFields || ["entries", "build", "defaults"];
+  for (const field of requiredFields) {
+    if (!(field in manifest) || (manifest as Record<string, unknown>)[field] === undefined) {
+      errors.push({
+        code: "missing-required-field",
+        message: `Required field "${field}" is missing or undefined.`,
+        field,
+      });
+    }
+  }
+
+  // 3. Package version check (if profile specifies minimum version)
+  if (profile?.minimumPackageVersion) {
+    if (!isVersionGreaterOrEqual(manifest.packageVersion, profile.minimumPackageVersion)) {
+      errors.push({
+        code: "package-version-too-old",
+        message: `Package version ${manifest.packageVersion} is below minimum required ${profile.minimumPackageVersion}.`,
+        field: "packageVersion",
+        expected: `>= ${profile.minimumPackageVersion}`,
+        actual: manifest.packageVersion,
+      });
+    }
+  }
+
+  // 4. Policy constraints (if specified)
+  if (profile?.allowedPolicies) {
+    const policyConstraints = (manifest as any).policyConstraints?.policy ||
+      (manifest as any).policyConstraints?.mode || [
+        manifest.build,
+      ];
+    const policies = Array.isArray(policyConstraints) ? policyConstraints : [policyConstraints];
+
+    for (const policy of policies) {
+      if (policy && !profile.allowedPolicies.includes(policy)) {
+        errors.push({
+          code: "disallowed-policy-mode",
+          message: `Policy mode "${policy}" is not allowed. Allowed modes: ${profile.allowedPolicies.join(", ")}.`,
+          field: "policyConstraints",
+          expected: profile.allowedPolicies,
+          actual: policy,
+        });
+      }
+    }
+  }
+
+  // 5. Validate individual entries
+  for (const [key, entry] of Object.entries(manifest.entries)) {
+    const entryValidationErrors: CompatibilityError[] = [];
+
+    // Blueprint version check
+    if (entry.blueprint.version !== 1) {
+      entryValidationErrors.push({
+        code: "blueprint-version-incompatible",
+        message: `Entry "${key}" has blueprint version ${entry.blueprint.version}, expected 1.`,
+        field: `entries[${key}].blueprint.version`,
+        expected: 1,
+        actual: entry.blueprint.version,
+      });
+    }
+
+    // Quality confidence check (warn if too low)
+    if (entry.quality.confidence < 0.5) {
+      entryValidationErrors.push({
+        code: "low-quality-confidence",
+        message: `Entry "${key}" has low quality confidence (${entry.quality.confidence}). Consider re-capturing.`,
+        field: `entries[${key}].quality.confidence`,
+        expected: ">= 0.5",
+        actual: entry.quality.confidence,
+      });
+    }
+
+    if (entryValidationErrors.length > 0) {
+      entryErrors.push({
+        key,
+        errors: entryValidationErrors,
+      });
+    }
+  }
+
+  // 6. Custom profile validation
+  if (profile?.validate) {
+    const customErrors = profile.validate(manifest);
+    errors.push(...customErrors);
+  }
+
+  // Merge entry errors into main error list if there are any
+  if (entryErrors.length > 0) {
+    // Only fail overall if there are critical entry errors
+    const criticalEntryErrors = entryErrors.filter((e) =>
+      e.errors.some((err) => !err.code.includes("low-quality"))
+    );
+    if (criticalEntryErrors.length > 0) {
+      errors.push({
+        code: "entry-validation-failed",
+        message: `${criticalEntryErrors.length} entry/entries failed validation.`,
+      });
+    }
+  }
+
+  return {
+    compatible: errors.length === 0,
+    errors,
+    entryErrors: entryErrors.length > 0 ? entryErrors : undefined,
+  };
+}
+
+/**
+ * B4: Validate a manifest against a compatibility matrix of supported versions.
+ * Checks that manifest was created by a supported version of the package.
+ */
+export function validateCompatibilityMatrix(
+  manifest: BlueprintManifest,
+  options: {
+    supportedVersions: string[];
+    allowedModes?: string[];
+  } = { supportedVersions: [] }
+): CompatibilityValidationResult {
+  const errors: CompatibilityError[] = [];
+
+  // Check if package version is in supported list
+  if (!options.supportedVersions.includes(manifest.packageVersion)) {
+    errors.push({
+      code: "unsupported-package-version",
+      message: `Package version "${manifest.packageVersion}" is not in the supported versions list: ${options.supportedVersions.join(", ")}.`,
+      field: "packageVersion",
+      expected: options.supportedVersions,
+      actual: manifest.packageVersion,
+    });
+  }
+
+  // If allowed modes are specified, check compatibility
+  if (options.allowedModes && (manifest as any).policyConstraints?.mode) {
+    const mode = (manifest as any).policyConstraints.mode;
+    if (!options.allowedModes.includes(mode)) {
+      errors.push({
+        code: "policy-mode-not-allowed",
+        message: `Policy mode "${mode}" is not allowed for current runtime. Allowed: ${options.allowedModes.join(", ")}.`,
+        field: "policyConstraints.mode",
+        expected: options.allowedModes,
+        actual: mode,
+      });
+    }
+  }
+
+  return {
+    compatible: errors.length === 0,
+    errors,
+  };
+}
+
+/**
+ * Helper: Compare semantic versions (e.g., "1.2.3" >= "1.0.0")
+ */
+function isVersionGreaterOrEqual(actual: string, minimum: string): boolean {
+  const actualParts = actual.split(".").map(Number);
+  const minimumParts = minimum.split(".").map(Number);
+
+  for (let i = 0; i < Math.max(actualParts.length, minimumParts.length); i++) {
+    const a = actualParts[i] || 0;
+    const b = minimumParts[i] || 0;
+    if (a > b) return true;
+    if (a < b) return false;
+  }
+  return true; // equal
 }

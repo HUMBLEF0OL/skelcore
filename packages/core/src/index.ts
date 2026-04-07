@@ -19,6 +19,9 @@ export {
   type ManifestAcceptanceResult,
   type StructuralHash,
   type StyleFingerprint,
+  type CompatibilityError,
+  type CompatibilityValidationResult,
+  type CompatibilityProfile,
   asStructuralHash,
   asStyleFingerprint,
 } from "./manifest-types.js";
@@ -31,6 +34,8 @@ export {
   validateEntryAcceptance,
   acceptManifestEntry,
   lookupAndAcceptEntry,
+  validateManifestCompatibility,
+  validateCompatibilityMatrix,
 } from "./manifest-validator.js";
 
 // Phase 10: Rollout Telemetry Infrastructure

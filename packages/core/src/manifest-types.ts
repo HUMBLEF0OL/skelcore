@@ -135,11 +135,11 @@ export interface ManifestEntryValidationResult {
   entry?: ManifestEntry;
   reason?: string;
   invalidationReason?:
-    | "version-mismatch"
-    | "ttl-expired"
-    | "structural-hash-mismatch"
-    | "style-drift"
-    | "malformed";
+  | "version-mismatch"
+  | "ttl-expired"
+  | "structural-hash-mismatch"
+  | "style-drift"
+  | "malformed";
 }
 
 /**
@@ -149,4 +149,51 @@ export interface ManifestAcceptanceResult {
   accepted: boolean;
   entry?: ManifestEntry;
   reason: string;
+}
+
+/**
+ * B4: Compatibility validation error with deterministic code and remediation guidance.
+ */
+export interface CompatibilityError {
+  /** Machine-parseable error code (kebab-case) */
+  code: string;
+  /** Human-readable error message with remediation guidance */
+  message: string;
+  /** Affected field/section (if applicable) */
+  field?: string;
+  /** Expected value or constraint (if applicable) */
+  expected?: unknown;
+  /** Actual value (if applicable) */
+  actual?: unknown;
+}
+
+/**
+ * B4: Validation result for manifest compatibility.
+ * Strict compatibility checks for current runtime contract and future strict mode.
+ */
+export interface CompatibilityValidationResult {
+  compatible: boolean;
+  errors: CompatibilityError[];
+  entryErrors?: Array<{
+    key: string;
+    errors: CompatibilityError[];
+  }>;
+  warnings?: CompatibilityError[];
+}
+
+/**
+ * B4: Compatibility profile defines constraints for a specific runtime policy or mode.
+ * Used to enforce version, shape, and policy requirements.
+ */
+export interface CompatibilityProfile {
+  /** Minimum package version required (e.g., "1.0.0" for strict mode) */
+  minimumPackageVersion?: string;
+  /** Expected manifest version (current: 1) */
+  manifestVersion?: number;
+  /** Required top-level fields in manifest */
+  requiredFields?: string[];
+  /** Allowed policy modes for this profile */
+  allowedPolicies?: string[];
+  /** Custom validation function (optional) */
+  validate?: (manifest: BlueprintManifest) => CompatibilityError[];
 }

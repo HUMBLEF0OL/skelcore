@@ -70,6 +70,10 @@ export interface CaptureConfig {
 export interface CapturedArtifact {
   key: string;
   entry: ManifestEntry;
+  quality?: {
+    score: number;
+    accepted: boolean;
+  };
 }
 
 export interface CaptureRunResult {
