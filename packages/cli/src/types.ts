@@ -1,4 +1,4 @@
-import type { ManifestEntry, BlueprintManifest } from "@ghostframes/core";
+import type { ManifestEntry } from "@ghostframes/core";
 
 export interface CliIo {
   log: (message: string) => void;
@@ -6,13 +6,29 @@ export interface CliIo {
 }
 
 // Parity (B1) - Capture accuracy validation
-export type ParityReasonCode = "matched" | "missing" | "extra" | "selector-mismatch" | "timing-variance";
+export type ParityReasonCode =
+  | "matched"
+  | "missing_selector"
+  | "extra_selector"
+  | "breakpoint_mismatch"
+  | "route_missing_artifact";
+
+export interface ParityObservation {
+  route: string;
+  breakpoint: number;
+  discoveredKeys: string[];
+  extractedKeys: string[];
+  extractionFailures: number;
+}
 
 export interface ParityMismatch {
   key: string;
   route: string;
   breakpoint: number;
   reason: ParityReasonCode;
+  missingKeys?: string[];
+  extraKeys?: string[];
+  extractionFailures?: number;
   details?: string;
 }
 
@@ -24,6 +40,7 @@ export interface ParityReport {
   minThreshold: number; // 0.95
   passed: boolean;
   mismatches: ParityMismatch[];
+  reasonCounts: Record<Exclude<ParityReasonCode, "matched">, number>;
 }
 
 // Determinism (B2) - Output consistency validation
@@ -62,6 +79,7 @@ export interface CaptureConfig {
   // Parity & determinism options
   enableParityCheck?: boolean;
   parityThreshold?: number; // default 0.95
+  maxSelectorMismatchCount?: number; // default 0
   enableDeterminismCheck?: boolean;
   maxUnexpectedDiffRate?: number; // default 0.01
   pilotRoutes?: string[]; // routes for parity checking
@@ -79,6 +97,7 @@ export interface CapturedArtifact {
 export interface CaptureRunResult {
   ok: boolean;
   artifacts: CapturedArtifact[];
+  parityObservations?: ParityObservation[];
   fatalError?: string;
 }
 

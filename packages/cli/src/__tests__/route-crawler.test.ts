@@ -97,8 +97,16 @@ describe("crawlRoutes", () => {
       retries: 0,
     });
 
-    expect(result).toHaveLength(1);
-    expect(result[0]?.key).toBe("ProductCard");
+    expect(result.artifacts).toHaveLength(1);
+    expect(result.artifacts[0]?.key).toBe("ProductCard");
+    expect(result.parityObservations).toHaveLength(1);
+    expect(result.parityObservations[0]).toMatchObject({
+      route: "/test",
+      breakpoint: 375,
+      discoveredKeys: ["ProductCard"],
+      extractedKeys: ["ProductCard"],
+      extractionFailures: 0,
+    });
   });
 
   it("reuses one page per route across breakpoints", async () => {
@@ -127,5 +135,59 @@ describe("crawlRoutes", () => {
     ).resolves.toBeDefined();
 
     expect(context.newPage).toHaveBeenCalledTimes(2);
+  });
+
+  it("records one observation per route x breakpoint", async () => {
+    const { context } = makeContext();
+    mockedDiscoverTargets.mockResolvedValue([
+      {
+        key: "ProductCard",
+        selector: '[data-skeleton-key="ProductCard"]',
+      },
+    ]);
+    mockedExtractArtifact.mockResolvedValue(null);
+
+    const result = await crawlRoutes(context as never, {
+      baseUrl: "http://localhost:3005",
+      routes: ["/test"],
+      breakpoints: [375, 768],
+      viewportHeight: 900,
+      outputDir: "apps/demo/lib/ghostframes/generated",
+      manifestFileName: "manifest.json",
+      loaderFileName: "manifest-loader.ts",
+      selector: "[data-skeleton-key]",
+      waitForMs: 0,
+      retries: 0,
+    });
+
+    expect(result.parityObservations).toHaveLength(2);
+    expect(result.parityObservations[0]).toMatchObject({ route: "/test", breakpoint: 375 });
+    expect(result.parityObservations[1]).toMatchObject({ route: "/test", breakpoint: 768 });
+  });
+
+  it("tracks extraction failures deterministically", async () => {
+    const { context } = makeContext();
+    mockedDiscoverTargets.mockResolvedValue([
+      {
+        key: "ProductCard",
+        selector: '[data-skeleton-key="ProductCard"]',
+      },
+    ]);
+    mockedExtractArtifact.mockResolvedValue(null);
+
+    const result = await crawlRoutes(context as never, {
+      baseUrl: "http://localhost:3005",
+      routes: ["/test"],
+      breakpoints: [375],
+      viewportHeight: 900,
+      outputDir: "apps/demo/lib/ghostframes/generated",
+      manifestFileName: "manifest.json",
+      loaderFileName: "manifest-loader.ts",
+      selector: "[data-skeleton-key]",
+      waitForMs: 0,
+      retries: 0,
+    });
+
+    expect(result.parityObservations[0]?.extractionFailures).toBe(1);
   });
 });

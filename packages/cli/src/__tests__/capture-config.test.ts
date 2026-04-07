@@ -10,6 +10,7 @@ describe("resolveCaptureConfig", () => {
 
     expect(config.breakpoints.length).toBeGreaterThan(0);
     expect(config.baseUrl).toContain("localhost");
+    expect(config.maxSelectorMismatchCount).toBe(0);
   });
 
   it("throws for empty route list", async () => {

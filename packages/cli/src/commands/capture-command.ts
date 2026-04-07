@@ -61,12 +61,32 @@ export async function runCaptureCommand(
     if (config.enableParityCheck !== false) {
       const pilotRoutes = config.pilotRoutes ?? ["/rtl", "/config-playground", "/reference", "/advanced"];
       const threshold = config.parityThreshold ?? 0.95;
+      const outputDir = path.resolve(rootDir, config.outputDir);
+      const parityObservations = captureResult.parityObservations ?? [];
       const parityReport = computeParityReport(
         captureResult.artifacts,
         pilotRoutes,
         config.breakpoints,
-        threshold
+        threshold,
+        parityObservations
       );
+      const selectorMismatchCount = parityReport.mismatches.reduce((total, mismatch) => {
+        const missingCount = mismatch.missingKeys?.length ?? 0;
+        const extraCount = mismatch.extraKeys?.length ?? 0;
+        return total + missingCount + extraCount;
+      }, 0);
+      const selectorMismatchBudget = config.maxSelectorMismatchCount ?? 0;
+
+      await fs.mkdir(outputDir, { recursive: true });
+      const parityReportPath = path.resolve(outputDir, "parity-report.json");
+      await fs.writeFile(parityReportPath, JSON.stringify(parityReport, null, 2), "utf8");
+
+      if (captureResult.artifacts.length > 0 && parityObservations.length === 0) {
+        io.error(
+          "Parity gate failed: runCapture must return parityObservations when artifacts are emitted"
+        );
+        return 1;
+      }
 
       if (!parityReport.passed) {
         io.error(
@@ -76,11 +96,13 @@ export async function runCaptureCommand(
           `Mismatches (${parityReport.mismatches.length}): ${parityReport.mismatches.map((m) => `${m.key}(${m.reason})`).join(", ")}`
         );
 
-        const outputDir = path.resolve(rootDir, config.outputDir);
-        await fs.mkdir(outputDir, { recursive: true });
-        const parityReportPath = path.resolve(outputDir, "parity-report.json");
-        await fs.writeFile(parityReportPath, JSON.stringify(parityReport, null, 2), "utf8");
+        return 1;
+      }
 
+      if (selectorMismatchCount > selectorMismatchBudget) {
+        io.error(
+          `Parity gate failed: selector mismatch budget exceeded (${selectorMismatchCount} > ${selectorMismatchBudget})`
+        );
         return 1;
       }
 

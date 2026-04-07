@@ -8,11 +8,12 @@ export async function runBrowserCapture(config: CaptureConfig): Promise<CaptureR
   try {
     browser = await chromium.launch({ headless: true });
     const context = await browser.newContext();
-    const artifacts = await crawlRoutes(context, config);
+    const crawlResult = await crawlRoutes(context, config);
     await context.close();
     return {
       ok: true,
-      artifacts,
+      artifacts: crawlResult.artifacts,
+      parityObservations: crawlResult.parityObservations,
     };
   } catch (error) {
     return {

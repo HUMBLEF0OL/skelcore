@@ -14,6 +14,7 @@ export const DEFAULT_CAPTURE_CONFIG: Omit<CaptureConfig, "routes"> = {
   // Parity & determinism defaults
   enableParityCheck: true,
   parityThreshold: 0.95,
+  maxSelectorMismatchCount: 0,
   enableDeterminismCheck: true,
   maxUnexpectedDiffRate: 0.01,
   pilotRoutes: ["/rtl", "/config-playground", "/reference", "/advanced"],

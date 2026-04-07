@@ -1,178 +1,116 @@
 import { describe, it, expect } from "vitest";
 import { computeParityReport, classifyParityReason } from "../capture/parity-scorer";
-import type { CapturedArtifact } from "../types";
-import { asStructuralHash } from "@ghostframes/core";
+import type { CapturedArtifact, ParityObservation } from "../types";
 
 describe("parity", () => {
     describe("B1: Capture Parity Baseline", () => {
-        it("should compute parity rate from artifacts", () => {
-            const artifacts: CapturedArtifact[] = [
+        it("computes parity from route x breakpoint observations", () => {
+            const observations: ParityObservation[] = [
                 {
-                    key: "Button_rtl_375",
-                    entry: {
-                        key: "Button_rtl_375",
-                        blueprint: {
-                            version: 1,
-                            rootWidth: 100,
-                            rootHeight: 40,
-                            nodes: [],
-                            generatedAt: 0,
-                            source: "dynamic",
-                        },
-                        structuralHash: asStructuralHash("hash-1"),
-                        generatedAt: 0,
-                        ttlMs: 60000,
-                        quality: { confidence: 0.9, warnings: [] },
-                    },
+                    route: "/rtl",
+                    breakpoint: 375,
+                    discoveredKeys: ["A"],
+                    extractedKeys: ["A"],
+                    extractionFailures: 0,
                 },
                 {
-                    key: "Button_rtl_768",
-                    entry: {
-                        key: "Button_rtl_768",
-                        blueprint: {
-                            version: 1,
-                            rootWidth: 150,
-                            rootHeight: 40,
-                            nodes: [],
-                            generatedAt: 0,
-                            source: "dynamic",
-                        },
-                        structuralHash: asStructuralHash("hash-2"),
-                        generatedAt: 0,
-                        ttlMs: 60000,
-                        quality: { confidence: 0.9, warnings: [] },
-                    },
+                    route: "/rtl",
+                    breakpoint: 768,
+                    discoveredKeys: ["A"],
+                    extractedKeys: [],
+                    extractionFailures: 1,
                 },
             ];
 
-            const routes = ["/rtl", "/config-playground"];
-            const breakpoints = [375, 768, 1280];
+            const report = computeParityReport([], ["/rtl"], [375, 768], 0.95, observations);
 
-            const report = computeParityReport(artifacts, routes, breakpoints, 0.95);
-
-            expect(report.parityRate).toBeLessThanOrEqual(1);
-            expect(report.minThreshold).toBe(0.95);
-            expect(report.totalChecks).toBe(6); // 2 routes x 3 breakpoints
-            expect(report.matchedCount).toBeLessThanOrEqual(report.totalChecks);
+            expect(report.totalChecks).toBe(2);
+            expect(report.matchedCount).toBe(1);
+            expect(report.parityRate).toBe(0.5);
+            expect(report.mismatches[0]?.reason).toBe("missing_selector");
+            expect(report.reasonCounts.missing_selector).toBe(1);
         });
 
-        it("should enforce 95% parity threshold", () => {
-            const artifacts: CapturedArtifact[] = [];
-            const routes = ["/rtl"];
-            const breakpoints = [375];
+        it("uses deterministic reason codes", () => {
+            const observations: ParityObservation[] = [
+                {
+                    route: "/rtl",
+                    breakpoint: 375,
+                    discoveredKeys: ["A"],
+                    extractedKeys: ["B"],
+                    extractionFailures: 0,
+                },
+            ];
 
-            const report = computeParityReport(artifacts, routes, breakpoints, 0.95);
+            const report = computeParityReport([], ["/rtl", "/reference"], [375, 768], 0.95, observations);
+            expect(report.mismatches.map((item) => item.reason)).toEqual([
+                "missing_selector",
+                "breakpoint_mismatch",
+                "route_missing_artifact",
+                "route_missing_artifact",
+            ]);
+            expect(report.reasonCounts).toEqual({
+                missing_selector: 1,
+                extra_selector: 0,
+                breakpoint_mismatch: 1,
+                route_missing_artifact: 2,
+            });
+        });
 
+        it("enforces threshold based on true matrix parity", () => {
+            const observations: ParityObservation[] = [
+                {
+                    route: "/rtl",
+                    breakpoint: 375,
+                    discoveredKeys: ["A"],
+                    extractedKeys: ["A"],
+                    extractionFailures: 0,
+                },
+            ];
+
+            const report = computeParityReport([], ["/rtl"], [375, 768], 0.95, observations);
             expect(report.passed).toBe(false);
-            expect(report.parityRate).toBeLessThan(0.95);
+            expect(report.parityRate).toBe(0.5);
         });
 
-        it("should generate reason codes for mismatches", () => {
-            const artifacts: CapturedArtifact[] = [];
-            const routes = ["/rtl", "/reference"];
-            const breakpoints = [375];
+        it("is deterministic for the same input", () => {
+            const observations: ParityObservation[] = [
+                {
+                    route: "/rtl",
+                    breakpoint: 375,
+                    discoveredKeys: ["A", "B"],
+                    extractedKeys: ["A"],
+                    extractionFailures: 1,
+                },
+            ];
 
-            const report = computeParityReport(artifacts, routes, breakpoints, 0.95);
-
-            // All should be missing since no artifacts
-            expect(report.mismatches.length).toBeGreaterThan(0);
-            for (const mismatch of report.mismatches) {
-                expect(["matched", "missing", "extra", "selector-mismatch", "timing-variance"]).toContain(
-                    mismatch.reason
-                );
-            }
+            const a = computeParityReport([], ["/rtl"], [375], 0.95, observations);
+            const b = computeParityReport([], ["/rtl"], [375], 0.95, observations);
+            expect(a.matchedCount).toBe(b.matchedCount);
+            expect(a.parityRate).toBe(b.parityRate);
+            expect(a.mismatches).toEqual(b.mismatches);
+            expect(a.reasonCounts).toEqual(b.reasonCounts);
         });
 
-        it("should classify parity reasons correctly", () => {
+        it("classifies parity reasons consistently", () => {
             expect(classifyParityReason(undefined, undefined)).toBe("matched");
-            expect(classifyParityReason("value", undefined)).toBe("missing");
-            expect(classifyParityReason(undefined, "value")).toBe("extra");
-            expect(classifyParityReason("value", "value")).toBe("matched");
-            expect(classifyParityReason({ key: "a" }, { key: "a" })).toBe("matched");
+            expect(classifyParityReason("value", undefined)).toBe("route_missing_artifact");
+            expect(classifyParityReason(undefined, "value")).toBe("extra_selector");
+            expect(classifyParityReason("x", "y", "breakpoint missing")).toBe("breakpoint_mismatch");
+            expect(classifyParityReason("x", "y")).toBe("missing_selector");
         });
 
-        it("should mark report as passed when parity meets threshold", () => {
-            const singleArtifact: CapturedArtifact[] = [
-                {
-                    key: "test",
-                    entry: {
-                        key: "test",
-                        blueprint: {
-                            version: 1,
-                            rootWidth: 100,
-                            rootHeight: 40,
-                            nodes: [],
-                            generatedAt: 0,
-                            source: "dynamic",
-                        },
-                        structuralHash: asStructuralHash("hash-1"),
-                        generatedAt: 0,
-                        ttlMs: 60000,
-                        quality: { confidence: 0.9, warnings: [] },
-                    },
-                },
-            ];
-
-            const routes = ["/rtl"];
-            const breakpoints = [375];
-            const report = computeParityReport(singleArtifact, routes, breakpoints, 0.95);
-
-            expect(report.parityRate).toBe(1.0); // MVP: any artifacts = full parity
-            expect(report.passed).toBe(true); // Should pass since we have artifacts
-            expect(report.minThreshold).toBe(0.95);
-        });
-
-        it("should emit parity report with deterministic structure", () => {
-            const artifacts: CapturedArtifact[] = [];
-            const routes = ["/rtl"];
-            const breakpoints = [375];
-
-            const report = computeParityReport(artifacts, routes, breakpoints, 0.95);
-
+        it("keeps report structure machine-readable", () => {
+            const report = computeParityReport([] as CapturedArtifact[], ["/rtl"], [375], 0.95, []);
             expect(report).toHaveProperty("generatedAt");
-            expect(report).toHaveProperty("totalChecks");
-            expect(report).toHaveProperty("matchedCount");
-            expect(report).toHaveProperty("parityRate");
-            expect(report).toHaveProperty("minThreshold");
-            expect(report).toHaveProperty("passed");
             expect(report).toHaveProperty("mismatches");
-            expect(Array.isArray(report.mismatches)).toBe(true);
-        });
-
-        // Gate 1: Parity >= 95%
-        it("GATE: B1_PARITY_GATE - parity >= 95% enforcement", () => {
-            // Create enough artifacts to meet 95% threshold
-            const routes = ["/rtl"];
-            const breakpoints = [375];
-
-            const artifacts: CapturedArtifact[] = [
-                {
-                    key: "comp1",
-                    entry: {
-                        key: "comp1",
-                        blueprint: {
-                            version: 1,
-                            rootWidth: 100,
-                            rootHeight: 40,
-                            nodes: [],
-                            generatedAt: 0,
-                            source: "dynamic",
-                        },
-                        structuralHash: asStructuralHash("hash-1"),
-                        generatedAt: 0,
-                        ttlMs: 60000,
-                        quality: { confidence: 0.9, warnings: [] },
-                    },
-                },
-            ];
-
-            const report = computeParityReport(artifacts, routes, breakpoints, 0.95);
-
-            // At minimum, check that the report structure is correct for gate evaluation
-            expect(report.minThreshold).toBe(0.95);
-            expect(typeof report.parityRate).toBe("number");
-            expect(typeof report.passed).toBe("boolean");
-            expect(report.passed).toBe(report.parityRate >= report.minThreshold);
+            expect(report).toHaveProperty("reasonCounts");
+            expect(report.reasonCounts).toEqual({
+                missing_selector: 0,
+                extra_selector: 0,
+                breakpoint_mismatch: 0,
+                route_missing_artifact: 1,
+            });
         });
     });
 });
