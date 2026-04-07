@@ -1,12 +1,12 @@
-# @ghostframes/runtime Runtime APIs
+# @ghostframes/core Internal APIs
 
-> Framework-agnostic analysis engine, blueprint system, animation utilities, and shared types powering Ghostframes.
+> Framework-agnostic analysis engine, blueprint system, animation utilities, and shared types used by `@ghostframes/runtime`.
 
 [![npm version](https://img.shields.io/npm/v/@ghostframes/runtime)](https://www.npmjs.com/package/@ghostframes/runtime)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/@ghostframes/runtime)](https://bundlephobia.com/package/@ghostframes/runtime)
 [![license](https://img.shields.io/npm/l/@ghostframes/runtime)](../../LICENSE)
 
-The `@ghostframes/core` package is the framework-agnostic engine. It contains no React, Vue, or any UI-framework code. If you are building a React app, you almost certainly want [`@ghostframes/react`](../react/README.md), which includes the React facade.
+The `@ghostframes/core` package is the internal framework-agnostic engine. Consumer applications should install [`@ghostframes/runtime`](../../ghostframes/README.md), which re-exports the public runtime surface.
 
 Use `@ghostframes/runtime` directly when you are:
 

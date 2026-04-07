@@ -1,6 +1,6 @@
 # Ghostframes Demo
 
-A comprehensive Next.js demonstration of `@ghostframes/react` features and customization options.
+A comprehensive Next.js demonstration of `@ghostframes/runtime` features and customization options.
 
 ## Running the Demo
 
@@ -10,6 +10,37 @@ pnpm dev
 
 # Open http://localhost:3005
 ```
+
+## End-to-End Skeleton Workflow
+
+The demo now covers full workflow layers:
+
+- Build/dev layer generates artifacts locally.
+- CI layer validates gates and blocks stale/invalid artifacts.
+- Deploy layer runs quick sanity checks against verified artifacts.
+
+### Local demonstration sequence
+
+```bash
+# Build packages and generate demo artifacts
+pnpm build
+
+# Optional: regenerate while actively developing
+pnpm skeleton:generate:dev
+
+# Validate generated artifact integrity
+pnpm quality:verify-artifacts
+
+# Run full quality + promotion gates
+pnpm quality:gate
+
+# Deploy-time quick sanity checks
+pnpm deploy:sanity
+```
+
+### Guide page covering this flow
+
+- `/reference/cli-workflow`
 
 ## Demo Sections
 
@@ -54,6 +85,7 @@ The demo showcases 13 use-cases covering basic to advanced Ghostframes features:
 
 - **`/`** — Main showcase (this list)
 - **`/reference`** — Feature documentation and configuration reference
+- **`/reference/cli-workflow`** — Build/dev generation, CI validation, deploy sanity, and rollout env template
 - **`/advanced/form-loading`** — Advanced form loading patterns
 - **`/config-playground`** — Interactive configuration explorer
 - **`/test`** — E2E test bench
@@ -61,6 +93,7 @@ The demo showcases 13 use-cases covering basic to advanced Ghostframes features:
 ## Learn More
 
 - [Workspace README](../../README.md)
-- [React Package Docs](../../packages/react/README.md)
-- [Core Package Docs](../../packages/core/README.md)
+- [Runtime Package Docs](../../packages/ghostframes/README.md)
+- [Package Implementation Notes](../../packages/react/README.md)
+- [Core Engine Notes](../../packages/core/README.md)
 - [Unified Package Plan](../../docs/UNIFIED_PACKAGE_PLAN.md)

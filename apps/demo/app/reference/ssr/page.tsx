@@ -52,7 +52,7 @@ export function ProductPreview({ loading }: { loading: boolean }) {
 }`;
 
 const recommendedPipelineCode = `// server.tsx (RSC)
-import { generateStaticBlueprint } from "@ghostframes/core";
+import { generateStaticBlueprint } from "@ghostframes/runtime";
 
 const blueprint = generateStaticBlueprint(
   <article>
@@ -62,7 +62,7 @@ const blueprint = generateStaticBlueprint(
 );
 
 // client.tsx
-import { AutoSkeleton } from "@ghostframes/react";
+import { AutoSkeleton } from "@ghostframes/runtime";
 
 <AutoSkeleton
   loading={loading}

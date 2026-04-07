@@ -1,12 +1,12 @@
-# @ghostframes/react
+# @ghostframes/react Internal Adapter
 
-> Automatic, zero-configuration skeleton loading states for React — powered by live DOM measurement.
+> Automatic, zero-configuration skeleton loading states for React — powered by live DOM measurement and re-exported by `@ghostframes/runtime`.
 
 [![npm version](https://img.shields.io/npm/v/@ghostframes/runtime)](https://www.npmjs.com/package/@ghostframes/runtime)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/@ghostframes/runtime)](https://bundlephobia.com/package/@ghostframes/runtime)
 [![license](https://img.shields.io/npm/l/@ghostframes/runtime)](../../LICENSE)
 
-`@ghostframes/react` wraps Ghostframes's engine with idiomatic React components and a hook. It measures your real UI — fonts, layout, borders, media — and replaces it with a pixel-perfect skeleton overlay while data loads. No manual schema. No configuration required to get started.
+`@ghostframes/react` is the internal React adapter behind the public runtime package. It measures your real UI — fonts, layout, borders, media — and replaces it with a pixel-perfect skeleton overlay while data loads. No manual schema. No configuration required to get started.
 
 **[→ Live Demo](https://getghostframes.vercel.app/)**
 

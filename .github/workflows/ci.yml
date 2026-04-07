@@ -38,6 +38,23 @@ jobs:
       - name: Turbo quality gates
         run: pnpm turbo run test lint typecheck build
 
+      - name: Enforce refreshed generated skeleton artifacts
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          CHANGED_FILES=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+
+          if echo "$CHANGED_FILES" | grep -Eq '^(packages/(cli|core|react)/|apps/demo/app/|apps/demo/ghostframes.capture.config.mjs|scripts/hardening/)'; then
+            if ! echo "$CHANGED_FILES" | grep -Eq '^apps/demo/lib/ghostframes/generated/'; then
+              echo "Skeleton-affecting changes detected, but no generated artifact updates found under apps/demo/lib/ghostframes/generated/."
+              echo "Run 'pnpm skeleton:generate' locally and commit generated files."
+              exit 1
+            fi
+          fi
+
+      - name: Verify generated skeleton artifacts
+        run: pnpm quality:verify-artifacts
+
       - name: Manifest quality gate
         run: |
           mkdir -p .tmp/ghostframes

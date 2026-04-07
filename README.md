@@ -1,6 +1,8 @@
 # ghostframes
 Zero config skeleton loaders for React.
 
+Ghostframes now ships as a single public package: `@ghostframes/runtime`.
+
 ## Installation
 
 ```bash
@@ -20,11 +22,23 @@ Generate demo manifest artifacts with:
 pnpm capture:demo
 ```
 
-This command runs `ghostframes capture` with `apps/demo/ghostframes.capture.config.mjs` and emits:
+This command runs the `ghostframes` binary with `apps/demo/ghostframes.capture.config.mjs` and emits:
 
 - `apps/demo/lib/ghostframes/generated/manifest.json`
 - `apps/demo/lib/ghostframes/generated/manifest-loader.ts`
 - `apps/demo/lib/ghostframes/generated/capture-report.txt`
+
+Build now also generates artifacts automatically:
+
+```bash
+pnpm build
+```
+
+Developer-focused generation command:
+
+```bash
+pnpm skeleton:generate:dev
+```
 
 ## CI Quality Gates
 
@@ -41,3 +55,9 @@ This executes:
 - `ghostframes report` to aggregate human/json outputs for CI.
 
 Artifacts are written to `.tmp/ghostframes/`.
+
+## Layered Workflow
+
+- Build/dev layer: generate artifacts locally (`pnpm build`, `pnpm skeleton:generate:dev`).
+- CI layer: verify artifacts and enforce promotion gates (`pnpm quality:verify-artifacts`, `pnpm quality:gate`).
+- Deploy layer: run quick artifact sanity checks (`pnpm deploy:sanity`).

@@ -70,8 +70,10 @@ Run these commands in order in your consumer app:
   - Requires: validate JSON and (optionally, if your workflow includes diff checks) diff JSON.
   - Produces: consolidated text/json report output.
 
-## Related Packages
+## Internal Packages
 
-- `@ghostframes/react`: React components and hooks.
-- `@ghostframes/core`: framework-agnostic blueprint and analyzer engine.
-- `@ghostframes/cli`: low-level CLI implementation used by the runtime binary.
+The runtime package bundles the public consumer surface. The split packages below are internal implementation details for the repository:
+
+- `@ghostframes/react`: React adapter implementation re-exported by `@ghostframes/runtime`.
+- `@ghostframes/core`: framework-agnostic engine used under the runtime facade.
+- `@ghostframes/cli`: CLI implementation that powers the `ghostframes` binary.
