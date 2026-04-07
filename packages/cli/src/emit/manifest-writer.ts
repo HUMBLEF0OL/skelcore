@@ -1,5 +1,6 @@
 import type { BlueprintManifest, ManifestEntry } from "@ghostframes/core";
 import type { CapturedArtifact } from "../types";
+import { normalizeManifest } from "../capture/normalization";
 
 export function buildManifestDocument(input: {
   packageVersion: string;
@@ -12,7 +13,7 @@ export function buildManifestDocument(input: {
     entries[artifact.key] = artifact.entry;
   }
 
-  return {
+  const manifest: BlueprintManifest = {
     manifestVersion: 1,
     packageVersion: input.packageVersion,
     build: {
@@ -24,6 +25,9 @@ export function buildManifestDocument(input: {
     },
     entries,
   };
+
+  // Apply deterministic normalization for B2
+  return normalizeManifest(manifest);
 }
 
 export function renderManifestJson(

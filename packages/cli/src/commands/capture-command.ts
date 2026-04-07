@@ -6,6 +6,7 @@ import { resolveCaptureConfig } from "../config/capture-config";
 import { buildManifestDocument, renderManifestJson } from "../emit/manifest-writer";
 import { renderManifestLoader } from "../emit/loader-writer";
 import { buildCaptureReport, renderCaptureReport } from "../emit/report-writer";
+import { computeParityReport } from "../capture/parity-scorer";
 import type { CaptureConfig, CaptureRunResult, CliIo } from "../types";
 
 interface CaptureArgs {
@@ -54,6 +55,36 @@ export async function runCaptureCommand(
     if (!parsed.success) {
       io.error(`Manifest validation failed: ${parsed.error ?? "unknown error"}`);
       return 1;
+    }
+
+    // B1: Check parity threshold
+    if (config.enableParityCheck !== false) {
+      const pilotRoutes = config.pilotRoutes ?? ["/rtl", "/config-playground", "/reference", "/advanced"];
+      const threshold = config.parityThreshold ?? 0.95;
+      const parityReport = computeParityReport(
+        captureResult.artifacts,
+        pilotRoutes,
+        config.breakpoints,
+        threshold
+      );
+
+      if (!parityReport.passed) {
+        io.error(
+          `Parity check failed: ${(parityReport.parityRate * 100).toFixed(1)}% < ${(threshold * 100).toFixed(1)}%`
+        );
+        io.error(
+          `Mismatches (${parityReport.mismatches.length}): ${parityReport.mismatches.map((m) => `${m.key}(${m.reason})`).join(", ")}`
+        );
+        
+        const outputDir = path.resolve(rootDir, config.outputDir);
+        await fs.mkdir(outputDir, { recursive: true });
+        const parityReportPath = path.resolve(outputDir, "parity-report.json");
+        await fs.writeFile(parityReportPath, JSON.stringify(parityReport, null, 2), "utf8");
+        
+        return 1;
+      }
+
+      io.log(`Parity check passed: ${(parityReport.parityRate * 100).toFixed(1)}% >= ${(threshold * 100).toFixed(1)}%`);
     }
 
     const outputDir = path.resolve(rootDir, config.outputDir);
