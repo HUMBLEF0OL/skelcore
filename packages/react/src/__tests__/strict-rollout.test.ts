@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { asStructuralHash, type BlueprintManifest } from "@ghostframes/core";
-import { deriveStrictRolloutPolicyForPath } from "../strict-rollout.js";
+import { deriveStrictRolloutPolicyForPath, evaluateStrictRolloutSlo } from "../strict-rollout.js";
 
 const strictCompatibilityProfile = {
     manifestVersion: 1,
@@ -120,5 +120,66 @@ describe("strict rollout policy helper", () => {
         expect(result.compatibilityStatus).toBe("compatible");
         expect(result.policy.mode).toBe("strict-precomputed");
         expect(result.policy.strict).toBe(true);
+    });
+});
+
+describe("strict rollout SLO evaluator", () => {
+    it("passes a strict canary window when anomaly and incidents are within thresholds", () => {
+        const firstWindow = evaluateStrictRolloutSlo({
+            evidence: {
+                fallbackAnomalyRate: 0.009,
+                p0Incidents: 0,
+                p1Incidents: 0,
+            },
+        });
+        const secondWindow = evaluateStrictRolloutSlo({
+            evidence: {
+                fallbackAnomalyRate: 0.008,
+                p0Incidents: 0,
+                p1Incidents: 0,
+            },
+            previousWindowPass: firstWindow.pass,
+        });
+
+        expect(firstWindow.pass).toBe(true);
+        expect(secondWindow.pass).toBe(true);
+        expect(secondWindow.promotionEligible).toBe(true);
+    });
+
+    it("recommends rollback when anomaly breaches rollback ceiling", () => {
+        const decision = evaluateStrictRolloutSlo({
+            evidence: {
+                fallbackAnomalyRate: 0.03,
+                p0Incidents: 0,
+                p1Incidents: 0,
+            },
+        });
+
+        expect(decision.pass).toBe(false);
+        expect(decision.rollbackRecommended).toBe(true);
+        expect(decision.status).toBe("rollback");
+    });
+
+    it("GATE: B6_STRICT_GATE - strict rollout requires <=1% anomaly and zero P0/P1 incidents for two windows", () => {
+        const firstWindow = evaluateStrictRolloutSlo({
+            evidence: {
+                fallbackAnomalyRate: 0.01,
+                p0Incidents: 0,
+                p1Incidents: 0,
+            },
+        });
+        const secondWindow = evaluateStrictRolloutSlo({
+            evidence: {
+                fallbackAnomalyRate: 0.009,
+                p0Incidents: 0,
+                p1Incidents: 0,
+            },
+            previousWindowPass: firstWindow.pass,
+        });
+
+        expect(firstWindow.pass).toBe(true);
+        expect(secondWindow.pass).toBe(true);
+        expect(secondWindow.promotionEligible).toBe(true);
+        expect(secondWindow.rollbackRecommended).toBe(false);
     });
 });

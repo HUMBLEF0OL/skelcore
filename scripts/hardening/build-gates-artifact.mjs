@@ -28,11 +28,11 @@ const GATE_DEFINITIONS = [
     {
         name: "B3_BLUEPRINT_GATE",
         statusPrefix: "BLUEPRINT",
-        description: "Blueprint quality score threshold >= 0.90",
-        threshold: { qualityScore: 0.9 },
+        description: "Blueprint quality gate enforces >= 0.90 threshold and >= 50% malformed fallback reduction",
+        threshold: { qualityScore: 0.9, malformedFallbackReduction: 0.5 },
         packageFilter: "@ghostframes/cli",
         packageDir: "packages/cli",
-        testFile: "src/__tests__/blueprint-quality-scorer.test.ts",
+        testFile: "src/__tests__/capture-command.test.ts",
     },
     {
         name: "B4_COMPATIBILITY_GATE",
@@ -46,8 +46,13 @@ const GATE_DEFINITIONS = [
     {
         name: "B5_CONFIDENCE_GATE",
         statusPrefix: "CONFIDENCE",
-        description: "Hybrid confidence gate supports promotion after two passing windows",
-        threshold: { hitRatio: 0.75, invalidationRate: 0.05 },
+        description: "Hybrid confidence gate requires hit/invalidation targets, no user-visible regression, and rollback drill <= 10m",
+        threshold: {
+            hitRatio: 0.75,
+            invalidationRate: 0.05,
+            maxUserVisibleRegressionDelta: 0,
+            maxRollbackDrillDurationMs: 600000,
+        },
         packageFilter: "@ghostframes/react",
         packageDir: "packages/react",
         testFile: "src/__tests__/resolver.test.ts",
@@ -55,8 +60,8 @@ const GATE_DEFINITIONS = [
     {
         name: "B6_STRICT_GATE",
         statusPrefix: "STRICT",
-        description: "Strict rollout canary route remains compatible and strict-precomputed",
-        threshold: { fallbackAnomalyRate: 0.01 },
+        description: "Strict rollout requires <= 1% fallback anomaly, zero P0/P1 incidents, and two-window promotion evidence",
+        threshold: { fallbackAnomalyRate: 0.01, p0Incidents: 0, p1Incidents: 0 },
         packageFilter: "@ghostframes/react",
         packageDir: "packages/react",
         testFile: "src/__tests__/strict-rollout.test.ts",

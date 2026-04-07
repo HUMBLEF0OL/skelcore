@@ -18,4 +18,7 @@ export const DEFAULT_CAPTURE_CONFIG: Omit<CaptureConfig, "routes"> = {
   enableDeterminismCheck: true,
   maxUnexpectedDiffRate: 0.01,
   pilotRoutes: ["/rtl", "/config-playground", "/reference", "/advanced"],
+  blueprintQualityThreshold: 0.9,
+  b1MalformedFallbackRateBaseline: 1,
+  minMalformedFallbackReduction: 0.5,
 };

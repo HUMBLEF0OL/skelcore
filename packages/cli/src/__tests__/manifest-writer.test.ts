@@ -150,7 +150,7 @@ describe("B3: Quality Filtering in buildManifestDocument", () => {
     );
   });
 
-  it("uses default quality threshold of 0.88 when not specified", () => {
+  it("uses default quality threshold of 0.90 when not specified", () => {
     const artifacts: CapturedArtifact[] = [
       createArtifact("Medium", 0.89, 3),
     ];
@@ -159,11 +159,10 @@ describe("B3: Quality Filtering in buildManifestDocument", () => {
       packageVersion: "0.1.0",
       appVersion: "demo",
       captureResults: artifacts,
-      // qualityThreshold not specified, should use 0.88
+      // qualityThreshold not specified, should use 0.90
     });
 
-    // Quality score should be high enough to pass 0.88 threshold
-    expect(Object.keys(manifest.entries).length).toBeGreaterThanOrEqual(0);
+    expect(Object.keys(manifest.entries)).toContain("Medium");
   });
 
   it("achieves >= 80% acceptance rate on high-quality pilot matrix", () => {

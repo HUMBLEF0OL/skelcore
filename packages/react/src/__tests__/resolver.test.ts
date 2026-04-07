@@ -9,6 +9,7 @@ import {
   derivePolicyForPath,
   diffResolverTelemetryCounters,
   evaluateHybridConfidenceGate,
+  evaluateHybridOperationalGate,
   getResolverTelemetryCounters,
   recordRuntimeBlueprint,
   resetResolverSessionCache,
@@ -265,6 +266,64 @@ describe("resolver confidence metrics", () => {
     expect(firstWindow.pass).toBe(true);
     expect(secondWindow.pass).toBe(true);
     expect(secondWindow.promotionEligible).toBe(true);
+  });
+});
+
+describe("resolver operational acceptance", () => {
+  it("passes when there is no user-visible regression and rollback drill meets 10-minute SLO", () => {
+    const firstWindow = evaluateHybridOperationalGate({
+      evidence: {
+        userVisibleRegressionDelta: 0,
+        rollbackDrillDurationMs: 540000,
+      },
+    });
+
+    const secondWindow = evaluateHybridOperationalGate({
+      evidence: {
+        userVisibleRegressionDelta: 0,
+        rollbackDrillDurationMs: 480000,
+      },
+      previousWindowPass: firstWindow.pass,
+    });
+
+    expect(firstWindow.pass).toBe(true);
+    expect(secondWindow.pass).toBe(true);
+    expect(secondWindow.promotionEligible).toBe(true);
+  });
+
+  it("recommends rollback when user-visible regression is detected", () => {
+    const decision = evaluateHybridOperationalGate({
+      evidence: {
+        userVisibleRegressionDelta: 0.02,
+        rollbackDrillDurationMs: 420000,
+      },
+    });
+
+    expect(decision.pass).toBe(false);
+    expect(decision.rollbackRecommended).toBe(true);
+    expect(decision.status).toBe("rollback");
+  });
+
+  it("GATE: B5_CONFIDENCE_GATE - operational acceptance requires no regression and rollback drill <= 10m", () => {
+    const firstWindow = evaluateHybridOperationalGate({
+      evidence: {
+        userVisibleRegressionDelta: 0,
+        rollbackDrillDurationMs: 590000,
+      },
+    });
+
+    const secondWindow = evaluateHybridOperationalGate({
+      evidence: {
+        userVisibleRegressionDelta: 0,
+        rollbackDrillDurationMs: 600000,
+      },
+      previousWindowPass: firstWindow.pass,
+    });
+
+    expect(firstWindow.pass).toBe(true);
+    expect(secondWindow.pass).toBe(true);
+    expect(secondWindow.promotionEligible).toBe(true);
+    expect(secondWindow.rollbackRecommended).toBe(false);
   });
 });
 

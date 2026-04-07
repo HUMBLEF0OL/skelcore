@@ -41,6 +41,32 @@ export interface StrictRolloutPolicySelection {
     reason: string;
 }
 
+export interface StrictRolloutSloThresholds {
+    maxFallbackAnomalyRate: number;
+    rollbackFallbackAnomalyRate: number;
+}
+
+export interface StrictRolloutWindowEvidence {
+    fallbackAnomalyRate: number;
+    p0Incidents: number;
+    p1Incidents: number;
+}
+
+export interface StrictRolloutSloDecision {
+    status: "pass" | "hold" | "rollback";
+    pass: boolean;
+    promotionEligible: boolean;
+    rollbackRecommended: boolean;
+    reasons: string[];
+    thresholds: StrictRolloutSloThresholds;
+    evidence: StrictRolloutWindowEvidence;
+}
+
+export const DEFAULT_STRICT_ROLLOUT_SLO_THRESHOLDS: StrictRolloutSloThresholds = {
+    maxFallbackAnomalyRate: 0.01,
+    rollbackFallbackAnomalyRate: 0.02,
+};
+
 function matchesPrefix(pathname: string, prefixes: string[]): boolean {
     return prefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 }
@@ -199,5 +225,54 @@ export function deriveStrictRolloutPolicyForPath(
             compatibilityStatus === "unchecked"
                 ? "strict-compatibility-unchecked"
                 : "strict-compatibility-blocked",
+    };
+}
+
+export function evaluateStrictRolloutSlo(input: {
+    evidence: StrictRolloutWindowEvidence;
+    previousWindowPass?: boolean;
+    thresholds?: Partial<StrictRolloutSloThresholds>;
+}): StrictRolloutSloDecision {
+    const thresholds: StrictRolloutSloThresholds = {
+        ...DEFAULT_STRICT_ROLLOUT_SLO_THRESHOLDS,
+        ...input.thresholds,
+    };
+
+    const reasons: string[] = [];
+    const fallbackAnomalyRate = Number.isFinite(input.evidence.fallbackAnomalyRate)
+        ? input.evidence.fallbackAnomalyRate
+        : Number.POSITIVE_INFINITY;
+    const p0Incidents = Math.max(Math.trunc(input.evidence.p0Incidents), 0);
+    const p1Incidents = Math.max(Math.trunc(input.evidence.p1Incidents), 0);
+
+    if (fallbackAnomalyRate > thresholds.maxFallbackAnomalyRate) {
+        reasons.push(
+            `fallback-anomaly-above-threshold: ${fallbackAnomalyRate.toFixed(3)} > ${thresholds.maxFallbackAnomalyRate.toFixed(3)}`
+        );
+    }
+    if (p0Incidents > 0) {
+        reasons.push(`p0-incidents-detected: ${p0Incidents}`);
+    }
+    if (p1Incidents > 0) {
+        reasons.push(`p1-incidents-detected: ${p1Incidents}`);
+    }
+
+    const rollbackRecommended =
+        fallbackAnomalyRate > thresholds.rollbackFallbackAnomalyRate || p0Incidents > 0 || p1Incidents > 0;
+    const pass = reasons.length === 0;
+    const promotionEligible = pass && input.previousWindowPass === true;
+
+    return {
+        status: rollbackRecommended ? "rollback" : pass ? "pass" : "hold",
+        pass,
+        promotionEligible,
+        rollbackRecommended,
+        reasons,
+        thresholds,
+        evidence: {
+            fallbackAnomalyRate,
+            p0Incidents,
+            p1Incidents,
+        },
     };
 }

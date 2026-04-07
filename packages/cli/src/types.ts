@@ -83,6 +83,9 @@ export interface CaptureConfig {
   enableDeterminismCheck?: boolean;
   maxUnexpectedDiffRate?: number; // default 0.01
   pilotRoutes?: string[]; // routes for parity checking
+  blueprintQualityThreshold?: number; // default 0.90
+  b1MalformedFallbackRateBaseline?: number; // baseline malformed fallback rate from B1 (0-1)
+  minMalformedFallbackReduction?: number; // default 0.50 (>= 50% reduction)
 }
 
 export interface CapturedArtifact {

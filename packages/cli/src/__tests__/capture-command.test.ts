@@ -410,4 +410,119 @@ describe("runCli", () => {
       '"parityRate"'
     );
   });
+
+  it("fails when malformed fallback reduction is below B3 threshold", async () => {
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "ghostframes-b3-reduction-fail-test-"));
+    createdDirs.push(tmpDir);
+    const outputDir = path.join(tmpDir, "generated");
+    const configPath = path.join(tmpDir, "capture.config.mjs");
+
+    await fs.writeFile(
+      configPath,
+      [
+        "export default {",
+        "  baseUrl: 'http://localhost:3005',",
+        "  routes: ['/test'],",
+        "  pilotRoutes: ['/test'],",
+        "  breakpoints: [375],",
+        "  viewportHeight: 900,",
+        `  outputDir: ${JSON.stringify(outputDir.replace(/\\/g, "/"))},`,
+        "  manifestFileName: 'manifest.json',",
+        "  loaderFileName: 'manifest-loader.ts',",
+        "  selector: '[data-skeleton-key]',",
+        "  waitForMs: 0,",
+        "  retries: 0,",
+        "  parityThreshold: 0,",
+        "  maxSelectorMismatchCount: 10,",
+        "  b1MalformedFallbackRateBaseline: 0.2,",
+        "  minMalformedFallbackReduction: 0.5,",
+        "};",
+        "",
+      ].join("\n"),
+      "utf8"
+    );
+
+    const io = {
+      log: vi.fn(),
+      error: vi.fn(),
+    };
+
+    const exitCode = await runCaptureCommand(["--config", configPath], io, {
+      runCapture: vi.fn().mockResolvedValue({
+        ok: true,
+        artifacts: [{ key: "ProductCard", entry: makeEntry("ProductCard") }],
+        parityObservations: [
+          {
+            route: "/test",
+            breakpoint: 375,
+            discoveredKeys: ["ProductCard", "PromoCard", "HeroBanner", "CTA"],
+            extractedKeys: ["ProductCard", "PromoCard", "HeroBanner", "CTA"],
+            extractionFailures: 1,
+          },
+        ],
+      }),
+    });
+
+    expect(exitCode).toBe(1);
+    expect(io.error).toHaveBeenCalledWith(expect.stringContaining("Blueprint quality gate failed"));
+  });
+
+  it("writes blueprint quality report when B3 reduction gate is evaluated", async () => {
+    const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "ghostframes-b3-report-test-"));
+    createdDirs.push(tmpDir);
+    const outputDir = path.join(tmpDir, "generated");
+    const configPath = path.join(tmpDir, "capture.config.mjs");
+
+    await fs.writeFile(
+      configPath,
+      [
+        "export default {",
+        "  baseUrl: 'http://localhost:3005',",
+        "  routes: ['/test'],",
+        "  pilotRoutes: ['/test'],",
+        "  breakpoints: [375],",
+        "  viewportHeight: 900,",
+        `  outputDir: ${JSON.stringify(outputDir.replace(/\\/g, "/"))},`,
+        "  manifestFileName: 'manifest.json',",
+        "  loaderFileName: 'manifest-loader.ts',",
+        "  selector: '[data-skeleton-key]',",
+        "  waitForMs: 0,",
+        "  retries: 0,",
+        "  parityThreshold: 0,",
+        "  b1MalformedFallbackRateBaseline: 0.5,",
+        "  minMalformedFallbackReduction: 0.5,",
+        "};",
+        "",
+      ].join("\n"),
+      "utf8"
+    );
+
+    const io = {
+      log: vi.fn(),
+      error: vi.fn(),
+    };
+
+    const exitCode = await runCaptureCommand(["--config", configPath], io, {
+      runCapture: vi.fn().mockResolvedValue({
+        ok: true,
+        artifacts: [{ key: "ProductCard", entry: makeEntry("ProductCard") }],
+        parityObservations: [
+          {
+            route: "/test",
+            breakpoint: 375,
+            discoveredKeys: ["ProductCard", "PromoCard", "HeroBanner", "CTA"],
+            extractedKeys: ["ProductCard", "PromoCard", "HeroBanner", "CTA"],
+            extractionFailures: 0,
+          },
+        ],
+      }),
+    });
+
+    expect(exitCode).toBe(0);
+    const report = JSON.parse(
+      await fs.readFile(path.join(outputDir, "blueprint-quality-report.json"), "utf8")
+    ) as { passed: boolean; malformedFallbackReduction: number };
+    expect(report.passed).toBe(true);
+    expect(report.malformedFallbackReduction).toBeGreaterThanOrEqual(0.5);
+  });
 });

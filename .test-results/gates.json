@@ -1,5 +1,5 @@
 {
-  "executedAt": "2026-04-07T06:48:43.401Z",
+  "executedAt": "2026-04-07T07:04:20.901Z",
   "targetBranch": "feat/rewamp",
   "gates": [
     {
@@ -57,35 +57,29 @@
     {
       "name": "B3_BLUEPRINT_GATE",
       "status": "BLUEPRINT_PASS",
-      "description": "Blueprint quality score threshold >= 0.90",
-      "testFile": "packages/cli/src/__tests__/blueprint-quality-scorer.test.ts",
-      "testCount": 17,
+      "description": "Blueprint quality gate enforces >= 0.90 threshold and >= 50% malformed fallback reduction",
+      "testFile": "packages/cli/src/__tests__/capture-command.test.ts",
+      "testCount": 10,
       "allPassed": true,
       "threshold": {
-        "qualityScore": 0.9
+        "qualityScore": 0.9,
+        "malformedFallbackReduction": 0.5
       },
       "evidence": {
         "exitCode": 0,
-        "passedTestCount": 17,
+        "passedTestCount": 10,
         "failedTestCount": 0,
         "testResults": [
-          "Blueprint Quality Scorer scoreBlueprint scores a complete blueprint with high quality",
-          "Blueprint Quality Scorer scoreBlueprint penalizes empty node lists",
-          "Blueprint Quality Scorer scoreBlueprint penalizes low confidence values",
-          "Blueprint Quality Scorer scoreBlueprint penalizes entries with warnings",
-          "Blueprint Quality Scorer scoreBlueprint penalizes small viewport dimensions",
-          "Blueprint Quality Scorer scoreBlueprint combines multiple penalties for poor blueprints",
-          "Blueprint Quality Scorer isQualityAcceptable accepts blueprints with score >= 0.90",
-          "Blueprint Quality Scorer isQualityAcceptable rejects blueprints with score < threshold",
-          "Blueprint Quality Scorer isQualityAcceptable uses default threshold of 0.88 if not specified",
-          "Blueprint Quality Scorer integrated quality workflow correctly filters pilot matrix for acceptable blueprints",
-          "Blueprint Quality Scorer B3 Edge Cases and Stress Tests handles extreme high dimensions gracefully",
-          "Blueprint Quality Scorer B3 Edge Cases and Stress Tests handles large DOM trees (100+ nodes) with consistent scoring",
-          "Blueprint Quality Scorer B3 Edge Cases and Stress Tests handles threshold boundaries for 0.88 and 0.90",
-          "Blueprint Quality Scorer B3 Edge Cases and Stress Tests handles zero confidence with non-empty nodes",
-          "Blueprint Quality Scorer B3 Edge Cases and Stress Tests handles maximum warning penalties without score collapse",
-          "Blueprint Quality Scorer B3 Edge Cases and Stress Tests maintains pilot quality threshold at or above 0.90",
-          "Blueprint Quality Scorer B3 Edge Cases and Stress Tests GATE: B3_BLUEPRINT_GATE - quality score threshold >= 0.90"
+          "runCli returns non-zero for unknown command",
+          "runCli returns 1 when capture run fails",
+          "runCli writes compact manifest and logs manifest size",
+          "runCli always writes parity-report.json when parity is enabled",
+          "runCli fails when parity threshold is not met",
+          "runCli fails when selector mismatch budget is exceeded",
+          "runCli counts selector mismatch budget per key across a check",
+          "runCli fails when artifacts are emitted without parity observations",
+          "runCli fails when malformed fallback reduction is below B3 threshold",
+          "runCli writes blueprint quality report when B3 reduction gate is evaluated"
         ],
         "failedTests": []
       }
@@ -134,17 +128,19 @@
     {
       "name": "B5_CONFIDENCE_GATE",
       "status": "CONFIDENCE_PASS",
-      "description": "Hybrid confidence gate supports promotion after two passing windows",
+      "description": "Hybrid confidence gate requires hit/invalidation targets, no user-visible regression, and rollback drill <= 10m",
       "testFile": "packages/react/src/__tests__/resolver.test.ts",
-      "testCount": 25,
+      "testCount": 28,
       "allPassed": true,
       "threshold": {
         "hitRatio": 0.75,
-        "invalidationRate": 0.05
+        "invalidationRate": 0.05,
+        "maxUserVisibleRegressionDelta": 0,
+        "maxRollbackDrillDurationMs": 600000
       },
       "evidence": {
         "exitCode": 0,
-        "passedTestCount": 25,
+        "passedTestCount": 28,
         "failedTestCount": 0,
         "testResults": [
           "resolution-types exposes runtime-only default policy",
@@ -160,6 +156,9 @@
           "resolver confidence metrics marks confidence gate pass and promotion eligibility on second passing window",
           "resolver confidence metrics marks rollback when hit ratio and invalidation thresholds breach rollback floor",
           "resolver confidence metrics GATE: B5_CONFIDENCE_GATE - promotion eligible after two passing windows",
+          "resolver operational acceptance passes when there is no user-visible regression and rollback drill meets 10-minute SLO",
+          "resolver operational acceptance recommends rollback when user-visible regression is detected",
+          "resolver operational acceptance GATE: B5_CONFIDENCE_GATE - operational acceptance requires no regression and rollback drill <= 10m",
           "resolver with manifest support prefers explicit blueprint over manifest",
           "resolver with manifest support checks manifest when no explicit blueprint provided",
           "resolver with manifest support falls back to dynamic when manifest lookup fails",
@@ -179,29 +178,34 @@
     {
       "name": "B6_STRICT_GATE",
       "status": "STRICT_PASS",
-      "description": "Strict rollout canary route remains compatible and strict-precomputed",
+      "description": "Strict rollout requires <= 1% fallback anomaly, zero P0/P1 incidents, and two-window promotion evidence",
       "testFile": "packages/react/src/__tests__/strict-rollout.test.ts",
-      "testCount": 5,
+      "testCount": 8,
       "allPassed": true,
       "threshold": {
-        "fallbackAnomalyRate": 0.01
+        "fallbackAnomalyRate": 0.01,
+        "p0Incidents": 0,
+        "p1Incidents": 0
       },
       "evidence": {
         "exitCode": 0,
-        "passedTestCount": 5,
+        "passedTestCount": 8,
         "failedTestCount": 0,
         "testResults": [
           "strict rollout policy helper enables strict-precomputed on compatible canary routes",
           "strict rollout policy helper falls back to hybrid when strict compatibility is blocked and hybrid serving is available",
           "strict rollout policy helper falls back to runtime-only when hybrid serving is unavailable",
           "strict rollout policy helper preserves legacy strict path behavior when tiered lists are absent",
-          "strict rollout policy helper GATE: B6_STRICT_GATE - canary compatibility enables strict-precomputed"
+          "strict rollout policy helper GATE: B6_STRICT_GATE - canary compatibility enables strict-precomputed",
+          "strict rollout SLO evaluator passes a strict canary window when anomaly and incidents are within thresholds",
+          "strict rollout SLO evaluator recommends rollback when anomaly breaches rollback ceiling",
+          "strict rollout SLO evaluator GATE: B6_STRICT_GATE - strict rollout requires <=1% anomaly and zero P0/P1 incidents for two windows"
         ],
         "failedTests": []
       }
     }
   ],
-  "totalTestsPassed": 83,
+  "totalTestsPassed": 82,
   "totalTestsFailed": 0,
   "gatesBlocking": [
     "B1_PARITY_GATE",

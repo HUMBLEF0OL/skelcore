@@ -7,6 +7,7 @@ import {
     deriveStrictRolloutPolicyForPath,
     diffResolverTelemetryCounters,
     evaluateHybridConfidenceGate,
+    evaluateHybridOperationalGate,
     getResolverTelemetryCounters,
     type CompatibilityProfile,
 } from "@ghostframes/runtime";
@@ -59,6 +60,13 @@ type TelemetrySnapshot = {
         rollbackRecommended: boolean;
         reasons: string[];
         manifestAttempts: number;
+        operationalStatus: "pass" | "hold" | "rollback";
+        operationalPass: boolean;
+        operationalPromotionEligible: boolean;
+        operationalRollbackRecommended: boolean;
+        operationalReasons: string[];
+        rollbackDrillDurationMs: number;
+        userVisibleRegressionDelta: number;
     };
 };
 
@@ -145,6 +153,24 @@ export function ClientProviders({
             counters: windowCounters,
             previousWindowPass: latestForRoute?.gate.pass,
         });
+        const userVisibleRegressionDelta = Number.parseFloat(
+            process.env.NEXT_PUBLIC_SKEL_USER_VISIBLE_REGRESSION_DELTA ?? "0"
+        );
+        const rollbackDrillDurationMs = Number.parseInt(
+            process.env.NEXT_PUBLIC_SKEL_ROLLBACK_DRILL_DURATION_MS ?? "0",
+            10
+        );
+        const operationalGate = evaluateHybridOperationalGate({
+            evidence: {
+                userVisibleRegressionDelta: Number.isFinite(userVisibleRegressionDelta)
+                    ? userVisibleRegressionDelta
+                    : 0,
+                rollbackDrillDurationMs: Number.isFinite(rollbackDrillDurationMs)
+                    ? rollbackDrillDurationMs
+                    : 0,
+            },
+            previousWindowPass: latestForRoute?.gate.operationalPass,
+        });
 
         const windowManifestAttempts = currentGate.metrics.manifestAttempts;
         const cumulativeManifestAttempts =
@@ -191,6 +217,13 @@ export function ClientProviders({
                 rollbackRecommended: currentGate.rollbackRecommended,
                 reasons: currentGate.reasons,
                 manifestAttempts: windowManifestAttempts,
+                operationalStatus: operationalGate.status,
+                operationalPass: operationalGate.pass,
+                operationalPromotionEligible: operationalGate.promotionEligible,
+                operationalRollbackRecommended: operationalGate.rollbackRecommended,
+                operationalReasons: operationalGate.reasons,
+                rollbackDrillDurationMs: operationalGate.evidence.rollbackDrillDurationMs,
+                userVisibleRegressionDelta: operationalGate.evidence.userVisibleRegressionDelta,
             },
         };
 

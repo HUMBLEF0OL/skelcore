@@ -97,6 +97,26 @@ export interface HybridConfidenceGateDecision {
   thresholds: HybridConfidenceThresholds;
 }
 
+export interface HybridOperationalThresholds {
+  maxUserVisibleRegressionDelta: number;
+  maxRollbackDrillDurationMs: number;
+}
+
+export interface HybridOperationalEvidence {
+  userVisibleRegressionDelta: number;
+  rollbackDrillDurationMs: number;
+}
+
+export interface HybridOperationalGateDecision {
+  status: "pass" | "hold" | "rollback";
+  pass: boolean;
+  promotionEligible: boolean;
+  rollbackRecommended: boolean;
+  reasons: string[];
+  thresholds: HybridOperationalThresholds;
+  evidence: HybridOperationalEvidence;
+}
+
 export interface ValidationResult {
   valid: boolean;
   reason?: string;

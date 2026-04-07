@@ -13,7 +13,7 @@ export function buildManifestDocument(input: {
   captureResults: CapturedArtifact[];
   qualityThreshold?: number;
 }): BlueprintManifest {
-  const qualityThreshold = input.qualityThreshold ?? 0.88;
+  const qualityThreshold = input.qualityThreshold ?? 0.9;
   const entries: Record<string, ManifestEntry> = {};
   const rejectedEntries: Array<{ key: string; reason: string }> = [];
 

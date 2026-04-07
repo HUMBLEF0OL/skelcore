@@ -2,6 +2,8 @@ import type { Blueprint, ManifestEntryValidationResult } from "@ghostframes/core
 import {
   DEFAULT_RESOLUTION_POLICY,
   type HybridConfidenceGateDecision,
+  type HybridOperationalGateDecision,
+  type HybridOperationalThresholds,
   type HybridConfidenceThresholds,
   type ResolutionPolicy,
   type ResolverConfidenceMetrics,
@@ -42,6 +44,11 @@ export const DEFAULT_HYBRID_CONFIDENCE_THRESHOLDS: HybridConfidenceThresholds = 
   rollbackHitRatioFloor: 0.6,
   rollbackInvalidationCeil: 0.08,
   minManifestAttempts: 1,
+};
+
+export const DEFAULT_HYBRID_OPERATIONAL_THRESHOLDS: HybridOperationalThresholds = {
+  maxUserVisibleRegressionDelta: 0,
+  maxRollbackDrillDurationMs: 10 * 60 * 1000,
 };
 
 function incrementCounter(counter: keyof ResolverTelemetryCounters): void {
@@ -314,6 +321,59 @@ export function evaluateHybridConfidenceGate(input: {
     reasons,
     metrics,
     thresholds,
+  };
+}
+
+export function evaluateHybridOperationalGate(input: {
+  evidence: {
+    userVisibleRegressionDelta: number;
+    rollbackDrillDurationMs: number;
+  };
+  previousWindowPass?: boolean;
+  thresholds?: Partial<HybridOperationalThresholds>;
+}): HybridOperationalGateDecision {
+  const thresholds: HybridOperationalThresholds = {
+    ...DEFAULT_HYBRID_OPERATIONAL_THRESHOLDS,
+    ...input.thresholds,
+  };
+
+  const reasons: string[] = [];
+  const userVisibleRegressionDelta = Number.isFinite(input.evidence.userVisibleRegressionDelta)
+    ? input.evidence.userVisibleRegressionDelta
+    : Number.POSITIVE_INFINITY;
+  const rollbackDrillDurationMs = Number.isFinite(input.evidence.rollbackDrillDurationMs)
+    ? input.evidence.rollbackDrillDurationMs
+    : Number.POSITIVE_INFINITY;
+
+  if (userVisibleRegressionDelta > thresholds.maxUserVisibleRegressionDelta) {
+    reasons.push(
+      `user-visible-regression-detected: ${userVisibleRegressionDelta.toFixed(3)} > ${thresholds.maxUserVisibleRegressionDelta.toFixed(3)}`
+    );
+  }
+
+  if (rollbackDrillDurationMs > thresholds.maxRollbackDrillDurationMs) {
+    reasons.push(
+      `rollback-drill-too-slow: ${rollbackDrillDurationMs}ms > ${thresholds.maxRollbackDrillDurationMs}ms`
+    );
+  }
+
+  const rollbackRecommended =
+    userVisibleRegressionDelta > 0 ||
+    rollbackDrillDurationMs > thresholds.maxRollbackDrillDurationMs;
+  const pass = reasons.length === 0;
+  const promotionEligible = pass && input.previousWindowPass === true;
+
+  return {
+    status: rollbackRecommended ? "rollback" : pass ? "pass" : "hold",
+    pass,
+    promotionEligible,
+    rollbackRecommended,
+    reasons,
+    thresholds,
+    evidence: {
+      userVisibleRegressionDelta,
+      rollbackDrillDurationMs,
+    },
   };
 }
 

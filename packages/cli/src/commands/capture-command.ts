@@ -49,6 +49,7 @@ export async function runCaptureCommand(
       packageVersion: "0.1.0",
       appVersion: "demo",
       captureResults: captureResult.artifacts,
+      qualityThreshold: config.blueprintQualityThreshold ?? 0.9,
     });
 
     const parsed = parseManifest(manifest);
@@ -107,6 +108,60 @@ export async function runCaptureCommand(
       }
 
       io.log(`Parity check passed: ${(parityReport.parityRate * 100).toFixed(1)}% >= ${(threshold * 100).toFixed(1)}%`);
+    }
+
+    const parityObservations = captureResult.parityObservations ?? [];
+    const totalDiscoveredTargets = parityObservations.reduce(
+      (sum, observation) => sum + observation.discoveredKeys.length,
+      0
+    );
+    const totalExtractionFailures = parityObservations.reduce(
+      (sum, observation) => sum + observation.extractionFailures,
+      0
+    );
+
+    if (totalDiscoveredTargets > 0) {
+      const outputDir = path.resolve(rootDir, config.outputDir);
+      const malformedFallbackRate = totalExtractionFailures / totalDiscoveredTargets;
+      const b1BaselineRate = config.b1MalformedFallbackRateBaseline ?? 1;
+      const minReduction = config.minMalformedFallbackReduction ?? 0.5;
+      const malformedFallbackReduction =
+        b1BaselineRate <= 0
+          ? malformedFallbackRate === 0
+            ? 1
+            : 0
+          : (b1BaselineRate - malformedFallbackRate) / b1BaselineRate;
+
+      await fs.mkdir(outputDir, { recursive: true });
+      const blueprintQualityReportPath = path.resolve(outputDir, "blueprint-quality-report.json");
+      await fs.writeFile(
+        blueprintQualityReportPath,
+        JSON.stringify(
+          {
+            generatedAt: new Date().toISOString(),
+            qualityThreshold: config.blueprintQualityThreshold ?? 0.9,
+            malformedFallbackRate,
+            b1BaselineRate,
+            malformedFallbackReduction,
+            minMalformedFallbackReduction: minReduction,
+            passed: malformedFallbackReduction >= minReduction,
+          },
+          null,
+          2
+        ),
+        "utf8"
+      );
+
+      if (malformedFallbackReduction < minReduction) {
+        io.error(
+          `Blueprint quality gate failed: malformed fallback reduction ${(malformedFallbackReduction * 100).toFixed(1)}% < ${(minReduction * 100).toFixed(1)}%`
+        );
+        return 1;
+      }
+
+      io.log(
+        `Blueprint quality gate passed: malformed fallback reduction ${(malformedFallbackReduction * 100).toFixed(1)}% >= ${(minReduction * 100).toFixed(1)}%`
+      );
     }
 
     const outputDir = path.resolve(rootDir, config.outputDir);
