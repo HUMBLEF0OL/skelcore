@@ -1,8 +1,50 @@
-import type { ManifestEntry } from "@ghostframes/core";
+import type { ManifestEntry, BlueprintManifest } from "@ghostframes/core";
 
 export interface CliIo {
   log: (message: string) => void;
   error: (message: string) => void;
+}
+
+// Parity (B1) - Capture accuracy validation
+export type ParityReasonCode = "matched" | "missing" | "extra" | "selector-mismatch" | "timing-variance";
+
+export interface ParityMismatch {
+  key: string;
+  route: string;
+  breakpoint: number;
+  reason: ParityReasonCode;
+  details?: string;
+}
+
+export interface ParityReport {
+  generatedAt: string;
+  totalChecks: number;
+  matchedCount: number;
+  parityRate: number; // 0-1
+  minThreshold: number; // 0.95
+  passed: boolean;
+  mismatches: ParityMismatch[];
+}
+
+// Determinism (B2) - Output consistency validation
+export interface DiffEntry {
+  key: string;
+  field: string;
+  old: unknown;
+  new: unknown;
+  classification: "expected" | "unexpected";
+  reason?: string;
+}
+
+export interface DeterminismReport {
+  generatedAt: string;
+  runCount: number;
+  totalDiffs: number;
+  unexpectedDiffCount: number;
+  unexpectedDiffRate: number; // 0-1
+  maxThreshold: number; // 0.01
+  passed: boolean;
+  diffs: DiffEntry[];
 }
 
 export interface CaptureConfig {
@@ -17,6 +59,12 @@ export interface CaptureConfig {
   waitForMs: number;
   retries: number;
   prettyPrintManifest?: boolean;
+  // Parity & determinism options
+  enableParityCheck?: boolean;
+  parityThreshold?: number; // default 0.95
+  enableDeterminismCheck?: boolean;
+  maxUnexpectedDiffRate?: number; // default 0.01
+  pilotRoutes?: string[]; // routes for parity checking
 }
 
 export interface CapturedArtifact {
