@@ -1,4 +1,4 @@
-# Changelog
+# @ghostframes/cli
 
 ## 1.0.0
 
