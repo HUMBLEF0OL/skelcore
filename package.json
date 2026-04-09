@@ -46,7 +46,6 @@
     "@changesets/cli": "^2.30.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.58.2",
-    "@rolldown/binding-win32-x64-msvc": "1.0.0-rc.12",
     "@size-limit/preset-small-lib": "^12.0.1",
     "@types/node": "^20.19.37",
     "@typescript-eslint/eslint-plugin": "^8.57.2",
